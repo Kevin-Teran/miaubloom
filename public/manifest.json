@@ -1,0 +1,14 @@
+{
+  "name": "MiauBloom: Crece y Siente",
+  "short_name": "MiauBloom",
+  "description": "Herramienta interactiva para apoyo psicoterapéutico y emocional.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#F2C2C1",
+  "icons": [
+    {"src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png"}
+  ]
+}

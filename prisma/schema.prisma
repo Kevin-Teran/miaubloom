@@ -1,0 +1,177 @@
+/**
+ * @file schema.prisma
+ * @route prisma/schema.prisma
+ * @description Define el esquema de la base de datos MySQL usando Prisma. 
+ * Incluye tablas para Usuarios, Perfiles, Registros Emocionales, Tareas y Citas.
+ * @author Kevin Mariano
+ * @version 1.0.3
+ * @since 1.0.0
+ * @copyright MiauBloom
+ */
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// =========================================================================
+// 1. AUTENTICACIÓN Y ROLES (LOGIN/PERFILES)
+// =========================================================================
+
+// Tabla principal de usuarios
+model User {
+  id               String   @id @default(uuid()) @db.VarChar(36)
+  email            String   @unique
+  passwordHash     String   @map("password_hash")
+  nombreCompleto   String   @map("nombre_completo")
+  rol              String   // 'Paciente', 'Psicólogo', 'Admin'
+  
+  // Relaciones
+  perfilPaciente   PerfilPaciente?
+  perfilPsicologo  PerfilPsicologo?
+  resetTokens      PasswordResetToken[]
+  
+  // Auditoría
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("Users")
+}
+
+// Tabla de perfiles de Paciente
+model PerfilPaciente {
+  userId               String   @id @map("user_id") @db.VarChar(36)
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  fechaNacimiento      DateTime @map("fecha_nacimiento") @db.Date
+  genero               String
+  contactoEmergencia   String   @map("contacto_emergencia")
+  nicknameAvatar       String   @map("nickname_avatar") @default("Nikky")
+  
+  // Relación con Psicólogo (Asignación)
+  psicologoAsignadoId  String?  @map("psicologo_asignado_id") @db.VarChar(36)
+  psicologoAsignado    PerfilPsicologo? @relation(fields: [psicologoAsignadoId], references: [userId], onDelete: SetNull, name: "AssignedPatients")
+
+  // Registros de la Aplicación (CAMPOS OPUESTOS CORREGIDOS)
+  registrosEmocionales RegistroEmocional[]
+  tareasRecibidas      Tarea[]                  @relation("PacienteTareas")
+  citasInvolucradas    Cita[]                   @relation("PacienteCitas")
+
+  // Auditoría
+  perfilCompletadoAt   DateTime @default(now()) @map("perfil_completado_at")
+
+  @@map("Perfiles_Paciente")
+}
+
+// Tabla de perfiles de Psicólogo
+model PerfilPsicologo {
+  userId               String   @id @map("user_id") @db.VarChar(36)
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  identificacion       String   @unique // Cédula o ID
+  registroProfesional  String   @map("registro_profesional") @unique
+  especialidad         String
+  tituloUniversitario  String   @map("titulo_universitario")
+  
+  // Lista de IDs de pacientes asignados (almacenado como JSON para el frontend)
+  pacientesAsignadosIds Json?    @map("pacientes_asignados_ids") @db.Json
+  
+  // Relación inversa con Pacientes y Registros
+  pacientesAsignados   PerfilPaciente[] @relation("AssignedPatients")
+  tareasAsignadas      Tarea[]          @relation("PsicologoTareas") // CAMPO OPUESTO A Tarea
+  citasAgendadas       Cita[]           @relation("PsicologoCitas")  // CAMPO OPUESTO A Cita
+  
+  // Auditoría
+  perfilCompletadoAt   DateTime @default(now()) @map("perfil_completado_at")
+
+  @@map("Perfiles_Psicologo")
+}
+
+// Tabla para Tokens de Recuperación de Contraseña
+model PasswordResetToken {
+  id        String   @id @default(uuid()) @db.VarChar(36)
+  userId    String   @map("user_id") @db.VarChar(36)
+  user      User     @relation(fields: [userId], references: [id])
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("Password_Reset_Tokens")
+}
+
+
+// =========================================================================
+// 2. REGISTRO Y SEGUIMIENTO EMOCIONAL
+// =========================================================================
+
+// Tabla para el registro diario de emociones del paciente (Historial Médico)
+model RegistroEmocional {
+  id                    Int      @id @default(autoincrement())
+  pacienteId            String   @map("paciente_id") @db.VarChar(36)
+  paciente              PerfilPaciente @relation(fields: [pacienteId], references: [userId])
+
+  timestamp             DateTime @default(now())
+  emocionPrincipal      String   @map("emocion_principal") // Ej: 'Tristeza', 'Alegria'
+  nivelAfectacion       Int      @map("nivel_afectacion") // Escala 1-10
+  queSucedio            String?  @map("que_sucedio") @db.Text // Contexto o causa (Pág. 17)
+  compartirPsicologo    Boolean  @map("compartir_psicologo") @default(false)
+  
+  // Metadatos del juego 3D (Jardín)
+  jardinMetadata        Json?    @map("jardin_metadata") @db.Json // Ej: { planta, crecimiento }
+
+  // Auditoría
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  @@map("Registros_Emocionales")
+}
+
+
+// =========================================================================
+// 3. INTERVENCIONES Y Citas
+// =========================================================================
+
+// Tabla para Tareas Asignadas por el Psicólogo (Pág. 3)
+model Tarea {
+  id           Int      @id @default(autoincrement())
+  psicologoId  String   @map("psicologo_id") @db.VarChar(36)
+  pacienteId   String   @map("paciente_id") @db.VarChar(36)
+  
+  descripcion  String   @db.Text
+  fechaLimite  DateTime @map("fecha_limite") @db.Date
+  estado       String   @default("Pendiente") // 'Pendiente', 'Completada', 'Vencida'
+
+  // Relaciones (AÑADIDOS NAMES PARA BIDIRECCIONALIDAD)
+  psicologo    PerfilPsicologo @relation(fields: [psicologoId], references: [userId], name: "PsicologoTareas")
+  paciente     PerfilPaciente  @relation(fields: [pacienteId], references: [userId], name: "PacienteTareas")
+
+  // Auditoría
+  createdBy    String   @map("created_by") @db.VarChar(36)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("Tareas")
+}
+
+// Tabla para Citas Agendadas (Pág. 3)
+model Cita {
+  id           Int      @id @default(autoincrement())
+  psicologoId  String   @map("psicologo_id") @db.VarChar(36)
+  pacienteId   String   @map("paciente_id") @db.VarChar(36)
+  
+  fechaHora    DateTime @map("fecha_hora")
+  detalles     String?  @db.Text
+  creadaPor    String   @map("creada_por") // 'Psicólogo' o 'Paciente'
+  estado       String   @default("Programada") // 'Programada', 'Cancelada', 'Completada'
+
+  // Relaciones (AÑADIDOS NAMES PARA BIDIRECCIONALIDAD)
+  psicologo    PerfilPsicologo @relation(fields: [psicologoId], references: [userId], name: "PsicologoCitas")
+  paciente     PerfilPaciente  @relation(fields: [pacienteId], references: [userId], name: "PacienteCitas")
+
+  // Auditoría
+  createdAt    DateTime @default(now()) @map("created_at")
+  
+  @@map("Citas")
+}
