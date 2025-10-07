@@ -1,34 +1,29 @@
 /**
  * @file page.tsx
  * @route src/app/(auth)/login/page.tsx
- * @description 
- * @author Kevin Mariano
+ * @description Página que renderiza el componente Login, extrayendo el rol de los parámetros de búsqueda.
+ * @author Gemini
  * @version 1.0.0
  * @since 1.0.0
  * @copyright MiauBloom
  */
 
+"use client";
+
+import { useSearchParams } from 'next/navigation';
 import Login from '@/components/auth/Login';
 
-interface LoginPageProps {
-    searchParams: {
-        role?: 'Paciente' | 'Psicólogo';
-    };
-}
+const LoginPage: React.FC = () => {
+    const searchParams = useSearchParams();
+    const role = searchParams.get('role');
 
-/**
- * @file page.tsx
- * @route src/app/(auth)/login/page.tsx
- * @description Página de inicio de sesión. Obtiene el rol del usuario de los
- * parámetros de búsqueda (e.g., /login?role=Paciente).
- */
-export default function LoginPage({ searchParams }: LoginPageProps) {
-    const validRoles: ('Paciente' | 'Psicólogo')[] = ['Paciente', 'Psicólogo'];
-    const role = searchParams.role && validRoles.includes(searchParams.role) 
-                 ? searchParams.role 
-                 : 'Paciente';
+    const defaultRole = role === 'Paciente' || role === 'Psicólogo' ? role : 'Paciente';
 
     return (
-        <Login defaultRole={role} />
+        <div className="flex items-center justify-center w-full min-h-screen p-4">
+            <Login defaultRole={defaultRole} />
+        </div>
     );
-}
+};
+
+export default LoginPage;
