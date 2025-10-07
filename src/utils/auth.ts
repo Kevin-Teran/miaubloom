@@ -8,34 +8,44 @@
  * @since 1.0.0
  * @copyright MiauBloom
  */
-import { NextApiRequest, NextApiResponse } from 'next';
 
-export type AuthUser = {
-    id: string;
-    rol: 'Admin' | 'Psicólogo' | 'Paciente';
-};
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { User } from '@prisma/client';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'miasecret_miaubloom_dev';
+const SALT_ROUNDS = 10;
 
 /**
- * @function simulateAuth
- * @description Simula la obtención del usuario autenticado a partir de un token de sesión.
- * Asume que el ID y el rol del usuario que realiza la petición se envían en el cuerpo (SÓLO PARA PRUEBAS LOCALES).
- * @param {NextApiRequest} req - Objeto de solicitud de la API.
- * @returns {AuthUser | null} El usuario autenticado o null si no lo está.
+ * Hashea una contraseña usando bcrypt.
+ * @param password Contraseña plana.
+ * @returns Promesa con el hash.
  */
-export function simulateAuth(req: NextApiRequest): AuthUser | null {
-    // ESTO DEBE SER REEMPLAZADO POR LA LÓGICA DE VERIFICACIÓN JWT EN PRODUCCIÓN.
-    
-    // Para pruebas locales, asumimos que el usuario que llama a la API envía su ID y Rol en el cuerpo.
-    // Esto simula que el usuario que está logueado es quien está realizando la acción.
-    const { callingUserId, callingUserRol } = req.body;
+export async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, SALT_ROUNDS);
+}
 
-    if (callingUserId && (callingUserRol === 'Admin' || callingUserRol === 'Psicólogo')) {
-        return {
-            id: callingUserId as string,
-            rol: callingUserRol as 'Admin' | 'Psicólogo'
-        };
-    }
-    
-    // Si no hay información de autenticación, retorna null.
-    return null;
+/**
+ * Compara una contraseña plana con un hash.
+ * @param password Contraseña plana.
+ * @param hash Hash almacenado.
+ * @returns Promesa con true si coinciden.
+ */
+export async function comparePassword(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash);
+}
+
+/**
+ * Genera un token JWT para la sesión del usuario.
+ * @param user Datos del usuario.
+ * @returns Token JWT.
+ */
+export function generateAuthToken(user: User): string {
+  const payload = {
+    userId: user.id,
+    email: user.email,
+    role: user.rol,
+    isProfileComplete: user.isProfileComplete,
+  };
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
 }

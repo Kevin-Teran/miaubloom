@@ -1,193 +1,162 @@
 /**
  * @file page.tsx
  * @route src/app/page.tsx
- * @description Implementación final del Selector de Rol (Pág. 6 del PDF) con estilo PWA,
- * con CSS en línea para garantizar la estabilidad del diseño y el espaciado correcto.
- * @author Kevin Mariano
- * @version 1.1.4
+ * @description Implementación final del Selector de Rol (Pág. 6 del PDF) con la estética PWA
+ * que incluye fondos decorativos, selección de estado, y transiciones.
+ * @author Kevin Mariano | Refactor: Gemini
+ * @version 2.0.1
  * @since 1.0.0
  * @copyright MiauBloom
  */
-"use client"; 
+"use client";
 
-import React, { useState } from 'react';
-// Importamos iconos para placeholders de imagen
-import { Cat, Smile, Users, X } from 'lucide-react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Cat, User, Users, ArrowRight } from 'lucide-react'; 
 
-// --- Constantes de Diseño ---
-const PRIMARY_COLOR = '#F2C2C1'; // Rosa claro
-const TEXT_DARK = '#070806';     // Negro
-const TEXT_LIGHT = '#B6BABE';    // Gris
-const BACKGROUND_LIGHT = '#FFF'; // Blanco
-const CARD_ACTIVE_COLOR = 'rgba(242, 194, 193, 0.9)'; // Rosa para el fondo activo del Psicólogo
+// Definimos los tokens de diseño como variables locales para los estilos complejos
+const PRIMARY = '#F2C2C1'; // Rosa
+const DARK = '#070806';    // Negro
+const LIGHT = '#B6BABE';   // Gris Claro
+const WHITE = '#FFFFFF';
 
-type UserRole = 'Paciente' | 'Psicólogo';
+type Role = 'Paciente' | 'Psicólogo' | null;
 
-// Componente para simular el Login después de la selección
-const LoginMock: React.FC<{ defaultRole: string, onBack: () => void }> = ({ defaultRole, onBack }) => (
-    <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-2xl space-y-4">
-        <button 
-            onClick={onBack} 
-            className="text-lg font-medium mb-4 block hover:text-pink-500 transition-colors" 
-            style={{ color: TEXT_DARK }}
-        >
-            &lt; Volver al Selector
-        </button>
-        <h2 className="text-3xl font-bold mb-2" style={{ color: PRIMARY_COLOR }}>Hola de nuevo</h2>
-        <p className="mb-8" style={{ color: TEXT_DARK }}>Accede como <span className="font-semibold">{defaultRole}</span>.</p>
-        <input type="email" placeholder="Correo electrónico" className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-pink-300" style={{ borderColor: TEXT_LIGHT, color: TEXT_DARK }} required/>
-        <input type="password" placeholder="Contraseña" className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-pink-300" style={{ borderColor: TEXT_LIGHT, color: TEXT_DARK }} required/>
-        <button 
-            type="button" 
-            className="w-full p-3 font-bold rounded-full text-white shadow-lg transition-colors duration-300 hover:bg-pink-400" 
-            style={{ backgroundColor: PRIMARY_COLOR }}
-            onClick={() => alert(`Simulando redirección a /login?role=${defaultRole}`)}
-        >
-            Continuar
-        </button>
-    </div>
-);
-
-
-/**
- * @function RoleSelector
- * @description Componente principal con el diseño vertical de selección de rol.
- */
-const RoleSelector: React.FC<{ onRoleSelect: (role: UserRole) => void }> = ({ onRoleSelect }) => {
-    const [selectedRole, setSelectedRole] = useState<UserRole>('Paciente'); 
-
-    /**
-     * @function RoleCard
-     * @description Renderiza una tarjeta de selección de rol con el diseño de la Pág. 6.
-     */
-    const RoleCard = ({ role }: { role: UserRole }) => {
-        const isActive = selectedRole === role;
-        // El Psicólogo se muestra con el fondo rosa activo en la imagen del PDF
-        const activeBg = role === 'Psicólogo' && isActive ? CARD_ACTIVE_COLOR : BACKGROUND_LIGHT;
-        const activeText = role === 'Psicólogo' && isActive ? 'white' : TEXT_DARK;
-        
-        return (
-            <button
-                onClick={() => setSelectedRole(role)}
-                // Uso de Flex y dimensiones fijas para la estabilidad en el móvil
-                className={`flex flex-col items-center justify-start h-56 rounded-2xl shadow-lg p-4 transition-all duration-300 ${isActive ? 'ring-4 ring-offset-2 ring-pink-300 scale-[1.03]' : 'hover:scale-[1.03] hover:shadow-xl'}`}
-                style={{ 
-                    // CLAVE: Definimos ancho fijo y el color de fondo aquí
-                    width: 'calc(50% - 8px)', // Ocupa la mitad del contenedor (menos el espacio entre ellas)
-                    backgroundColor: activeBg,
-                    color: activeText,
-                    borderColor: isActive && role === 'Paciente' ? PRIMARY_COLOR : 'transparent',
-                    borderWidth: '2px',
-                    position: 'relative',
-                    overflow: 'hidden'
-                }}
-            >
-                {/* Etiqueta superior del Rol */}
-                <span 
-                    className="text-base font-bold uppercase block w-full text-center"
-                    style={{ color: TEXT_DARK, backgroundColor: PRIMARY_COLOR, padding: '4px 8px', borderRadius: '8px', opacity: isActive ? 1 : 0.4, transition: 'all 0.3s' }}
-                >
-                    {role}
-                </span>
-
-                {/* Placeholder de la imagen del gato (Icono) */}
-                <div className="w-full flex-grow flex items-center justify-center text-8xl">
-                    {role === 'Psicólogo' 
-                        ? <Users size={120} style={{ color: TEXT_DARK }} /> 
-                        : <Smile size={120} style={{ color: TEXT_DARK }} />}
-                </div>
-            </button>
-        );
+// Componente de Tarjeta de Selección Reutilizable
+const RoleCard: React.FC<{ role: Role; selected: boolean; onSelect: (r: Role) => void }> = ({ role, selected, onSelect }) => {
+    
+    // Estilos basados en la estética PWA
+    const baseStyle: React.CSSProperties = {
+        background: selected ? PRIMARY : WHITE,
+        boxShadow: selected 
+            ? `0 8px 24px rgba(242, 194, 193, 0.4), 0 0 0 3px rgba(242, 194, 193, 0.3)`
+            : '0 4px 12px rgba(0, 0, 0, 0.08)',
+        transform: selected ? 'scale(1.02)' : 'scale(1)'
     };
 
     return (
-        <div className="relative flex flex-col items-center justify-start min-h-screen w-full overflow-hidden" style={{ backgroundColor: BACKGROUND_LIGHT, fontFamily: 'Roboto' }}>
+        <button
+            onClick={() => onSelect(role)}
+            className="flex-1 rounded-2xl p-4 transition-all duration-300 relative text-body-2"
+            style={baseStyle}
+        >
+            <div 
+              className="text-xs font-bold uppercase py-1 px-3 rounded-lg mb-3 inline-block"
+              style={{ 
+                background: PRIMARY,
+                color: DARK,
+                opacity: selected ? 1 : 0.5
+              }}
+            >
+              {role}
+            </div>
             
-            {/* Elementos Gráficos de Fondo (Semi-círculos/Dona) */}
+            <div className="flex justify-center items-center py-8">
+              {role === 'Paciente' ? (
+                <User size={80} style={{ color: selected ? WHITE : DARK }} strokeWidth={1.5} />
+              ) : (
+                <Users size={80} style={{ color: selected ? WHITE : DARK }} strokeWidth={1.5} />
+              )}
+            </div>
+        </button>
+    );
+};
+
+export default function HomePage() {
+    const [selectedRole, setSelectedRole] = useState<Role>(null);
+    const router = useRouter();
+
+    const handleComenzar = () => {
+        if (selectedRole) {
+            // Redirige al login, que ahora está en la ruta /login
+            router.push(`/login?role=${selectedRole}`);
+        }
+    };
+
+    return (
+        <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden w-full" style={{ background: WHITE }}>
             
-            {/* 1. Semicírculo Superior Izquierdo (Tipo Dona) - Grande y visible en esquina */}
-            <div className="absolute top-[-250px] left-[-200px] w-[500px] h-[500px] rounded-full opacity-30" style={{ backgroundColor: PRIMARY_COLOR, boxShadow: `0 0 0 50px ${BACKGROUND_LIGHT} inset` }}></div>
+            {/* Elementos decorativos de fondo (Estilos de tu código PWA) */}
+            <div 
+                className="absolute rounded-full opacity-20"
+                style={{
+                    top: '-180px',
+                    left: '-150px',
+                    width: '400px',
+                    height: '400px',
+                    background: PRIMARY,
+                    border: `40px solid ${WHITE}`
+                }}
+            />
+            <div 
+                className="absolute rounded-full opacity-15"
+                style={{
+                    bottom: '-120px',
+                    right: '-120px',
+                    width: '320px',
+                    height: '320px',
+                    background: PRIMARY,
+                    border: `30px solid ${WHITE}`
+                }}
+            />
             
-            {/* 2. Semicírculo Inferior Derecho (Tipo Dona) - Grande y visible en esquina opuesta */}
-            <div className="absolute bottom-[-150px] right-[-150px] w-[350px] h-[350px] rounded-full opacity-20" style={{ backgroundColor: PRIMARY_COLOR, boxShadow: `0 0 0 30px ${BACKGROUND_LIGHT} inset` }}></div>
+            {/* Puntos decorativos */}
+            <div className="absolute top-12 left-8 w-3 h-3 rounded-full" style={{ background: PRIMARY, opacity: 0.6 }} />
+            <div className="absolute top-24 right-6 w-2 h-2 rounded-full" style={{ background: PRIMARY, opacity: 0.5 }} />
+            <div className="absolute bottom-32 left-16 w-2 h-2 rounded-full" style={{ background: PRIMARY, opacity: 0.4 }} />
 
-            {/* Puntos de detalle */}
-            <div className="absolute top-10 left-10 w-3 h-3 rounded-full opacity-60" style={{ backgroundColor: PRIMARY_COLOR }}></div>
-            <div className="absolute top-20 right-5 w-2 h-2 rounded-full opacity-50" style={{ backgroundColor: PRIMARY_COLOR }}></div>
-
-            {/* Contenedor Principal Centrado y con Espaciado Vertical Fijo */}
-            <div className="relative z-10 flex flex-col items-center w-full max-w-sm p-4 pt-16" style={{ maxWidth: '380px', margin: '0 auto' }}>
-
-                {/* Logo y Texto Principal */}
-                <div className="flex flex-col items-center mb-10">
-                    {/* Placeholder para el logo del gato con sombrero */}
-                    <div className="w-20 h-20 mb-2 flex items-center justify-center text-5xl rounded-full" style={{ color: PRIMARY_COLOR }}>
-                        <Cat size={64} style={{ color: PRIMARY_COLOR }} />
+            {/* Contenido principal (Tarjeta centrada) */}
+            <div className="relative z-10 w-full max-w-sm px-6 flex flex-col items-center bg-white p-8 rounded-2xl shadow-2xl">
+                
+                {/* Logo y título */}
+                <div className="mb-8 text-center">
+                    <div className="mb-3 flex justify-center">
+                        <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: `${PRIMARY}20` }}>
+                          <Cat size={32} style={{ color: PRIMARY }} strokeWidth={2.5} />
+                        </div>
                     </div>
-                    <h1 className="text-4xl font-extrabold mb-0" style={{ color: TEXT_DARK }}>
-                        <span style={{ color: PRIMARY_COLOR }}>Miau</span>Bloom
+                    <h1 className="text-4xl font-black" style={{ color: DARK }}>
+                        <span style={{ color: PRIMARY }}>Miau</span>Bloom
                     </h1>
-                    <p className="text-base font-medium mt-1" style={{ color: TEXT_DARK }}>
+                    <p className="text-body-1 font-medium" style={{ color: DARK, opacity: 0.8 }}>
                         Crece y siente
                     </p>
                 </div>
 
-                {/* Separación Ajustada */}
-                <p className="text-xl font-medium mb-12" style={{ color: TEXT_DARK }}>
-                    ¿Cual eres tú?
-                </p>
+                {/* Pregunta */}
+                <h2 className="text-heading-1 font-bold mb-8" style={{ color: DARK }}>
+                    ¿Cuál eres tú?
+                </h2>
 
-                {/* Contenedor de las Tarjetas de Rol */}
-                {/* CLAVE: Usamos gap-4 para la separación y mantenemos el ancho total fijo */}
-                <div className="flex gap-4 mb-16 w-full justify-center"> 
-                    <RoleCard role="Paciente" />
-                    <RoleCard role="Psicólogo" />
+                {/* Tarjetas de selección */}
+                <div className="flex gap-4 w-full mb-12">
+                    <RoleCard 
+                        role="Paciente" 
+                        selected={selectedRole === 'Paciente'} 
+                        onSelect={setSelectedRole} 
+                    />
+                    <RoleCard 
+                        role="Psicólogo" 
+                        selected={selectedRole === 'Psicólogo'} 
+                        onSelect={setSelectedRole} 
+                    />
                 </div>
 
-                {/* Botón Comenzar (Ancho Ajustado al Contenedor de Tarjetas) */}
+                {/* Botón Comenzar */}
                 <button
-                    onClick={() => onRoleSelect(selectedRole)}
-                    // El botón toma un ancho fijo para que se vea centrado y proporcionado
-                    className="w-full max-w-[200px] p-3 text-lg font-bold rounded-full transition-colors duration-300 shadow-xl hover:bg-pink-400"
-                    style={{ backgroundColor: PRIMARY_COLOR, color: 'white' }}
+                    onClick={handleComenzar}
+                    disabled={!selectedRole}
+                    className="w-full py-4 rounded-full text-lg font-bold text-white transition-all duration-300 flex items-center justify-center gap-2"
+                    style={{
+                        background: selectedRole ? PRIMARY : LIGHT,
+                        opacity: selectedRole ? 1 : 0.5,
+                        boxShadow: selectedRole ? '0 6px 20px rgba(242, 194, 193, 0.4)' : 'none'
+                    }}
                 >
                     Comenzar
+                    <ArrowRight size={20} />
                 </button>
             </div>
         </div>
     );
-};
-
-
-/**
- * @function App
- * @description Componente controlador que alterna entre el selector de rol y el login.
- */
-const App: React.FC = () => {
-    // Define la vista actual: si muestra el selector de rol o el mock de login
-    const [currentView, setCurrentView] = useState<'role_select' | 'login'>('role_select');
-    const [selectedRole, setSelectedRole] = useState<UserRole>('Paciente'); 
-
-    const handleRoleSelect = (role: UserRole) => {
-        setSelectedRole(role);
-        setCurrentView('login');
-    };
-
-    const handleBackToRoleSelect = () => {
-        setCurrentView('role_select');
-    };
-
-    return (
-        <div className="App flex justify-center items-start min-h-screen w-full">
-            <div className="w-full h-full flex justify-center items-start">
-                {currentView === 'role_select' ? (
-                    <RoleSelector onRoleSelect={handleRoleSelect} />
-                ) : (
-                    <LoginMock defaultRole={selectedRole} onBack={handleBackToRoleSelect} />
-                )}
-            </div>
-        </div>
-    );
 }
-
-export default App;

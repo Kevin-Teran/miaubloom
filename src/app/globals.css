@@ -1,31 +1,25 @@
 /**
  * @file globals.css
  * @route src/app/globals.css
- * @description Archivo de estilos globales de la aplicación. Contiene las directivas
- * para inicializar Tailwind CSS.
+ * @description Archivo de estilos globales de la aplicación.
  * @author Kevin Mariano
- * @version 1.0.1
+ * @version 1.0.2
  * @since 1.0.0
  * @copyright MiauBloom
  */
+
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Estilos personalizados para el proyecto */
 html, body {
-    /* **CORRECCIÓN:** Usamos 100% y min-h-screen para asegurar que Tailwind funcione */
     height: 100%;
     min-height: 100vh;
     margin: 0;
     padding: 0;
-    /* Usamos Roboto, como se especifica en el diseño */
-    font-family: 'Roboto', sans-serif;
-    /* Fondo muy claro, si se desea aplicar globalmente */
-    background-color: #F9F9F9; 
 }
 
-/* Estilo para simular el aspecto de tarjeta de la PWA */
 .shadow-2xl {
-    box-shadow: 0 25px 50px -12px rgba(242, 194, 193, 0.4); /* Sombra suave en color rosa */
+    box-shadow: 0 25px 50px -12px rgba(242, 194, 193, 0.4); 
 }
