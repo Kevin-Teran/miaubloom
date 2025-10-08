@@ -1,24 +1,55 @@
 {
-  "name": "MiauBloom: Crece y Siente",
+  "name": "MiauBloom - Crece y Siente",
   "short_name": "MiauBloom",
-  "description": "Herramienta interactiva para apoyo psicoterapéutico y emocional.",
+  "description": "Herramienta interactiva para apoyo psicoterapéutico y seguimiento de datos emocionales en pacientes con depresión",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#FFFFFF",
   "theme_color": "#F2C2C1",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "/icons/icon-192x192.png",
+      "src": "/icons/vercel.svg",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-512x512.png",
+      "src": "/icons/globe.svg",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "health",
+    "medical",
+    "lifestyle"
+  ],
+  "shortcuts": [
+    {
+      "name": "Registrar emoción",
+      "short_name": "Registrar",
+      "description": "Registra cómo te sientes ahora",
+      "url": "/dashboard/paciente/registrar",
+      "icons": [
+        {
+          "src": "/icons/vercel.svg",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Ver calendario",
+      "short_name": "Calendario",
+      "description": "Revisa tu historial emocional",
+      "url": "/dashboard/paciente/calendario",
+      "icons": [
+        {
+          "src": "/icons/vercel.svg",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }
