@@ -1,18 +1,16 @@
 /**
  * @file auth-context.tsx
- * @route lib/auth-context.tsx
- * @description Contexto de autenticación migrado a Prisma/API (Iron Session).
- * Proporciona user, rol y métodos de autenticación (signIn/signOut) a través de rutas API.
- * El registro (signUp) se elimina ya que los usuarios son creados por Admin/Psicólogo.
+ * @route src/lib/auth-context.tsx
+ * @description Contexto de autenticación con Iron Session y Prisma. Gestiona sesión de usuario.
  * @author Kevin Mariano
- * @version 1.0.1
+ * @version 3.1.0
  * @since 1.0.0
  * @copyright MiauBloom
  */
 
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 type Role = 'patient' | 'psychologist' | 'admin';
 

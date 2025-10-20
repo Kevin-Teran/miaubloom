@@ -1,57 +1,146 @@
-// project/src/app/api/auth/login/route.ts
-import { NextResponse } from 'next/server';
-import * as bcrypt from 'bcryptjs';
-import prisma from '@/lib/prisma';
-import { getSession } from '@/lib/session';
-import { Role } from '@prisma/client';
+/**
+ * @file route.ts
+ * @route src/app/api/auth/login/route.ts
+ * @description API completamente funcional para inicio de sesión con validaciones robustas
+ * @author Kevin Mariano
+ * @version 2.0.0
+ * @copyright MiauBloom
+ */
 
-// POST /api/auth/login
-export async function POST(request: Request) {
+import { NextRequest, NextResponse } from 'next/server';
+import prisma from '@/utils/prisma';
+import { comparePassword, generateAuthToken } from '@/utils/auth';
+
+interface LoginResponse {
+  message: string;
+  sessionData?: {
+    token: string;
+    rol: string;
+    isProfileComplete: boolean;
+    userId: string;
+    nombreCompleto: string;
+  };
+}
+
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+export async function POST(req: NextRequest) {
   try {
-    const { email, password } = await request.json();
+    const body = await req.json();
+    const { email, password, expectedRole } = body;
 
     if (!email || !password) {
-      return NextResponse.json({ error: 'Faltan credenciales' }, { status: 400 });
+      return NextResponse.json(
+        { message: 'El correo electrónico y la contraseña son requeridos.' },
+        { status: 400 }
+      );
     }
 
-    // 1. Buscar usuario en la base de datos (Prisma/MySQL)
+    if (!isValidEmail(email)) {
+      return NextResponse.json(
+        { message: 'El formato del correo electrónico no es válido.' },
+        { status: 400 }
+      );
+    }
+
+    if (password.length < 6) {
+      return NextResponse.json(
+        { message: 'La contraseña debe tener al menos 6 caracteres.' },
+        { status: 400 }
+      );
+    }
+
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { email: email.toLowerCase().trim() },
+      include: {
+        perfilPaciente: true,
+        perfilPsicologo: true,
+      },
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'Usuario o contraseña inválidos' }, { status: 401 });
+      return NextResponse.json(
+        { message: 'Credenciales inválidas. Verifica tu correo y contraseña.' },
+        { status: 401 }
+      );
     }
 
-    // 2. Verificar la contraseña con bcrypt
-    const isValid = bcrypt.compareSync(password, user.password);
+    const passwordIsValid = await comparePassword(password, user.password);
 
-    if (!isValid) {
-      return NextResponse.json({ error: 'Usuario o contraseña inválidos' }, { status: 401 });
+    if (!passwordIsValid) {
+      return NextResponse.json(
+        { message: 'Credenciales inválidas. Verifica tu correo y contraseña.' },
+        { status: 401 }
+      );
     }
 
-    // 3. Crear la sesión segura (Iron Session)
-    const session = await getSession();
-    const sessionUser = {
+    if (expectedRole && user.rol !== expectedRole) {
+      return NextResponse.json(
+        { 
+          message: `Esta cuenta está registrada como ${user.rol}. Por favor, selecciona el rol correcto.` 
+        },
+        { status: 403 }
+      );
+    }
+
+    let isProfileComplete = false;
+    
+    if (user.rol === 'Paciente') {
+      isProfileComplete = !!user.perfilPaciente;
+    } else if (user.rol === 'Psicólogo') {
+      isProfileComplete = !!user.perfilPsicologo;
+    }
+
+    const token = generateAuthToken({
       id: user.id,
       email: user.email,
-      role: user.role as Role,
-      onboarding_completed: user.onboarding_completed,
-      full_name: user.full_name,
+      rol: user.rol,
+      nombreCompleto: user.nombreCompleto,
+    });
+
+    const sessionData = {
+      token,
+      rol: user.rol,
+      isProfileComplete,
+      userId: user.id,
+      nombreCompleto: user.nombreCompleto,
     };
 
-    session.user = sessionUser;
-    await session.save();
+    const response = NextResponse.json<LoginResponse>(
+      {
+        message: 'Inicio de sesión exitoso.',
+        sessionData,
+      },
+      { status: 200 }
+    );
 
-    // 4. Determinar la ruta de redirección
-    const redirectUrl = user.onboarding_completed 
-      ? `/dashboard/${user.role}` 
-      : `/onboarding/welcome`; // Ruta de onboarding inicial (ajustar según la app)
+    response.cookies.set('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 24 * 7, 
+      path: '/',
+    });
 
-    return NextResponse.json({ user: sessionUser, redirectUrl }, { status: 200 });
+    console.log(`[AUTH] Login exitoso: ${email} como ${user.rol}`);
+
+    return response;
 
   } catch (error) {
-    console.error('Error en el login:', error);
-    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
+    console.error('[AUTH] Error durante el inicio de sesión:', error);
+    
+    return NextResponse.json(
+      { 
+        message: 'Error interno del servidor. Por favor, intenta más tarde.' 
+      },
+      { status: 500 }
+    );
   }
+}
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { status: 200 });
 }

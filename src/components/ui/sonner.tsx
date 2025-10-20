@@ -1,24 +1,31 @@
-'use client'; // 👈 AGREGAR ESTA LÍNEA AL INICIO
+'use client';
 
-import { Toaster as Sonner } from 'sonner';
 import { useTheme } from 'next-themes';
+import { Toaster as Sonner } from 'sonner';
 
-// Exportamos el componente Toaster.
-// Este componente gestiona la inyección del tema correcto de next-themes
-// al componente base <Sonner> para evitar problemas de recursión.
-export function Toaster({ ...props }) {
-  // Obtenemos el tema actual de next-themes.
-  const { theme: nextTheme } = useTheme(); 
+type ToasterProps = React.ComponentProps<typeof Sonner>;
 
-  // La librería 'sonner' solo acepta 'light' o 'dark'.
-  // Si es 'system', usamos la preferencia resuelta (light o dark).
-  const theme = nextTheme === 'system' ? 'light' : nextTheme; 
+const Toaster = ({ ...props }: ToasterProps) => {
+  const { theme = 'system' } = useTheme();
 
   return (
-    <Sonner 
-      theme={theme as 'light' | 'dark'} // Inyectamos el tema seguro
+    <Sonner
+      theme={theme as ToasterProps['theme']}
       className="toaster group"
-      {...props} 
+      toastOptions={{
+        classNames: {
+          toast:
+            'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg',
+          description: 'group-[.toast]:text-muted-foreground',
+          actionButton:
+            'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
+          cancelButton:
+            'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
+        },
+      }}
+      {...props}
     />
   );
-}
+};
+
+export { Toaster };

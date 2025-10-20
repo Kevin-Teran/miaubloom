@@ -1,10 +1,9 @@
 /**
  * @file layout.tsx
- * @route app/layout.tsx
- * @description Layout principal de la aplicación MiauBloom.
- * Incluye el provider de autenticación, ThemeProvider para tema oscuro/claro, y corrección de metadata PWA.
+ * @route src/app/layout.tsx
+ * @description Layout principal de la aplicación con providers y metadata PWA
  * @author Kevin Mariano
- * @version 3.0.0
+ * @version 3.0.1
  * @since 1.0.0
  * @copyright MiauBloom
  */
@@ -46,7 +45,6 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={roboto.className}>
-        {/* Se envuelve con ThemeProvider para habilitar el modo oscuro/claro */}
         <ThemeProvider
           attribute="class"
           defaultTheme="system" 

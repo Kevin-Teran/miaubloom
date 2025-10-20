@@ -1,3 +1,13 @@
+/**
+ * @file tailwind.config.ts
+ * @route /
+ * @description Configuración de Tailwind CSS v4 para MiauBloom
+ * @author Kevin Mariano
+ * @version 1.0.0
+ * @since 1.0.0
+ * @copyright MiauBloom
+ */
+
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
@@ -11,8 +21,7 @@ const config: Config = {
     extend: {
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-conic':
-          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+        'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -85,6 +94,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
-};
-export default config;
+  plugins: [], // Elimina require('tailwindcss-animate')
+}
+
+export default config
