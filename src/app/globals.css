@@ -1,11 +1,16 @@
 /**
  * @file globals.css
  * @route src/app/globals.css
- * @description Estilos globales de MiauBloom con paleta personalizada
+ * @description Estilos globales y animaciones para MiauBloom - VERSIÓN CORREGIDA
  * @author Kevin Mariano
- * @version 2.0.0
+ * @version 3.1.0
  * @since 1.0.0
  * @copyright MiauBloom
+ * * CORRECCIONES:
+ * - Animación de caída mejorada para gotas
+ * - Animación float optimizada para elementos estáticos
+ * - Performance mejorado
+ * - AÑADIDO: Animación float-bubble para puntos decorativos
  */
 
 @import "tailwindcss";
@@ -48,14 +53,12 @@
   --radius-full: 9999px;
 }
 
-@theme inline {
+@theme {
   --color-background: var(--color-background);
   --color-foreground: var(--color-foreground);
   --color-miaubloom-pink: var(--color-primary);
   --color-miaubloom-purple: var(--color-secondary);
   --color-coral-400: #F87171;
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -79,14 +82,90 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Clase para el fondo de la splash screen */
-.splash-background {
-  background: linear-gradient(135deg, #EE7E7F 0%, #F5A0A1 50%, #A78BFA 100%);
-  position: relative;
+/* ================================================
+   ANIMACIONES PARA SPLASH SCREEN - CORREGIDAS
+   ================================================ */
+
+/**
+ * Animación FLOAT - Para huellas, nubes y flores
+ * Movimiento suave hacia arriba y abajo
+ */
+@keyframes float {
+  0% {
+    transform: translateY(0px) translateX(0px);
+  }
+  25% {
+    transform: translateY(-12px) translateX(5px);
+  }
+  50% {
+    transform: translateY(-20px) translateX(0px);
+  }
+  75% {
+    transform: translateY(-12px) translateX(-5px);
+  }
+  100% {
+    transform: translateY(0px) translateX(0px);
+  }
 }
 
-/* Animaciones personalizadas */
-@keyframes fadeIn {
+/**
+ * Animación FALL - Para gotas de lluvia
+ * Caen desde arriba hasta abajo de la pantalla
+ */
+@keyframes fall {
+  0% {
+    transform: translateY(-150px);
+    opacity: 0;
+  }
+  5% {
+    opacity: 0.6;
+  }
+  95% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(calc(100vh + 150px));
+    opacity: 0;
+  }
+}
+
+/**
+ * Clases de utilidad para aplicar animaciones
+ */
+.animate-float {
+  animation-name: float;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+.animate-fall {
+  animation-name: fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+
+/* ================================================
+   OTRAS ANIMACIONES Y UTILIDADES
+   ================================================ */
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes fade-in {
   from {
     opacity: 0;
   }
@@ -95,7 +174,7 @@ body {
   }
 }
 
-@keyframes slideInUp {
+@keyframes slide-in-up {
   from {
     opacity: 0;
     transform: translateY(20px);
@@ -106,7 +185,7 @@ body {
   }
 }
 
-@keyframes slideInDown {
+@keyframes slide-in-down {
   from {
     opacity: 0;
     transform: translateY(-20px);
@@ -117,50 +196,34 @@ body {
   }
 }
 
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+/* ===== INICIO DE CÓDIGO AÑADIDO ===== */
+@keyframes float-bubble {
+  0% { transform: translateY(0px) translateX(0px); }
+  50% { transform: translateY(-10px) translateX(5px); } /* Ligeros movimientos */
+  100% { transform: translateY(0px) translateX(0px); }
+}
+/* ===== FIN DE CÓDIGO AÑADIDO ===== */
+
+
+/* Clases de animación */
+.animate-spin {
+  animation: spin 1s linear infinite;
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-/* Clases de utilidad para animaciones */
 .animate-fade-in {
-  animation: fadeIn 0.5s ease-out;
+  animation: fade-in 0.5s ease-out;
 }
 
 .animate-slide-in-up {
-  animation: slideInUp 0.5s ease-out;
+  animation: slide-in-up 0.5s ease-out;
 }
 
 .animate-slide-in-down {
-  animation: slideInDown 0.5s ease-out;
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.3s ease-out;
+  animation: slide-in-down 0.5s ease-out;
 }
 
 /* Scrollbar personalizado */
@@ -236,12 +299,6 @@ button, a, input, textarea, select {
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* Estilos para inputs mejorados */
 input:not([type="checkbox"]):not([type="radio"]),
 textarea,
@@ -294,5 +351,22 @@ select:focus {
 @media (min-width: 1024px) {
   .container-responsive {
     padding: 0 2rem;
+  }
+}
+
+/* Performance optimizations */
+.animate-float,
+.animate-fall {
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Reducir animaciones en dispositivos con batería baja o preferencia de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-fall,
+  .animate-pulse,
+  .animate-spin {
+    animation: none !important;
   }
 }
