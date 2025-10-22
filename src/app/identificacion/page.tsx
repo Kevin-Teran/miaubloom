@@ -107,11 +107,11 @@ export default function IdentificacionPage() {
     <div
       className="flex flex-col min-h-screen bg-white p-6 relative overflow-hidden items-center justify-center"
     >
-      <div className="absolute -top-1/4 -right-1/4 w-1/2 h-1/2 opacity-60">
-        <Image src="/assets/ellipse-corner.png" alt="Decoración" fill className="object-contain" />
+      <div className="absolute -top-1/4 -right-1/4 w-3/4 h-3/4 opacity-60">
+        <Image src="/assets/ellipse-corner.svg" alt="Decoración" fill className="object-contain" />
       </div>
-      <div className="absolute -bottom-1/4 -left-1/4 w-1/2 h-1/2 opacity-60 transform rotate-180">
-        <Image src="/assets/ellipse-corner.png" alt="Decoración" fill className="object-contain" />
+      <div className="absolute -bottom-1/4 -left-1/4 w-3/4 h-3/4 opacity-60 transform rotate-180">
+        <Image src="/assets/ellipse-corner.svg" alt="Decoración" fill className="object-contain" />
       </div>
 
       <div className="absolute inset-0 z-0 pointer-events-none">
