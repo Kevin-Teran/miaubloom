@@ -220,7 +220,7 @@ export default function SplashScreen() {
 
     const redirectTimer = setTimeout(() => {
       window.location.href = '/identificacion';
-    }, 5000); 
+    }, 3000); 
 
     return () => {
       clearTimeout(redirectTimer);

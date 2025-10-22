@@ -99,7 +99,11 @@ export default function IdentificacionPage() {
 
   const handleContinue = () => {
     if (selectedRole) {
-      router.push(`/auth/login?role=${selectedRole.toLowerCase()}`);
+      if (selectedRole === 'Paciente') {
+        router.push('/bienvenido');
+      } else if (selectedRole === 'Psicólogo') {
+        router.push(`/auth/login/psicologo`);
+      }
     }
   };
 
