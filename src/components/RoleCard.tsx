@@ -7,6 +7,7 @@
  * @since 1.0.0
  * @copyright MiauBloom
  */
+
 "use client";
 
 import React from 'react';

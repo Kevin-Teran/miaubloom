@@ -1,20 +1,20 @@
-"use client";
-
 /**
  * @file page.tsx
  * @route src/app/auth/login/[role]/page.tsx
- * @description Página de inicio de sesión - V11 (Placeholder Google Sign-in, no-select text)
+ * @description Página de inicio de sesión
  * @author Kevin Mariano
- * @version 2.11.0
+ * @version 1.0.2
  * @since 1.0.0
  * @copyright MiauBloom
  */
 
+"use client";
+
 import { useRouter, useParams } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
-import React, { Suspense, useState } from 'react';
-import Input from '@/components/ui/Input'; //
+import React, { Suspense, useState, useEffect } from 'react'; 
+import Input from '@/components/ui/Input'; 
+import LoadingIndicator from '@/components/ui/LoadingIndicator'; 
 
 /**
  * @component LoginForm
@@ -23,7 +23,6 @@ import Input from '@/components/ui/Input'; //
 function LoginForm() {
   const params = useParams();
   const router = useRouter();
-
   const roleParam = params.role;
   const decodedRoleParam = typeof roleParam === 'string' ? decodeURIComponent(roleParam).toLowerCase() : '';
   const role = decodedRoleParam === 'paciente' ? 'paciente'
@@ -33,11 +32,32 @@ function LoginForm() {
 
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({ email: '', password: '' });
-  const [isLoading, setIsLoading] = useState(false); // Para el login normal
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false); // Estado separado para Google
+  const [isLoading, setIsLoading] = useState(false); 
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false); 
   const [apiError, setApiError] = useState('');
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true); 
 
-  // ... (handleInputChange y validateForm sin cambios) ...
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const response = await fetch('/api/auth/login'); 
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.authenticated) {
+            console.log("Usuario ya autenticado, redirigiendo desde login...");
+            router.replace('/identificacion'); 
+            return;
+          }
+        }
+        setIsLoadingAuth(false); 
+      } catch (authError) {
+        console.error("Error verificando estado de autenticación:", authError);
+        setIsLoadingAuth(false); 
+      }
+    };
+    checkAuthStatus();
+  }, [router]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -67,36 +87,34 @@ function LoginForm() {
     return isValid;
   };
 
-
   const handleSubmit = async (e: React.FormEvent) => {
-    // ... (lógica de submit sin cambios) ...
         e.preventDefault();
     if (!validateForm()) return;
-    setIsLoading(true); // Usa isLoading normal
+    setIsLoading(true); 
     setApiError('');
     try {
-        const response = await fetch('/api/auth/login', { //
-            method: 'POST', //
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 email: formData.email,
                 password: formData.password,
-                rol: isPatient ? 'Paciente' : 'Psicólogo' //
+                rol: isPatient ? 'Paciente' : 'Psicólogo' 
             }),
         });
         const data = await response.json();
-        if (data.success) { //
+        if (data.success) { 
             const dashboardRoute = isPatient ? '/dashboard/paciente' : '/dashboard/psicologo';
             const completeProfileRoute = isPatient ? '/auth/complete-profile/paciente' : '/auth/complete-profile/psicologo';
-            router.push(data.user.perfilCompleto ? dashboardRoute : completeProfileRoute); //
+            router.push(data.user.perfilCompleto ? dashboardRoute : completeProfileRoute); 
         } else {
-            setApiError(data.message || 'Error al iniciar sesión'); //
+            setApiError(data.message || 'Error al iniciar sesión'); 
         }
     } catch (error) {
         console.error('Error en login:', error);
         setApiError('Error de conexión. Intenta nuevamente.');
     } finally {
-        setIsLoading(false); // Usa isLoading normal
+        setIsLoading(false); 
     }
   };
 
@@ -105,29 +123,30 @@ function LoginForm() {
    * AQUÍ deberías integrar tu librería/lógica de autenticación de Google.
    */
   const handleGoogleSignIn = async () => {
-    setIsGoogleLoading(true); // Usa el estado de carga de Google
+    setIsGoogleLoading(true);
     setApiError('');
     console.log('Iniciando proceso de login con Google...');
-    // --- INICIO: Lógica de ejemplo ---
-    // Simula una llamada a API o redirección
     await new Promise(resolve => setTimeout(resolve, 1500));
     console.log('Simulación de Google Sign-In completada (esto es solo un ejemplo).');
-    // Aquí normalmente recibirías un token, verificarías en tu backend,
-    // crearías/loguearías al usuario y redirigirías.
-    // Ejemplo de error simulado:
-    // setApiError('Inicio de sesión con Google no implementado.');
-    // --- FIN: Lógica de ejemplo ---
-    setIsGoogleLoading(false); // Usa el estado de carga de Google
+    setIsGoogleLoading(false);
   };
 
   const themeColor = '#F1A8A9';
 
+  if (isLoadingAuth) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <LoadingIndicator text="Cargando tu experiencia..." className="[&>p]:text-gray-600 [&>div]:opacity-50 [&>div]:bg-[#F5A0A1] [&>div>div]:bg-[#EE7E7F]"/>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 p-6 relative">
+    <div className="flex flex-col min-h-screen bg-gray-50 p-6 relative select-none"> 
       <Link
-        href="/identificacion" //
+        href="/identificacion" 
         style={{ backgroundColor: themeColor }}
-        className="absolute top-8 left-6 flex items-center justify-center w-10 h-10 rounded-full text-white hover:opacity-90 transition-opacity z-10"
+        className="absolute top-8 left-6 flex items-center justify-center w-10 h-10 rounded-full text-white hover:opacity-90 transition-opacity z-10 cursor-pointer"
         aria-label="Volver"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
@@ -147,23 +166,23 @@ function LoginForm() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {apiError && ( /* ... Error API ... */ <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm flex items-center gap-2"><span>{apiError}</span></div> )}
+              {apiError && ( <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm flex items-center gap-2"><span>{apiError}</span></div> )}
 
               <Input
-                label="Correo electrónico" //
+                label="Correo electrónico" 
                 type="email" id="email" name="email" value={formData.email}
                 onChange={handleInputChange} placeholder="allissonbecker@gmail.com"
-                error={errors.email} disabled={isLoading || isGoogleLoading} // Deshabilitado si CUALQUIERA está cargando
+                error={errors.email} disabled={isLoading || isGoogleLoading} 
                 className={`bg-white border-gray-300 rounded-full text-gray-900 placeholder-gray-400 focus:border-[${themeColor}] focus:ring-1 focus:ring-[${themeColor}] px-5 py-3`}
                 labelClassName="text-gray-900 font-semibold mb-1 ml-3"
               />
 
               <Input
-                label="Contraseña" //
+                label="Contraseña" 
                 type="password" id="password" name="password" value={formData.password}
                 onChange={handleInputChange} placeholder="••••••••"
-                error={errors.password} disabled={isLoading || isGoogleLoading} // Deshabilitado si CUALQUIERA está cargando
-                 showPasswordToggle={true} //
+                error={errors.password} disabled={isLoading || isGoogleLoading} 
+                 showPasswordToggle={true} 
                 className={`bg-white border-gray-300 rounded-full text-gray-900 placeholder-gray-400 focus:border-[${themeColor}] focus:ring-1 focus:ring-[${themeColor}] px-5 py-3`}
                 labelClassName="text-gray-900 font-semibold mb-1 ml-3"
               />
@@ -177,23 +196,20 @@ function LoginForm() {
               {/* Botón Ingresar */}
               <button
                 type="submit"
-                disabled={isLoading || isGoogleLoading} // Deshabilitado si CUALQUIERA está cargando
+                disabled={isLoading || isGoogleLoading}
                 style={{ backgroundColor: isLoading ? '#cccccc' : themeColor }}
-                // *** AÑADIDO select-none ***
-                className={`w-full text-white py-1.5 rounded-full font-bold text-lg shadow-md hover:opacity-90 transition-opacity duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4 select-none`}
+                className={`w-full text-white py-1.5 rounded-full font-bold text-lg shadow-md hover:opacity-90 transition-opacity duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4 select-none cursor-pointer`}
               >
-                {isLoading ? ( /* ... icono ... */ <><svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"> {/* */} <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Ingresando...</> )
+                {isLoading ? ( <><svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"> {/* */} <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Ingresando...</> )
                 : ( 'Ingresar' )}
               </button>
 
               {/* Botón Google */}
               <button
                  type="button"
-                 disabled={isLoading || isGoogleLoading} // Deshabilitado si CUALQUIERA está cargando
-                 // *** onClick AÑADIDO ***
+                 disabled={isLoading || isGoogleLoading} 
                  onClick={handleGoogleSignIn}
-                 // *** AÑADIDO select-none ***
-                 className={`w-full bg-white border-none text-gray-800 py-1.5 rounded-full font-bold text-lg shadow-sm hover:bg-gray-100 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 select-none`}
+                 className={`w-full bg-white border-none text-gray-800 py-1.5 rounded-full font-bold text-lg shadow-sm hover:bg-gray-100 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 select-none cursor-pointer`}
                >
                  {isGoogleLoading ? (
                     <>
@@ -217,13 +233,12 @@ function LoginForm() {
 
       {/* Footer Condicional */}
       <footer className="w-full max-w-sm mx-auto pb-8">
-          {/* CONFIRMADO: Solo se muestra si isPatient es true */}
           {isPatient && (
             <div className="text-center">
                <p className="text-sm text-gray-600">
                  ¿No Tienes Una Cuenta?{' '}
                  <Link
-                   href={`/auth/register?role=paciente`} //
+                   href={`/auth/register`} 
                    style={{ color: themeColor }}
                    className="font-semibold hover:underline transition-colors"
                  >
@@ -237,7 +252,6 @@ function LoginForm() {
   );
 }
 
-// Wrapper LoginPage con Suspense
 const themeColorForFallback = '#F1A8A9';
 
 export default function LoginPage() {
@@ -245,7 +259,7 @@ export default function LoginPage() {
     <Suspense fallback={
       <div className="flex items-center justify-center min-h-screen">
         <div
-          className="animate-spin rounded-full h-12 w-12 border-b-2" //
+          className="animate-spin rounded-full h-12 w-12 border-b-2"
           style={{ borderColor: themeColorForFallback }}
         ></div>
       </div>

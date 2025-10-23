@@ -1,5 +1,3 @@
-"use client";
-
 /**
  * @file page.tsx
  * @route src/app/bienvenido/page.tsx
@@ -8,14 +6,9 @@
  * @version 2.0.0
  * @since 1.0.0
  * @copyright MiauBloom
- * 
- * CARACTERÍSTICAS:
- * - 3 pasos de onboarding
- * - Diseño exacto según referencias
- * - Componentes reutilizables
- * - Navegación correcta
- * - Código limpio y mantenible
  */
+
+"use client";
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -82,8 +75,8 @@ function PaginationDots({ current, total }: { current: number; total: number }) 
           key={index}
           className={`rounded-full transition-all duration-300 ${
             index === current 
-              ? 'w-8 h-2.5 bg-[#F4A9A0]'  // Activo: más largo y rosa
-              : 'w-2.5 h-2.5 bg-[#FDE6E6]'  // Inactivo: pequeño y rosa claro
+              ? 'w-8 h-2.5 bg-[#F4A9A0]'  
+              : 'w-2.5 h-2.5 bg-[#FDE6E6]'  
           }`}
         />
       ))}
@@ -105,7 +98,6 @@ export default function BienvenidoPage() {
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === totalSteps - 1;
 
-  // Generar puntos decorativos
   useEffect(() => {
     const generatedDots: Dot[] = [];
     for (let i = 0; i < 15; i++) {
@@ -137,7 +129,7 @@ export default function BienvenidoPage() {
   };
 
   const handleRegister = () => {
-    router.push('/auth/register?role=paciente');
+    router.push('/auth/register');
   };
 
   const handleLogin = () => {

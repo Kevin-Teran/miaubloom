@@ -1,14 +1,14 @@
-"use client";
-
 /**
  * @file page.tsx
  * @route src/app/page.tsx
- * @description Splash screen MiauBloom 
+ * @description Splash screen MiauBloom (Restored progress bar, disabled selection)
  * @author Kevin Mariano
- * @version 4.2.0
+ * @version 1.0.2 
  * @since 1.0.0
  * @copyright MiauBloom
  */
+
+"use client";
 
 import Image from 'next/image';
 import React, { useEffect, useState, useLayoutEffect } from 'react';
@@ -28,9 +28,9 @@ interface PlacedElement {
 const useScreenSize = () => {
   const [size, setSize] = useState({ width: 0, height: 0 });
   useLayoutEffect(() => {
-    const updateSize = () => setSize({ 
-      width: window.innerWidth, 
-      height: window.innerHeight 
+    const updateSize = () => setSize({
+      width: window.innerWidth,
+      height: window.innerHeight
     });
     window.addEventListener('resize', updateSize);
     updateSize();
@@ -39,12 +39,16 @@ const useScreenSize = () => {
   return size;
 };
 
-/**
- * Verifica si dos rectángulos se superponen
- */
+type RectBounds = {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+};
+
 function checkCollision(
-  rect1: { left: number; top: number; width: number; height: number },
-  rect2: { left: number; top: number; width: number; height: number },
+  rect1: RectBounds,
+  rect2: RectBounds,
   margin: number = 0
 ): boolean {
   return !(
@@ -65,149 +69,88 @@ export default function SplashScreen() {
     if (!isClient) return;
 
     const generateElements = () => {
-      const { width: screenWidth, height: screenHeight } = screenSize;
-      const screenArea = screenWidth * screenHeight;
-      const baseArea = 1920 * 1080; 
-      const areaRatio = screenArea / baseArea;
-      
-      const numClouds = Math.max(20, Math.min(30, Math.floor(30 * areaRatio)));
-      const numPaws = Math.max(20, Math.min(30, Math.floor(30 * areaRatio)));
-      const numFlowers = Math.max(20, Math.min(30, Math.floor(30 * areaRatio)));
-      const numDrops = Math.max(150, Math.min(300, Math.floor(300 * areaRatio)));
+       const { width: screenWidth, height: screenHeight } = screenSize;
+       const screenArea = screenWidth * screenHeight;
+       const baseArea = 1920 * 1080;
+       const areaRatio = screenArea / baseArea;
+
+       const numClouds = Math.max(15, Math.min(25, Math.floor(25 * areaRatio)));
+       const numPaws = Math.max(15, Math.min(25, Math.floor(25 * areaRatio)));
+       const numFlowers = Math.max(15, Math.min(25, Math.floor(25 * areaRatio)));
+       const numDrops = Math.max(100, Math.min(250, Math.floor(250 * areaRatio)));
 
       const floatConfig = [
-        {
-          src: '/assets/cloud.svg',
-          alt: 'Nube',
-          count: numClouds,
-          sizeMin: 130,
-          sizeMax: 170,
-        },
-        {
-          src: '/assets/paw.svg',
-          alt: 'Huella',
-          count: numPaws,
-          sizeMin: 130,
-          sizeMax: 170,
-        },
-        {
-          src: '/assets/flower.svg',
-          alt: 'Flor',
-          count: numFlowers,
-          sizeMin: 130,
-          sizeMax: 170,
-        },
-      ];
+        { src: '/assets/cloud.svg', alt: 'Nube', count: numClouds, sizeMin: 80, sizeMax: 120 },
+        { src: '/assets/paw.svg', alt: 'Huella', count: numPaws, sizeMin: 40, sizeMax: 60 },
+        { src: '/assets/flower.svg', alt: 'Flor', count: numFlowers, sizeMin: 50, sizeMax: 70 },
+      ]; 
 
       const placedElements: PlacedElement[] = [];
-      const MAX_ATTEMPTS = 250; 
-      const COLLISION_MARGIN = 10; 
-      //console.log('🏁 Iniciando colocación Round-Robin');
+      const MAX_ATTEMPTS = 150;
+      const COLLISION_MARGIN = 5;
       const maxCount = Math.max(...floatConfig.map(config => config.count));
-      const successfulPlacements: { [key: string]: number } = {
-        Nube: 0,
-        Huella: 0,
-        Flor: 0,
-      };
+      const successfulPlacements: { [key: string]: number } = { Nube: 0, Huella: 0, Flor: 0 };
 
       for (let i = 0; i < maxCount; i++) {
         for (const config of floatConfig) {
-          
-          if (i >= config.count) {
-            continue;
-          }
-
+          if (i >= config.count) continue;
           let attempts = 0;
           let placed = false;
-
           while (attempts < MAX_ATTEMPTS && !placed) {
             attempts++;
             const size = config.sizeMin + Math.random() * (config.sizeMax - config.sizeMin);
             const left = (Math.random() * screenWidth) - (size / 2);
             const top = (Math.random() * screenHeight) - (size / 2);
-
-            const newBounds = {
-              left,
-              top,
-              width: size,
-              height: size,
-            };
-
+            const newBounds: RectBounds = { left, top, width: size, height: size };
             let hasCollision = false;
             for (const existing of placedElements) {
-              if (checkCollision(newBounds, existing, COLLISION_MARGIN)) {
-                hasCollision = true;
-                break;
+              if ( checkCollision(newBounds, existing, COLLISION_MARGIN) ) {
+                hasCollision = true; break;
               }
             }
-
             if (!hasCollision) {
               const element: PlacedElement = {
                 id: `${config.alt}-${i}-${Date.now()}-${Math.random()}`,
                 src: config.src,
                 alt: config.alt,
-                animationClass: 'animate-float',
-                left,
-                top,
-                width: size,
-                height: size,
+                animationClass: 'animate-float', 
+                left, top, width: size, height: size,
                 style: {
-                  position: 'absolute',
-                  left: `${left}px`,
-                  top: `${top}px`,
-                  width: `${size}px`,
-                  height: `${size}px`,
+                  position: 'absolute', left: `${left}px`, top: `${top}px`, width: `${size}px`, height: `${size}px`,
+                  animationDuration: `${Math.random() * 5 + 8}s`,
+                  animationDelay: `-${Math.random() * 8}s`,
                 },
               };
-
               placedElements.push(element);
               successfulPlacements[config.alt]++;
               placed = true;
             }
-          } 
-
-          if (!placed) {
-            console.warn(`⚠️ No se pudo colocar ${config.alt} (ronda ${i + 1}) después de ${MAX_ATTEMPTS} intentos`);
           }
-        } 
-      } 
+          if (!placed) console.warn(`⚠️ Could not place ${config.alt} (round ${i + 1})`);
+        }
+      }
 
-      //console.log('✅ Colocación Round-Robin finalizada:');
-      //console.log(`  Nubes: ${successfulPlacements['Nube']}/${numClouds}`);
-      //console.log(`  Huellas: ${successfulPlacements['Huella']}/${numPaws}`);
-      //console.log(`  Flores: ${successfulPlacements['Flor']}/${numFlowers}`);
-     
       const drops: PlacedElement[] = [];
-      
       for (let i = 0; i < numDrops; i++) {
-        const size = 12 + Math.random() * 18;
+        const size = 10 + Math.random() * 15;
         const leftPosition = Math.random() * screenWidth;
-        const duration = 20 + Math.random() * 15;
+        const duration = 15 + Math.random() * 10;
         const delay = -(Math.random() * duration);
-        
         const drop: PlacedElement = {
           id: `drop-${i}-${Date.now()}-${Math.random()}`,
-          src: '/assets/drop.svg',
+          src: '/assets/drop.svg', 
           alt: 'Gota',
-          animationClass: 'animate-fall',
-          left: leftPosition,
-          top: -100,
-          width: size,
-          height: size,
+          animationClass: 'animate-fall', 
+          left: leftPosition, top: -100, width: size, height: size,
           style: {
-            position: 'absolute',
-            left: `${leftPosition}px`,
-            top: '-100px',
-            width: `${size}px`,
-            height: `${size}px`,
-            opacity: 0.35 + Math.random() * 0.4,
+            position: 'absolute', left: `${leftPosition}px`, top: '-100px', width: `${size}px`, height: `${size}px`,
+            opacity: 0.3 + Math.random() * 0.3,
             animationDelay: `${delay}s`,
             animationDuration: `${duration}s`,
           },
         };
         drops.push(drop);
       }
-      //console.log(`💧 ${drops.length} gotas generadas`);
 
       setBackgroundElements([...placedElements, ...drops]);
     };
@@ -220,7 +163,7 @@ export default function SplashScreen() {
 
     const redirectTimer = setTimeout(() => {
       window.location.href = '/identificacion';
-    }, 3000); 
+    }, 3000);
 
     return () => {
       clearTimeout(redirectTimer);
@@ -228,37 +171,37 @@ export default function SplashScreen() {
     };
   }, [screenSize, isClient]);
 
-  if (!isClient) {
-    return (
-      <main 
-        style={{ backgroundColor: '#EE7E7F' }} 
-        className="min-h-screen flex flex-col items-center justify-center p-4"
-      >
-      </main>
-    );
-  }
+   if (!isClient) {
+     return (
+       <main
+         style={{ backgroundColor: '#EE7E7F' }}
+         className="min-h-screen flex flex-col items-center justify-center p-4 select-none" // <<<--- select-none
+       >
+          {/* Spinner estático */}
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white pointer-events-none"></div> {/* <<<--- pointer-events-none */}
+       </main>
+     );
+   }
 
   return (
     <main
       style={{ backgroundColor: '#EE7E7F' }}
-      className="relative flex flex-col items-center justify-center min-h-screen p-4 overflow-hidden"
+      className="relative flex flex-col items-center justify-center min-h-screen p-4 overflow-hidden select-none"
     >
       {/* Elementos de Fondo */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {backgroundElements.map((el) => (
           <div
             key={el.id}
-            className={el.alt === 'Gota' ? el.animationClass : ''}
+            className={el.animationClass} 
             style={el.style}
           >
             <Image
-              src={el.src}
+              src={el.src} 
               alt={el.alt}
               fill
-              style={{
-                objectFit: 'contain',
-              }}
-              unoptimized 
+              style={{ objectFit: 'contain' }}
+              unoptimized
             />
           </div>
         ))}
@@ -273,45 +216,33 @@ export default function SplashScreen() {
             alt="Logo de MiauBloom"
             width={160}
             height={160}
-            priority 
-            style={{ height: 'auto' }}
-            className="mx-auto drop-shadow-md"
+            priority
+            style={{ height: 'auto', width: 'auto' }}
+            className="mx-auto drop-shadow-md pointer-events-none"
           />
         </div>
 
-        {/* Título */}
-        <div className="flex flex-col items-center mb-2">
-          <span
-            className="text-white text-3xl font-bold -mb-2"
-            style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.2)' }}
-          >
-            Miau
-          </span>
-          <span
-            className="text-white text-7xl font-bold"
-            style={{ textShadow: '3px 3px 6px rgba(0,0,0,0.3)' }}
-          >
-            Bloom
-          </span>
+        {/* MiauBloom Logo Image */}
+        <div className="flex flex-col items-center mb-8">
+          <Image
+            src="/assets/MiauBloom-b.svg"
+            alt="MiauBloom Crece y siente"
+            width={250}
+            height={70}
+            priority
+            style={{ height: 'auto', width: 'auto' }}
+            className="drop-shadow-lg pointer-events-none"
+          />
         </div>
 
-        {/* Subtítulo */}
-        <p
-          className="text-white text-xl font-bold mb-8"
-          style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.15)' }}
-        >
-          Crece y siente
-        </p>
-        
-        {/* Barra de Progreso (esta es la que se anima) */}
-        <div className="w-full">
-          <div className="w-40 h-1.5 bg-white/50 rounded-full overflow-hidden mx-auto">
+        <div className="w-full mt-4">
+          <div className="w-40 h-1.5 bg-white/50 rounded-full overflow-hidden mx-auto pointer-events-none">
             <div
-              className="h-full bg-white rounded-full transition-all duration-150 ease-linear"
+              className="h-full bg-white rounded-full transition-all duration-150 ease-linear pointer-events-none"
               style={{ width: `${progress}%` }}
             />
           </div>
-          <p className="text-white/90 text-xs mt-2 font-light">
+          <p className="text-white/90 text-xs mt-2 font-light select-none">
             Cargando tu experiencia...
           </p>
         </div>
