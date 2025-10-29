@@ -13,7 +13,8 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useState, useEffect, Suspense } from 'react';
 import Input from '@/components/ui/Input';
-import LoadingIndicator from '@/components/ui/LoadingIndicator'; 
+import LoadingIndicator from '@/components/ui/LoadingIndicator';
+import { EllipseCorner } from '@/components/EllipseCorner'; 
 
 function ResetPasswordForm() {
     const router = useRouter();
@@ -114,6 +115,21 @@ function ResetPasswordForm() {
 
     return (
         <div className="flex flex-col min-h-screen bg-gray-50 p-6 relative select-none">
+            {/* FRANJA ROSA DECORATIVA */}
+            <EllipseCorner />
+
+            {/* Botón Volver */}
+            <button
+                onClick={() => router.back()}
+                style={{ backgroundColor: themeColor }}
+                className="absolute top-8 left-6 flex items-center justify-center w-10 h-10 rounded-full text-white hover:opacity-90 transition-opacity z-10 cursor-pointer"
+                aria-label="Volver"
+            >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+
             <main className="flex-grow flex flex-col items-center justify-center pt-12">
                 <div className="w-full max-w-sm">
                     {/* Título y Descripción */}
