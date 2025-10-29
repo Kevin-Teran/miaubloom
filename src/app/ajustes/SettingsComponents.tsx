@@ -15,8 +15,8 @@ import Link from 'next/link';
 
 // Componente reutilizable para items de la lista de ajustes (rosa)
 export const SettingsItemLink = ({ href = "#", children }: { href?: string; children: React.ReactNode }) => (
-    <Link href={href} className="flex items-center justify-between py-3 px-4 rounded-lg hover:bg-white/10 transition-colors group">
-        <span className="text-white text-sm">{children}</span>
+    <Link href={href} className="flex items-center justify-between py-3 px-4 md:py-5 md:px-4 rounded-lg hover:bg-white/10 transition-colors group md:mb-2 font-roboto md:font-bold md:text-base">
+        <span className="text-white text-sm md:text-base md:font-bold">{children}</span>
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white/50 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
         </svg>

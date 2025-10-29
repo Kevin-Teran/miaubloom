@@ -9,11 +9,15 @@
  */
 
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Roboto } from 'next/font/google';
 import './globals.css';
 import { LenisScroll } from '@/components/LenisScroll';
 
-const inter = Inter({ subsets: ['latin'] });
+const roboto = Roboto({ 
+  weight: ['400', '500', '700'],
+  subsets: ['latin'],
+  variable: '--font-roboto'
+});
 
 export const metadata: Metadata = {
   title: 'MiauBloom',
@@ -43,7 +47,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="MiauBloom" />
       </head>
-      <body className={inter.className}>
+      <body className={roboto.className} style={{ fontFamily: 'Roboto, sans-serif' }}>
         <LenisScroll>{children}</LenisScroll>
       </body>
     </html>
