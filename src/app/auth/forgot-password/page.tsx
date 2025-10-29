@@ -15,6 +15,7 @@ import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import Input from '@/components/ui/Input';
 import LoadingIndicator from '@/components/ui/LoadingIndicator';
+import { EllipseCorner } from '@/components/EllipseCorner';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -115,6 +116,9 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 p-6 relative select-none">
+      {/* FRANJA ROSA DECORATIVA */}
+      <EllipseCorner />
+
       {/* Botón Volver */}
       <button
         onClick={() => router.back()}

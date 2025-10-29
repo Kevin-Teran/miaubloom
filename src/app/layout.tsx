@@ -3,7 +3,7 @@
  * @route src/app/layout.tsx
  * @description Layout raíz de la aplicación MiauBloom.
  * @author Kevin Mariano
- * @version 1.0.1 
+ * @version 2.0.0 
  * @since 1.0.0
  * @copyright MiauBloom
  */
@@ -11,6 +11,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { LenisScroll } from '@/components/LenisScroll';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -42,7 +43,9 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="MiauBloom" />
       </head>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <LenisScroll>{children}</LenisScroll>
+      </body>
     </html>
   );
 }

@@ -14,7 +14,8 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import React, { Suspense, useState, useEffect } from 'react'; 
 import Input from '@/components/ui/Input'; 
-import LoadingIndicator from '@/components/ui/LoadingIndicator'; 
+import LoadingIndicator from '@/components/ui/LoadingIndicator';
+import { EllipseCorner } from '@/components/EllipseCorner'; 
 
 /**
  * @component LoginForm
@@ -142,7 +143,10 @@ function LoginForm() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 p-6 relative select-none"> 
+    <div className="flex flex-col min-h-screen bg-gray-50 p-6 relative select-none">
+      {/* FRANJA ROSA DECORATIVA */}
+      <EllipseCorner />
+
       <Link
         href="/identificacion" 
         style={{ backgroundColor: themeColor }}

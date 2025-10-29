@@ -14,6 +14,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import React, { Suspense, useState, ChangeEvent, FormEvent } from 'react';
 import Input from '@/components/ui/Input';
+import { EllipseCorner } from '@/components/EllipseCorner';
 
 function PaginationDots({ current, total, color = '#F4A9A0', inactiveColor = '#FDE6E6' }: { current: number; total: number; color?: string; inactiveColor?: string }) {
  return (
@@ -118,6 +119,9 @@ function RegisterForm() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 p-6 relative select-none">
+      {/* FRANJA ROSA DECORATIVA */}
+      <EllipseCorner />
+
       {/* 'cursor-pointer' */}
       <button onClick={() => currentStep > 0 ? setCurrentStep(currentStep - 1) : router.push('/identificacion')} style={{ backgroundColor: themeColor }} className="absolute top-8 left-6 flex items-center justify-center w-10 h-10 rounded-full text-white hover:opacity-90 transition-opacity z-10 cursor-pointer" aria-label="Volver">
         <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
