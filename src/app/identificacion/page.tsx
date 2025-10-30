@@ -10,6 +10,8 @@
 
 "use client";
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect, useLayoutEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -28,9 +30,9 @@ interface RoleCardProps {
 }
 
 function RoleCard({ role, imageSrc, isSelected, onSelect }: RoleCardProps) {
-  const selectedBgColor = "#F4A9A0";
-  const unselectedBgColor = "#FFF8F7";
-  const textColor = "#F4A9A0";
+  const selectedBgColor = "var(--color-theme-primary)";
+  const unselectedBgColor = "var(--color-theme-primary-light)";
+  const textColor = "var(--color-theme-primary)";
 
   return (
     <button
@@ -181,7 +183,7 @@ export default function IdentificacionPage() {
           </div>
         </main>
         <footer className="w-full flex justify-center">
-          <button onClick={handleContinue} disabled={!selectedRole} className={`w-full max-w-[280px] py-4 rounded-full font-bold text-lg transition-all duration-300 shadow-md select-none ${selectedRole ? 'text-white hover:opacity-95 bg-[#F4A9A0] cursor-pointer' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}>
+          <button onClick={handleContinue} disabled={!selectedRole} className={`w-full max-w-[280px] py-4 rounded-full font-bold text-lg transition-all duration-300 shadow-md select-none ${selectedRole ? 'text-white hover:opacity-95 cursor-pointer' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`} style={{ backgroundColor: selectedRole ? 'var(--color-theme-primary)' : 'inherit' }}>
             Comenzar
           </button>
         </footer>

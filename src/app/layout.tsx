@@ -12,6 +12,7 @@ import type { Metadata } from 'next';
 import { Roboto } from 'next/font/google';
 import './globals.css';
 import { LenisScroll } from '@/components/LenisScroll';
+import { AuthProvider } from '@/context/AuthContext';
 
 const roboto = Roboto({ 
   weight: ['400', '500', '700'],
@@ -48,7 +49,19 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="MiauBloom" />
       </head>
       <body className={roboto.className} style={{ fontFamily: 'Roboto, sans-serif' }}>
-        <LenisScroll>{children}</LenisScroll>
+        <style>{`
+          img {
+            user-select: none !important;
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            pointer-events: none !important;
+            -webkit-touch-callout: none !important;
+          }
+        `}</style>
+        <AuthProvider>
+          <LenisScroll>{children}</LenisScroll>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -3,7 +3,7 @@
  * @route src/app/api/auth/register/route.ts
  * @description API endpoint para registro de nuevos usuarios (Pacientes y Psicólogos)
  * @author Kevin Mariano
- * @version 1.0.0
+ * @version 1.0.1
  * @since 1.0.0
  * @copyright MiauBloom
  */
@@ -14,148 +14,136 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-/**
- * @interface RegisterRequestBody
- * @description Estructura del cuerpo de la petición de registro
- */
-interface RegisterRequestBody {
-  email: string;
-  password: string;
-  nombreCompleto: string;
-  rol: 'Paciente' | 'Psicólogo';
-}
-
-/**
- * @function POST
- * @description Registra un nuevo usuario en el sistema
- * @param {NextRequest} request - Petición HTTP
- * @returns {Promise<NextResponse>} Respuesta con datos del usuario creado o error
- */
 export async function POST(request: NextRequest) {
   try {
-    // Parsear el cuerpo de la petición
-    const body: RegisterRequestBody = await request.json();
-    const { email, password, nombreCompleto, rol } = body;
+    const body = await request.json();
+    const {
+      email, password, nombreCompleto, rol,
+      day, month, year, genero, contactoEmergencia, institucionReferida, nombreInstitucion,
+      numeroRegistro, especialidad, tituloUniversitario,
+      idNombreAvatar, horarioUso, duracionUso
+    } = body;
 
-    // Validar campos requeridos
+    // Validación de datos básicos
     if (!email || !password || !nombreCompleto || !rol) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Todos los campos son requeridos'
-        },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, message: 'Los datos básicos son requeridos' }, { status: 400 });
     }
 
-    // Validar formato de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'El formato del correo electrónico no es válido'
-        },
-        { status: 400 }
-      );
+    // Validación para Paciente
+    if (rol === 'Paciente') {
+      if (!day || !month || !year) {
+        return NextResponse.json({ success: false, message: 'La fecha de nacimiento es requerida' }, { status: 400 });
+      }
+      if (!genero) {
+        return NextResponse.json({ success: false, message: 'El género es requerido' }, { status: 400 });
+      }
+      if (!contactoEmergencia) {
+        return NextResponse.json({ success: false, message: 'El contacto de emergencia es requerido' }, { status: 400 });
+      }
+      if (institucionReferida === 'Pública' && !nombreInstitucion) {
+        return NextResponse.json({ success: false, message: 'El nombre de institución es requerido para instituciones públicas' }, { status: 400 });
+      }
+    }
+    // Validación para Psicólogo
+    else if (rol === 'Psicólogo') {
+      if (!numeroRegistro) {
+        return NextResponse.json({ success: false, message: 'El número de registro es requerido' }, { status: 400 });
+      }
+      if (!especialidad) {
+        return NextResponse.json({ success: false, message: 'La especialidad es requerida' }, { status: 400 });
+      }
+      if (!tituloUniversitario) {
+        return NextResponse.json({ success: false, message: 'El título universitario es requerido' }, { status: 400 });
+      }
     }
 
-    // Validar longitud de contraseña
-    if (password.length < 6) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'La contraseña debe tener al menos 6 caracteres'
-        },
-        { status: 400 }
-      );
+    // Validación de horarioUso y duracionUso (comunes)
+    if (!horarioUso) {
+      return NextResponse.json({ success: false, message: 'El horario de uso es requerido' }, { status: 400 });
     }
-
-    // Validar rol
-    if (rol !== 'Paciente' && rol !== 'Psicólogo') {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'El rol debe ser "Paciente" o "Psicólogo"'
-        },
-        { status: 400 }
-      );
+    if (!duracionUso) {
+      return NextResponse.json({ success: false, message: 'La duración de uso es requerida' }, { status: 400 });
     }
 
     // Verificar si el email ya existe
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        email: email.toLowerCase().trim()
-      }
-    });
-
+    const existingUser = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
     if (existingUser) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Este correo electrónico ya está registrado'
-        },
-        { status: 409 }
-      );
+      return NextResponse.json({ success: false, message: 'Este correo electrónico ya está registrado' }, { status: 409 });
     }
-
-    // Hashear contraseña
+    
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Crear nuevo usuario
-    const newUser = await prisma.user.create({
-      data: {
-        email: email.toLowerCase().trim(),
-        password: hashedPassword,
-        nombreCompleto: nombreCompleto.trim(),
-        rol: rol
-      },
-      select: {
-        id: true,
-        email: true,
-        nombreCompleto: true,
-        rol: true,
-        createdAt: true
+    const newUser = await prisma.$transaction(async (tx) => {
+      // 1. Crear el usuario
+      const user = await tx.user.create({
+        data: {
+          email: email.toLowerCase().trim(),
+          password: hashedPassword,
+          nombreCompleto: nombreCompleto.trim(),
+          rol: rol,
+        },
+      });
+
+      // 2. Crear el perfil correspondiente
+      if (rol === 'Paciente') {
+        const fechaNacimiento = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
+        const perfilData: Record<string, unknown> = {
+          userId: user.id,
+          fechaNacimiento,
+          genero,
+          contactoEmergencia,
+          institucionReferida,
+          nombreInstitucion: institucionReferida === 'Pública' ? nombreInstitucion : null,
+          nicknameAvatar: idNombreAvatar || 'Nikky01',
+          horarioUso,
+          duracionUso,
+        };
+        await tx.perfilPaciente.create({ data: perfilData as Parameters<typeof tx.perfilPaciente.create>[0]['data'] });
+      } else if (rol === 'Psicólogo') {
+        const perfilData: Record<string, unknown> = {
+          userId: user.id,
+          identificacion: numeroRegistro,
+          registroProfesional: numeroRegistro,
+          especialidad,
+          tituloUniversitario,
+          nicknameAvatar: idNombreAvatar || 'Avatar',
+          horarioUso,
+          duracionUso,
+        };
+        await tx.perfilPsicologo.create({ data: perfilData as Parameters<typeof tx.perfilPsicologo.create>[0]['data'] });
       }
+      return user;
     });
 
-    // Preparar respuesta exitosa
+    if (!newUser) {
+        throw new Error("La creación del usuario falló.");
+    }
+
     const responseData = {
       success: true,
       message: 'Usuario registrado exitosamente',
-      user: {
-        id: newUser.id,
-        email: newUser.email,
-        nombreCompleto: newUser.nombreCompleto,
-        rol: newUser.rol,
-        perfilCompleto: false
-      }
+      user: { id: newUser.id, email: newUser.email, nombreCompleto: newUser.nombreCompleto, rol: newUser.rol }
     };
 
-    // Crear respuesta con cookie de sesión
     const response = NextResponse.json(responseData, { status: 201 });
-
-    // Configurar cookie de sesión (7 días)
     response.cookies.set('miaubloom_session', newUser.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60, // 7 días en segundos
+      maxAge: 7 * 24 * 60 * 60,
       path: '/'
     });
-
     return response;
 
   } catch (error) {
-    console.error('Error en el registro:', error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Error interno del servidor al registrar usuario'
-      },
-      { status: 500 }
-    );
+    console.error('Error en API de registro:', error);
+    let errorMessage = 'Error interno del servidor';
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    
+    return NextResponse.json({ success: false, message: errorMessage }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }

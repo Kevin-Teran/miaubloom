@@ -10,45 +10,12 @@
  * @copyright MiauBloom
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import LoadingIndicator from '@/components/ui/LoadingIndicator';
 import Link from 'next/link';
-
-// Hook de autenticación
-const useAuth = () => {
-    const [user, setUser] = useState<{ nombreCompleto: string; rol: string; avatarUrl?: string; nickname?: string } | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchUser = async () => {
-            setIsLoading(true);
-            try {
-                const response = await fetch('/api/auth/login');
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success && data.authenticated) {
-                        setUser({
-                            nombreCompleto: data.user.nombreCompleto,
-                            rol: data.user.rol,
-                            nickname: data.user.perfil?.nicknameAvatar || data.user.nombreCompleto.split(' ')[0],
-                            avatarUrl: "/assets/avatar-paciente.png"
-                        });
-                    } else { setUser(null); }
-                } else { setUser(null); }
-            } catch (error) { 
-                console.error("Error fetching auth status:", error); 
-                setUser(null); 
-            } finally { 
-                setIsLoading(false); 
-            }
-        };
-        fetchUser();
-    }, []);
-
-    return { user, isLoading };
-};
+import { useAuth } from '@/context/AuthContext';
 
 // Componente de Tarea
 const TaskCard = ({ 
@@ -72,8 +39,8 @@ const TaskCard = ({
                     onClick={onToggle}
                     className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
                         isCompleted 
-                            ? 'bg-[#F4A9A0] border-[#F4A9A0]' 
-                            : 'border-gray-300 hover:border-[#F4A9A0]'
+                            ? 'bg-[var(--color-theme-primary)] border-[var(--color-theme-primary)]' 
+                            : 'border-gray-300 hover:border-[var(--color-theme-primary)]'
                     }`}
                 >
                     {isCompleted && (
@@ -92,7 +59,7 @@ const TaskCard = ({
                         {description}
                     </p>
                     {/* Tag */}
-                    <span className="inline-block px-3 py-1 bg-pink-100 text-pink-600 text-xs font-medium rounded-full">
+                    <span className="inline-block px-3 py-1 bg-[var(--color-theme-primary-light)] text-[var(--color-theme-primary)] text-xs font-medium rounded-full">
                         {tag}
                     </span>
                 </div>
@@ -185,10 +152,10 @@ const NavButton = ({
     label: string; 
     isActive?: boolean; 
 }) => {
-    const colorClass = isActive ? 'text-[#F4A9A0]' : 'text-gray-400';
+    const colorClass = isActive ? 'text-[var(--color-theme-primary)]' : 'text-gray-400';
     
     return (
-        <Link href={href} className={`flex flex-col items-center ${colorClass} transition-colors duration-200 hover:text-[#F4A9A0]`}>
+        <Link href={href} className={`flex flex-col items-center ${colorClass} transition-colors duration-200 hover:text-[var(--color-theme-primary)]`}>
             {icon}
             <span className="text-xs mt-1 font-medium">{label}</span>
         </Link>
@@ -215,18 +182,21 @@ export default function InicioPacientePage() {
         }
     ]);
 
-    // Protección de ruta
-    useEffect(() => {
-        if (!isLoading && (!user || user.rol !== 'Paciente')) {
-            console.log("Acceso no autorizado, redirigiendo...");
-            router.replace('/identificacion');
-        }
-    }, [user, isLoading, router]);
-
     const toggleTask = (id: number) => {
         setTasks(tasks.map(task => 
             task.id === id ? { ...task, isCompleted: !task.isCompleted } : task
         ));
+    };
+
+    // Función para cerrar sesión
+    const handleSignOut = async () => {
+        try {
+            await fetch('/api/auth/logout', { method: 'POST' });
+        } catch (error) {
+            console.error("Error al cerrar sesión:", error);
+        } finally {
+            router.push('/identificacion');
+        }
     };
 
     // Estado de carga
@@ -253,31 +223,35 @@ export default function InicioPacientePage() {
             ============================================ */}
             <div className="lg:hidden min-h-screen bg-white pb-20 relative">
                 {/* FONDO ROSADO CON CONTENIDO */}
-                <div className="bg-gradient-to-b from-[#F4A9A0] to-[#F4A9A0]/80 min-h-[60vh] relative z-0">
+                <div className="bg-gradient-to-b from-[var(--color-theme-primary)] to-[var(--color-theme-primary-dark)] min-h-[60vh] relative z-0">
                     {/* Header con fondo rosado */}
                     <header className="bg-transparent pt-safe px-4 py-4 sticky top-0 z-10">
                         <div className="flex justify-between items-center max-w-lg mx-auto">
-                            {/* Botón Ajustes */}
-                            <Link 
-                                href="/ajustes/paciente" 
-                                className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all active:scale-95"
+                            {/* Botón Atrás - Rosa con ícono blanco */}
+                            <button 
+                                onClick={() => router.back()}
+                                className="w-10 h-10 rounded-full bg-[var(--color-theme-primary)] flex items-center justify-center text-white hover:opacity-90 transition-all active:scale-95 shadow-md"
+                                aria-label="Volver atrás"
                             >
-                                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                                 </svg>
-                            </Link>
+                            </button>
 
                             {/* Botón Chat con notificación */}
-                            <Link 
-                                href="/chat/paciente" 
-                                className="relative w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all active:scale-95"
-                            >
-                                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                                </svg>
+                            <div className="relative">
+                                <button 
+                                    onClick={() => router.push('/chat/paciente')}
+                                    className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all active:scale-95"
+                                    aria-label="Chat"
+                                >
+                                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                    </svg>
+                                </button>
                                 {/* Punto de notificación */}
                                 <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 border-2 border-white rounded-full"></span>
-                            </Link>
+                            </div>
                         </div>
                     </header>
 
@@ -306,11 +280,11 @@ export default function InicioPacientePage() {
                         {/* Fecha */}
                         <div className="flex justify-center">
                             <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg px-4 py-3 flex items-center gap-3">
-                                <svg className="w-5 h-5 text-[#F4A9A0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 text-[var(--color-theme-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
                                 <div className="text-center">
-                                    <span className="block text-2xl font-bold text-[#F4A9A0] leading-none">
+                                    <span className="block text-2xl font-bold text-[var(--color-theme-primary)] leading-none">
                                         {formattedDate}
                                     </span>
                                     <span className="block text-xs text-gray-500 font-semibold uppercase tracking-wider mt-0.5">
@@ -332,7 +306,7 @@ export default function InicioPacientePage() {
                     <div className="max-w-lg mx-auto">
                         {/* Sección Mis Tareas */}
                         <section className="mb-8">
-                            <h3 className="text-lg font-bold text-[#F4A9A0] mb-4 px-2">
+                            <h3 className="text-lg font-bold text-[var(--color-theme-primary)] mb-4 px-2">
                                 Mis tareas
                             </h3>
                             <div className="space-y-3">
@@ -351,7 +325,7 @@ export default function InicioPacientePage() {
 
                         {/* Sección Mi Actividad */}
                         <section className="pb-8">
-                            <h3 className="text-lg font-bold text-[#F4A9A0] mb-4 px-2">
+                            <h3 className="text-lg font-bold text-[var(--color-theme-primary)] mb-4 px-2">
                                 Mi actividad
                             </h3>
                             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-md">
@@ -407,7 +381,7 @@ export default function InicioPacientePage() {
                         {/* Botón Central Grande (+) */}
                         <Link
                             href="/registrar-emocion"
-                            className="w-14 h-14 bg-gradient-to-br from-[#F4A9A0] to-[#EE8F8E] rounded-full flex items-center justify-center text-white shadow-xl hover:shadow-2xl active:scale-95 transition-all -mt-8 border-4 border-white relative z-10"
+                            className="w-14 h-14 bg-gradient-to-br from-[var(--color-theme-primary)] to-[var(--color-theme-primary-dark)] rounded-full flex items-center justify-center text-white shadow-xl hover:shadow-2xl active:scale-95 transition-all -mt-8 border-4 border-white relative z-10"
                         >
                             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -464,8 +438,8 @@ export default function InicioPacientePage() {
                         {/* Usuario y acciones */}
                         <div className="flex items-center gap-4">
                             {/* Fecha */}
-                            <div className="flex items-center gap-2 bg-pink-50 rounded-full px-4 py-2">
-                                <svg className="w-4 h-4 text-[#F4A9A0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="flex items-center gap-2 bg-[var(--color-theme-primary-light)] rounded-full px-4 py-2">
+                                <svg className="w-4 h-4 text-[var(--color-theme-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
                                 <span className="text-sm font-semibold text-gray-700">
@@ -507,7 +481,7 @@ export default function InicioPacientePage() {
                         {/* Columna Izquierda - Avatar y Navegación */}
                         <aside className="col-span-3 space-y-6">
                             {/* Card de Saludo */}
-                            <div className="bg-gradient-to-br from-pink-200/60 to-pink-100/40 rounded-3xl p-6 text-center shadow-lg">
+                            <div className="bg-gradient-to-br from-[var(--color-theme-primary-light)] to-[var(--color-theme-primary-light)]/60 rounded-3xl p-6 text-center shadow-lg">
                                 <div className="w-40 h-40 relative mx-auto mb-4 drop-shadow-2xl">
                                     <Image
                                         src="/assets/gato-inicio-1.png"
@@ -528,7 +502,7 @@ export default function InicioPacientePage() {
 
                             {/* Navegación */}
                             <nav className="bg-white rounded-3xl p-4 shadow-lg space-y-2">
-                                <Link href="/inicio/paciente" className="flex items-center gap-3 px-4 py-3 bg-pink-50 text-[#F4A9A0] rounded-xl font-semibold transition-colors">
+                                <Link href="/inicio/paciente" className="flex items-center gap-3 px-4 py-3 bg-[var(--color-theme-primary-light)] text-[var(--color-theme-primary)] rounded-xl font-semibold transition-colors">
                                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
                                     </svg>
@@ -553,12 +527,24 @@ export default function InicioPacientePage() {
                                     </svg>
                                     Ajustes
                                 </Link>
+                                {/* Divisor */}
+                                <div className="h-px bg-gray-200 my-2"></div>
+                                {/* Botón Cerrar Sesión */}
+                                <button
+                                    onClick={handleSignOut}
+                                    className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl font-medium transition-colors"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                    </svg>
+                                    Cerrar Sesión
+                                </button>
                             </nav>
 
                             {/* Botón de Acción */}
                             <Link
                                 href="/registrar-emocion"
-                                className="block w-full bg-gradient-to-r from-[#F4A9A0] to-[#EE8F8E] text-white font-bold py-4 rounded-2xl text-center shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
+                                className="block w-full bg-gradient-to-r from-[var(--color-theme-primary)] to-[var(--color-theme-primary-dark)] text-white font-bold py-4 rounded-2xl text-center shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
                             >
                                 + Registrar Emoción
                             </Link>
@@ -570,7 +556,7 @@ export default function InicioPacientePage() {
                             <section>
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-2xl font-bold text-gray-800">Mis tareas</h3>
-                                    <Link href="/inicio/paciente/tareas" className="text-sm text-[#F4A9A0] hover:text-[#E8989] font-semibold">
+                                    <Link href="/inicio/paciente/tareas" className="text-sm hover:text-opacity-80 font-semibold transition-colors" style={{ color: 'var(--color-theme-primary)' }}>
                                         Ver todas →
                                     </Link>
                                 </div>
