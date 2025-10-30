@@ -94,7 +94,6 @@ function PaginationDots({ current, total }: { current: number; total: number }) 
 export default function BienvenidoPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [dots, setDots] = useState<Dot[]>([]);
-  const [isAnimating, setIsAnimating] = useState(false);
   const catRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -180,8 +179,6 @@ export default function BienvenidoPage() {
    */
   const handleNext = () => {
     if (currentStep < totalSteps - 1) {
-      setIsAnimating(true);
-      
       // Animación de salida
       if (catRef.current) {
         gsap.to(catRef.current, {
@@ -203,15 +200,12 @@ export default function BienvenidoPage() {
       
       setTimeout(() => {
         setCurrentStep(currentStep + 1);
-        setIsAnimating(false);
       }, 300);
     }
   };
 
   const handlePrev = () => {
     if (currentStep > 0) {
-      setIsAnimating(true);
-      
       // Animación de salida
       if (catRef.current) {
         gsap.to(catRef.current, {
@@ -233,7 +227,6 @@ export default function BienvenidoPage() {
       
       setTimeout(() => {
         setCurrentStep(currentStep - 1);
-        setIsAnimating(false);
       }, 300);
     }
   };
