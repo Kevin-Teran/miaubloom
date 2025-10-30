@@ -14,7 +14,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import React, { useState, useEffect } from 'react';
 
-const THEME_COLOR = '#F4A9A0';
+const THEME_COLOR = 'var(--color-theme-primary)';
 
 interface Dot {
   id: number;
@@ -81,6 +81,13 @@ export default function NotFound() {
 
         {/* Contenido Principal */}
         <div className="relative z-10 flex flex-col items-center">
+            {/* Error 404 */}
+            <div className="mb-6 opacity-0 animate-[fadeIn_1s_ease-in-out_0.3s_forwards]">
+              <h2 className="text-8xl font-bold" style={{ color: THEME_COLOR }}>
+                404
+              </h2>
+            </div>
+
             {/* Imagen del Gato */}
             <div className="relative w-48 h-48 mb-8">
                  <Image
@@ -108,6 +115,13 @@ export default function NotFound() {
             Volver al inicio
           </button>
         </div>
+
+        <style jsx>{`
+          @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+          }
+        `}</style>
     </div>
   );
 }

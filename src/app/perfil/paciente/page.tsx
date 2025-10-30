@@ -14,8 +14,8 @@
  * - Font: Roboto
  * 
  * Colores:
- * - Primary: #F2C2C1 (Rosa)
- * - Primary Hover: #E8B0AF (Rosa más oscuro)
+ * - Primary: var(--color-theme-primary) (Rosa/Azul dinámico)
+ * - Primary Hover: var(--color-theme-primary-dark) (Rosa/Azul oscuro dinámico)
  * - Dark: #070806 (Gris oscuro)
  * - Secondary: #B6BABE (Gris claro)
  * - Background: #FAFAFA (Gris muy claro)
@@ -110,7 +110,7 @@ export default function PacienteProfilePage() {
           {/* COLUMNA IZQUIERDA: Header + Información */}
           <div className="lg:col-span-4 space-y-6">
             {/* Header del Perfil con mejor diseño */}
-            <div className="bg-white rounded-3xl shadow-lg p-8 border-t-4 border-[#F2C2C1] hover:shadow-xl transition-shadow duration-300">
+            <div className="bg-white rounded-3xl shadow-lg p-8 border-t-4 border-[var(--color-theme-primary)] hover:shadow-xl transition-shadow duration-300">
               <ProfileHeader
                 nombre={userData.nombreCompleto}
                 avatar="/assets/avatar-paciente.png"
@@ -119,7 +119,7 @@ export default function PacienteProfilePage() {
               
               {/* Información adicional del perfil */}
               <div className="mt-8 space-y-4">
-                <div className="bg-gradient-to-r from-pink-50 to-transparent rounded-xl p-4 border-l-4 border-[#F2C2C1]">
+                <div className="bg-gradient-to-r from-[var(--color-theme-primary-light)] to-transparent rounded-xl p-4 border-l-4 border-[var(--color-theme-primary)]">
                   <h3 className="font-roboto font-semibold text-[#070806] mb-2" style={{ fontSize: '17px' }}>
                     ¿Por qué personalizar?
                   </h3>
@@ -135,11 +135,11 @@ export default function PacienteProfilePage() {
                   <div className="flex items-center gap-3">
                     <div className="flex-1 bg-gray-200 rounded-full h-2.5 overflow-hidden">
                       <div 
-                        className="bg-gradient-to-r from-[#F2C2C1] to-pink-400 h-full rounded-full transition-all duration-500"
+                        className="bg-gradient-to-r from-[var(--color-theme-primary)] to-[var(--color-theme-primary-dark)] h-full rounded-full transition-all duration-500"
                         style={{ width: `${((currentStep + 1) / 2) * 100}%` }}
                       />
                     </div>
-                    <span className="font-roboto font-semibold text-[#F2C2C1]" style={{ fontSize: '15px' }}>
+                    <span className="font-roboto font-semibold text-[var(--color-theme-primary)]" style={{ fontSize: '15px' }}>
                       {currentStep + 1}/2
                     </span>
                   </div>
@@ -157,16 +157,16 @@ export default function PacienteProfilePage() {
 
           {/* COLUMNA DERECHA: Formulario de personalización */}
           <div className="lg:col-span-8">
-            <div className="bg-white rounded-3xl shadow-xl p-8 md:p-10 border-t-4 border-[#F2C2C1] hover:shadow-2xl transition-shadow duration-300">
+            <div className="bg-white rounded-3xl shadow-xl p-8 md:p-10 border-t-4 border-[var(--color-theme-primary)] hover:shadow-2xl transition-shadow duration-300">
               
               {/* Header de la sección */}
               <div className="text-center mb-10">
-                <div className="inline-block bg-gradient-to-r from-pink-100 to-pink-50 rounded-full px-6 py-2 mb-4">
-                  <span className="font-roboto font-semibold text-[#F2C2C1]" style={{ fontSize: '15px' }}>
+                <div className="inline-block bg-gradient-to-r from-[var(--color-theme-primary-light)] to-transparent rounded-full px-6 py-2 mb-4">
+                  <span className="font-roboto font-semibold text-[var(--color-theme-primary)]" style={{ fontSize: '15px' }}>
                     Paso {currentStep + 1} de 2
                   </span>
                 </div>
-                <h2 className="mb-3 font-roboto font-bold text-[#F2C2C1]" style={{ fontSize: '32px', letterSpacing: '-0.02em' }}>
+                <h2 className="mb-3 font-roboto font-bold text-[var(--color-theme-primary)]" style={{ fontSize: '32px', letterSpacing: '-0.02em' }}>
                   Personaliza
                 </h2>
                 <p className="font-roboto font-medium text-[#070806]" style={{ fontSize: '20px' }}>
@@ -225,7 +225,7 @@ export default function PacienteProfilePage() {
                   <button
                     onClick={() => handleStepChange(currentStep + 1)}
                     className="group flex items-center gap-2 ml-auto px-10 py-4 rounded-full font-roboto font-semibold transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
-                    style={{ fontSize: '17px', color: '#FFFFFF', backgroundColor: '#F2C2C1' }}
+                    style={{ fontSize: '17px', color: '#FFFFFF', backgroundColor: 'var(--color-theme-primary)' }}
                   >
                     Siguiente
                     <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -236,7 +236,7 @@ export default function PacienteProfilePage() {
                   <button
                     onClick={() => router.push('/inicio/paciente')}
                     className="group flex items-center gap-2 ml-auto px-10 py-4 rounded-full font-roboto font-semibold transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
-                    style={{ fontSize: '17px', color: '#FFFFFF', backgroundColor: '#F2C2C1' }}
+                    style={{ fontSize: '17px', color: '#FFFFFF', backgroundColor: 'var(--color-theme-primary)' }}
                   >
                     Comenzar
                     <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -261,16 +261,16 @@ export default function PacienteProfilePage() {
           </div>
 
           {/* Contenedor Principal */}
-          <div className="mt-6 rounded-3xl shadow-lg p-6 bg-white border-t-4 border-[#F2C2C1]">
+          <div className="mt-6 rounded-3xl shadow-lg p-6 bg-white border-t-4 border-[var(--color-theme-primary)]">
             
             {/* Título de Sección */}
             <div className="text-center mb-8">
               <div className="inline-block bg-pink-50 rounded-full px-5 py-1.5 mb-3">
-                <span className="font-roboto font-semibold text-[#F2C2C1]" style={{ fontSize: '14px' }}>
+                <span className="font-roboto font-semibold text-[var(--color-theme-primary)]" style={{ fontSize: '14px' }}>
                   Paso {currentStep + 1} de 2
                 </span>
               </div>
-              <h2 className="mb-2 font-roboto font-bold text-[#F2C2C1]" style={{ fontSize: '28px' }}>
+              <h2 className="mb-2 font-roboto font-bold text-[var(--color-theme-primary)]" style={{ fontSize: '28px' }}>
                 Personaliza
               </h2>
               <p className="font-roboto font-medium text-[#070806]" style={{ fontSize: '18px' }}>
@@ -283,11 +283,11 @@ export default function PacienteProfilePage() {
               <div className="flex items-center gap-3 bg-gray-50 rounded-full p-2">
                 <div className="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
                   <div 
-                    className="bg-gradient-to-r from-[#F2C2C1] to-pink-400 h-full rounded-full transition-all duration-500"
+                    className="bg-gradient-to-r from-[var(--color-theme-primary)] to-[var(--color-theme-primary-dark)] h-full rounded-full transition-all duration-500"
                     style={{ width: `${((currentStep + 1) / 2) * 100}%` }}
                   />
                 </div>
-                <span className="font-roboto font-semibold text-[#F2C2C1] px-2" style={{ fontSize: '14px' }}>
+                <span className="font-roboto font-semibold text-[var(--color-theme-primary)] px-2" style={{ fontSize: '14px' }}>
                   {currentStep + 1}/2
                 </span>
               </div>
@@ -340,8 +340,8 @@ export default function PacienteProfilePage() {
               {currentStep < 1 ? (
                 <button
                   onClick={() => handleStepChange(currentStep + 1)}
-                  className="flex items-center gap-2 ml-auto px-8 py-3.5 rounded-full font-roboto font-semibold transition-all duration-300 active:scale-95 shadow-lg"
-                  style={{ fontSize: '16px', color: '#FFFFFF', backgroundColor: '#F2C2C1' }}
+                  className="flex items-center gap-2 ml-auto px-8 py-3.5 rounded-full font-roboto font-semibold transition-all duration-300 active:scale-95 shadow-lg text-white"
+                  style={{ fontSize: '16px', backgroundColor: 'var(--color-theme-primary)' }}
                 >
                   Siguiente
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -351,8 +351,8 @@ export default function PacienteProfilePage() {
               ) : (
                 <button
                   onClick={() => router.push('/inicio/paciente')}
-                  className="flex items-center gap-2 ml-auto px-8 py-3.5 rounded-full font-roboto font-semibold transition-all duration-300 active:scale-95 shadow-lg"
-                  style={{ fontSize: '16px', color: '#FFFFFF', backgroundColor: '#F2C2C1' }}
+                  className="flex items-center gap-2 ml-auto px-8 py-3.5 rounded-full font-roboto font-semibold transition-all duration-300 active:scale-95 shadow-lg text-white"
+                  style={{ fontSize: '16px', backgroundColor: 'var(--color-theme-primary)' }}
                 >
                   Comenzar
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -416,7 +416,7 @@ export default function PacienteProfilePage() {
         /* Focus states mejorados */
         button:focus-visible,
         a:focus-visible {
-          outline: 3px solid #F2C2C1;
+          outline: 3px solid var(--color-theme-primary);
           outline-offset: 3px;
         }
 

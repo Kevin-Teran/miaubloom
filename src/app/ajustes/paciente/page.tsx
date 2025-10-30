@@ -18,45 +18,7 @@ import Image from 'next/image';
 import LoadingIndicator from '@/components/ui/LoadingIndicator'; //
 // Importar desde el archivo de componentes compartidos
 import { SettingsItemLink, AccountSettingsItemLink, ToggleItem } from '../SettingsComponents'; //
-
-// --- PLACEHOLDER HOOK DE AUTENTICACIÓN ---
-const useAuth = () => {
-    const [user, setUser] = useState<{ nombreCompleto: string; rol: string; avatarUrl?: string } | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        // Simular carga de usuario (llama a tu API GET /api/auth/login)
-        const fetchUser = async () => {
-            setIsLoading(true);
-            try {
-                const response = await fetch('/api/auth/login'); //
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success && data.authenticated) { //
-                        setUser({
-                            nombreCompleto: data.user.nombreCompleto,
-                            rol: data.user.rol,
-                            avatarUrl: "/assets/avatar-paciente.png" // Placeholder
-                        });
-                    } else {
-                        setUser(null); // No autenticado
-                    }
-                } else {
-                     setUser(null); // Error de red u otro
-                }
-            } catch (error) {
-                console.error("Error fetching auth status in hook:", error);
-                setUser(null);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchUser();
-    }, []);
-
-    return { user, isLoading };
-};
-// --- FIN PLACEHOLDER HOOK ---
+import { useAuth } from '@/context/AuthContext';
 
 
 export default function AjustesPacientePage() {
@@ -93,12 +55,14 @@ export default function AjustesPacientePage() {
     if (isLoading || !user) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
-                <LoadingIndicator text="Cargando ajustes..." className="[&>p]:text-gray-600 [&>div]:opacity-50 [&>div]:bg-[#F5A0A1] [&>div>div]:bg-[#EE7E7F]" /> {/* */}
+                <LoadingIndicator text="Cargando ajustes..." className="[&>p]:text-gray-600 [&>div]:opacity-50 [&>div]:bg-[var(--color-theme-primary-light)] [&>div>div]:bg-[var(--color-theme-primary)]" /> {/* */}
             </div>
         );
     }
 
-    const themeColor = '#F4A9A0'; //
+    const themeColor = 'var(--color-theme-primary)'; //
+
+    // --- JSX ---
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -182,9 +146,8 @@ export default function AjustesPacientePage() {
                  <section>
                      <h2 className="text-xs uppercase text-gray-500 font-semibold px-4 mb-2 tracking-wide">Configuración de la aplicación</h2>
                     <div className="bg-gray-50/70 rounded-lg divide-y divide-gray-200 border border-gray-200">
-                        <ToggleItem label="Enable Face ID For Log In" />
-                        <ToggleItem label="Enable Push Notifications" initialValue={true}/>
-                        <ToggleItem label="Enable Location Services" />
+                        <ToggleItem label="Activar notificaciones" initialValue={true}/>
+                        <ToggleItem label="Servicio de ubicación" />
                         <ToggleItem label="Dark Mode" />
                     </div>
                 </section>

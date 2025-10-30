@@ -16,19 +16,19 @@
 @import "tailwindcss";
 
 :root {
-  /* Colores principales de MiauBloom */
-  --color-primary: #EE7E7F;
-  --color-primary-dark: #E65758;
-  --color-primary-light: #F5A0A1;
+  /* Colores principales de MiauBloom (CORREGIDOS SEGÚN PDF) */
+  --color-primary: #F2C2C1; /* Rosa Principal */
+  --color-primary-dark: #E8B0AF; /* Un rosa más oscuro para hover/active */
+  --color-primary-light: #FDE6E6; /* Un rosa muy claro para fondos */
   
-  --color-secondary: #A78BFA;
-  --color-secondary-dark: #8B5CF6;
-  --color-secondary-light: #C4B5FD;
+  --color-secondary: #B6BABE; /* Gris Secundario */
+  --color-secondary-dark: #A1A4A8;
+  --color-secondary-light: #D1D5DB;
   
-  /* Colores neutros */
+  /* Colores neutros (CORREGIDOS SEGÚN PDF) */
   --color-background: #FFFFFF;
-  --color-background-alt: #F9FAFB;
-  --color-foreground: #111827;
+  --color-background-alt: #FAFAFA;
+  --color-foreground: #070806; /* Negro/Gris oscuro para texto */
   --color-gray: #6B7280;
   --color-gray-light: #E5E7EB;
   
@@ -57,7 +57,7 @@
   --color-background: var(--color-background);
   --color-foreground: var(--color-foreground);
   --color-miaubloom-pink: var(--color-primary);
-  --color-miaubloom-purple: var(--color-secondary);
+  --color-miaubloom-purple: var(--color-secondary); /* Ajustado a gris secundario */
   --color-coral-400: #F87171;
 }
 
@@ -80,6 +80,26 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ================================================
+   DESABILITAR SELECCIÓN DE IMÁGENES
+   ================================================ */
+/* Impedir selección de imágenes en toda la app */
+img {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  pointer-events: none;
+}
+
+/* Permitir selección de texto normalmente */
+p, span, h1, h2, h3, h4, h5, h6, a, button, li {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 /* ================================================
@@ -379,3 +399,27 @@ select:focus {
     animation: none !important;
   }
 }
+
+/* ================================================
+   TEMAS DINÁMICOS POR GÉNERO
+   ================================================ */
+:root {
+  /* Tema por defecto (Femenino - Rosa) */
+  --color-theme-primary: #F2C2C1;
+  --color-theme-primary-dark: #E8B0AF;
+  --color-theme-primary-light: #FDE6E6;
+  --color-theme-accent: #F87171; /* Un color de acento, por si lo necesitas */
+}
+
+.theme-blue {
+  /* Tema Masculino - Azul Pastel */
+  --color-theme-primary: #A7C7E7; /* Azul pastel principal */
+  --color-theme-primary-dark: #89A9C9;
+  --color-theme-primary-light: #E0EAF3;
+  --color-theme-accent: #6A96C2;
+}
+
+/* NOTA: A partir de ahora, en los componentes usaremos 'var(--color-theme-primary)'
+  en lugar de 'var(--color-primary)' o colores hardcodeados para los elementos
+  que deben cambiar de color.
+*/

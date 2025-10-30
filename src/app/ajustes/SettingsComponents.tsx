@@ -49,7 +49,8 @@ export const ToggleItem = ({ label, initialValue = false }: { label: string; ini
             <button
                 onClick={onToggle}
                 // Switch visual básico
-                className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#F4A9A0]/50 ${isEnabled ? 'bg-[#F4A9A0]' : 'bg-gray-300'}`} // Color activo rosa
+                className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors duration-200 ease-in-out focus:outline-none ${isEnabled ? 'bg-[var(--color-theme-primary)]' : 'bg-gray-300'}`}
+                style={{ outline: `2px solid var(--color-theme-primary)`, outlineOffset: '2px' }}
             >
                 <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform duration-200 ease-in-out ${isEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
             </button>
