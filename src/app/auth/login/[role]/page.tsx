@@ -105,7 +105,7 @@ function LoginForm() {
         });
         const data = await response.json();
         if (data.success) { 
-            const dashboardRoute = isPatient ? '/dashboard/paciente' : '/dashboard/psicologo';
+            const dashboardRoute = isPatient ? '/inicio/paciente' : '/dashboard/psicologo';
             const completeProfileRoute = isPatient ? '/auth/complete-profile/paciente' : '/auth/complete-profile/psicologo';
             router.push(data.user.perfilCompleto ? dashboardRoute : completeProfileRoute); 
         } else {

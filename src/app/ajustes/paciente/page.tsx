@@ -104,13 +104,15 @@ export default function AjustesPacientePage() {
         <div className="min-h-screen bg-gray-100">
 
             {/* ----- VISTA PRINCIPAL (ROSA) ----- */}
-            <div className={`min-h-screen p-6 ${showAppSettings ? 'hidden' : 'block'} select-none`} style={{ backgroundColor: themeColor }}>
-                 {/* Botón de volver */}
-                 <button onClick={() => router.back()} className="mb-4 text-white hover:opacity-75">
+            <div className={`md:fixed md:top-0 md:left-0 md:w-72 md:h-screen min-h-screen p-6 ${showAppSettings ? 'hidden md:block' : 'block'} select-none md:shadow-lg md:z-40 transition-all duration-300`} style={{ backgroundColor: themeColor }}>
+
+                {/* Botón de volver - Solo en desktop */}
+                <button onClick={() => router.back()} className="hidden md:flex items-center gap-2 mb-6 text-white hover:opacity-75 transition-opacity">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
-                 </button>
+                    <span className="text-sm font-medium">Volver</span>
+                </button>
 
                 {/* Perfil */}
                 <div className="flex items-center gap-4 mb-8">
@@ -132,8 +134,8 @@ export default function AjustesPacientePage() {
                     <SettingsItemLink href="/notificaciones/paciente">Notificaciones</SettingsItemLink>
                     <hr className="border-white/20 my-3"/>
                     {/* Botón para cambiar a vista de Ajustes App */}
-                    <button onClick={() => setShowAppSettings(true)} className="flex items-center justify-between py-3 px-4 rounded-lg hover:bg-white/10 transition-colors w-full text-left group">
-                        <span className="text-white text-sm">Configuraciones</span>
+                    <button onClick={() => setShowAppSettings(true)} className="flex items-center justify-between py-5 px-4 rounded-lg hover:bg-white/10 transition-colors w-full text-left group md:mb-2 font-roboto md:font-bold">
+                        <span className="text-white text-sm md:text-base md:font-bold">Configuraciones</span>
                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white/50 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                          </svg>
@@ -142,17 +144,22 @@ export default function AjustesPacientePage() {
                     <SettingsItemLink href="/privacidad">Privacy & Policy</SettingsItemLink>
                      <hr className="border-white/20 my-3"/>
                     {/* Botón Sign Out llama a handleSignOut */}
-                    <button onClick={handleSignOut} className="w-full text-left py-3 px-4 rounded-lg text-red-100 hover:bg-white/10 transition-colors font-medium">
-                        Sign Out
+                    <button onClick={handleSignOut} className="w-full flex items-center justify-between py-5 px-4 rounded-lg bg-red-500 hover:bg-red-600 text-white transition-colors font-medium font-roboto md:font-bold md:text-base md:mb-2">
+                        <span>Sign Out</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
                     </button>
                 </nav>
             </div>
 
             {/* ----- VISTA SECUNDARIA (BLANCA - Ajustes App) ----- */}
-            <div className={`min-h-screen bg-white p-6 ${showAppSettings ? 'block' : 'hidden'} select-none`}>
+            <div className={`min-h-screen bg-white p-6 ${showAppSettings ? 'block' : 'hidden'} select-none md:ml-72 md:block md:min-h-screen`}>
                 {/* Encabezado */}
                 <div className="flex items-center mb-6 relative h-10">
-                     <button onClick={() => setShowAppSettings(false)} className="absolute left-0 top-1/2 -translate-y-1/2 p-2 text-gray-600 hover:text-gray-900">
+                     <button onClick={() => {
+                         setShowAppSettings(false);
+                     }} className="absolute left-0 top-1/2 -translate-y-1/2 p-2 text-gray-600 hover:text-gray-900 hover:opacity-75 transition-opacity md:hidden">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                         </svg>
