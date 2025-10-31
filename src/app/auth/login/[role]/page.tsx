@@ -12,9 +12,8 @@
 
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import React, { Suspense, useState, useEffect } from 'react'; 
-import Input from '@/components/ui/Input'; 
-import LoadingIndicator from '@/components/ui/LoadingIndicator';
+import React, { Suspense, useState } from 'react'; 
+import Input from '@/components/ui/Input';
 import { EllipseCorner } from '@/components/EllipseCorner'; 
 
 /**
@@ -36,28 +35,6 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false); 
   const [isGoogleLoading, setIsGoogleLoading] = useState(false); 
   const [apiError, setApiError] = useState('');
-  const [isLoadingAuth, setIsLoadingAuth] = useState(true); 
-
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        const response = await fetch('/api/auth/login'); 
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.authenticated) {
-            console.log("Usuario ya autenticado, redirigiendo desde login...");
-            router.replace('/identificacion'); 
-            return;
-          }
-        }
-        setIsLoadingAuth(false); 
-      } catch (authError) {
-        console.error("Error verificando estado de autenticación:", authError);
-        setIsLoadingAuth(false); 
-      }
-    };
-    checkAuthStatus();
-  }, [router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -130,14 +107,6 @@ function LoginForm() {
 
   const themeColor = '#F1A8A9';
 
-  if (isLoadingAuth) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <LoadingIndicator text="Cargando tu experiencia..." className="[&>p]:text-gray-600 [&>div]:opacity-50 [&>div]:bg-[#F5A0A1] [&>div>div]:bg-[#EE7E7F]"/>
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-gray-50 relative select-none">
       {/* FRANJA ROSA DECORATIVA */}
@@ -147,7 +116,7 @@ function LoginForm() {
           COLUMNA IZQUIERDA - SOLO DESKTOP
       ============================================ */}
       <div className="hidden lg:flex lg:w-1/2 bg-white relative items-center justify-center p-12">
-        <div className="max-w-md space-y-8">
+        <div className="max-w-md space-y-8 select-none">
           {/* Ilustración/Logo */}
           <div className="relative w-64 h-64 mx-auto">
             <div className="w-full h-full rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-theme-primary-light)', opacity: 0.2 }}>
@@ -213,16 +182,19 @@ function LoginForm() {
       ============================================ */}
       <div className="flex flex-col flex-1 lg:w-1/2 p-6 lg:p-12 relative">
         {/* Botón de retroceso */}
-        <Link
-          href="/identificacion" 
+        <button
+          onClick={() => {
+            const redirectPath = isPatient ? '/bienvenido/paciente' : '/inicio/psicologo';
+            router.push(redirectPath);
+          }}
           style={{ backgroundColor: themeColor }}
-          className="absolute top-8 left-6 lg:top-12 lg:left-12 flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-full text-white hover:opacity-90 transition-opacity z-10 cursor-pointer shadow-md"
+          className="absolute top-6 left-6 lg:top-4 lg:left-4 flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-full text-white hover:opacity-90 transition-opacity z-10 cursor-pointer shadow-md"
           aria-label="Volver"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
-        </Link>
+        </button>
 
         <main className="flex-grow flex flex-col items-center justify-center">
           <div className="w-full max-w-sm lg:max-w-md">

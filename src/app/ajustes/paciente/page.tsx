@@ -1,6 +1,8 @@
 // src/app/ajustes/paciente/page.tsx
 "use client";
 
+export const dynamic = 'force-dynamic';
+
 /**
  * @file page.tsx
  * @route src/app/ajustes/paciente/page.tsx
@@ -11,48 +13,46 @@
  * @copyright MiauBloom
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 // import Link from 'next/link'; // <<<--- ELIMINADO (No se usa directamente)
 import Image from 'next/image';
 import LoadingIndicator from '@/components/ui/LoadingIndicator'; //
 // Importar desde el archivo de componentes compartidos
 import { SettingsItemLink, AccountSettingsItemLink, ToggleItem } from '../SettingsComponents'; //
-import { useAuth } from '@/context/AuthContext';
+import { useRouteProtection } from '@/hooks/useRouteProtection';
 
 
 export default function AjustesPacientePage() {
     const router = useRouter();
-    const { user, isLoading } = useAuth();
+    const { user, hasAccess, isLoading } = useRouteProtection(['Paciente']);
     const [showAppSettings, setShowAppSettings] = useState(false);
-
-    // Protección de ruta
-    useEffect(() => {
-        if (!isLoading && (!user || user.rol !== 'Paciente')) { //
-             console.log("Ajustes Paciente: Acceso no autorizado o usuario no cargado, redirigiendo...");
-             router.replace('/identificacion'); //
-        }
-    }, [user, isLoading, router]);
 
     // Función para cerrar sesión
     const handleSignOut = async () => {
         console.log("Cerrando sesión...");
         try {
-            const response = await fetch('/api/auth/logout', { method: 'POST' }); //
-            if (!response.ok) {
-                console.error("Error al cerrar sesión desde la API:", await response.text());
-            } else {
-                 console.log("Logout API call successful");
+            const response = await fetch('/api/auth/logout', { method: 'POST' });
+            if (response.ok) {
+                // Limpiar localStorage si la aplicación lo usa
+                if (typeof window !== 'undefined') {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                }
+                // Redirigir y recargar para asegurar que se limpie el contexto
+                router.push('/identificacion');
+                // Pequeño delay para permitir que la redirección se procese
+                setTimeout(() => {
+                    window.location.reload();
+                }, 100);
             }
         } catch (error) {
             console.error("Error de red al cerrar sesión:", error);
-        } finally {
-            router.push('/identificacion'); //
+            router.push('/identificacion');
         }
     };
-
-    // Muestra indicador mientras carga
-    if (isLoading || !user) {
+    // Muestra indicador mientras carga o sin acceso
+    if (isLoading || !hasAccess) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
                 <LoadingIndicator text="Cargando ajustes..." className="[&>p]:text-gray-600 [&>div]:opacity-50 [&>div]:bg-[var(--color-theme-primary-light)] [&>div>div]:bg-[var(--color-theme-primary)]" /> {/* */}
@@ -81,11 +81,11 @@ export default function AjustesPacientePage() {
                 {/* Perfil */}
                 <div className="flex items-center gap-4 mb-8">
                     <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-white pointer-events-none">
-                        <Image src={user.avatarUrl || "/assets/avatar-paciente.png"} alt="Avatar" fill className="object-cover"/> {/* */}
+                        <Image src={user!.avatarUrl || "/assets/avatar-paciente.png"} alt="Avatar" fill className="object-cover"/> {/* */}
                     </div>
                     <div>
                         <p className="text-sm text-white/80">Hola</p>
-                        <h1 className="text-xl font-semibold text-white">{user.nombreCompleto}</h1>
+                        <h1 className="text-xl font-semibold text-white">{user!.nombreCompleto}</h1>
                     </div>
                 </div>
 

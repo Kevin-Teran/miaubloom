@@ -1,9 +1,9 @@
 /**
  * @file ProfilePagination.tsx
- * @description Componente de indicadores de progreso
+ * @description Componente de paginación visual para los pasos
  * 
- * Color activo: #F2C2C1 (Rosa)
- * Color inactivo: #B6BABE (Gris)
+ * Color activo: var(--color-theme-primary) (Rosa/Azul dinámico)
+ * Color inactivo: #F0F0F0 (Gris muy claro)
  */
 
 interface ProfilePaginationProps {
@@ -13,14 +13,14 @@ interface ProfilePaginationProps {
 
 export function ProfilePagination({ current, total }: ProfilePaginationProps) {
   return (
-    <div className="flex items-center justify-center gap-2 my-6">
+    <div className="flex gap-2 justify-center">
       {Array.from({ length: total }).map((_, index) => (
         <div
           key={index}
-          className="h-1.5 rounded-full transition-all duration-300"
+          className="h-2 rounded-full transition-all duration-300"
           style={{
-            backgroundColor: index === current ? '#F2C2C1' : '#B6BABE',
-            width: index === current ? '32px' : '6px',
+            width: index === current ? '24px' : '8px',
+            backgroundColor: index === current ? 'var(--color-theme-primary)' : '#F0F0F0',
           }}
         />
       ))}

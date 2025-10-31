@@ -87,20 +87,7 @@ export default function PacienteProfilePage() {
 
       if (response.ok) {
         setShowConfirmModal(false);
-        // Actualizar userData con la foto nueva
-        if (userData) {
-          setUserData({
-            ...userData,
-            perfil: {
-              ...userData.perfil,
-              fotoPerfil: fotoPerfil,
-            }
-          });
-        }
-        // Esperar un momento antes de redirigir para que se vea el cambio
-        setTimeout(() => {
-          router.push('/inicio/paciente');
-        }, 500);
+        router.push('/inicio/paciente');
       } else {
         alert('Error al guardar el perfil');
       }
@@ -176,7 +163,6 @@ export default function PacienteProfilePage() {
                     onPhotoChange={setFotoPerfil}
                     userRole="paciente"
                     availableAvatars={AVATARS}
-                    userId={userData.id}
                   />
                 </div>
 
@@ -208,7 +194,7 @@ export default function PacienteProfilePage() {
                 <button
                   onClick={() => router.back()}
                   className="flex-1 px-8 py-4 rounded-full font-roboto font-semibold"
-                  style={{ fontSize: '17px', color: '#070806', backgroundColor: '#F0F0F0' }}
+                  style={{ fontSize: '17px', color: '#070806', backgroundColor: '#B6BABE' }}
                 >
                   Cancelar
                 </button>
@@ -251,7 +237,6 @@ export default function PacienteProfilePage() {
                   onPhotoChange={setFotoPerfil}
                   userRole="paciente"
                   availableAvatars={AVATARS}
-                  userId={userData.id}
                 />
               </div>
 
@@ -279,7 +264,7 @@ export default function PacienteProfilePage() {
                 <button
                   onClick={() => router.back()}
                   className="flex-1 px-6 py-3.5 rounded-full font-roboto font-semibold"
-                  style={{ fontSize: '16px', color: '#070806', backgroundColor: '#F0F0F0' }}
+                  style={{ fontSize: '16px', color: '#070806', backgroundColor: '#B6BABE' }}
                 >
                   Cancelar
                 </button>

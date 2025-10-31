@@ -23,9 +23,6 @@ const durationOptions = [
 export function UsageDuration({ selectedDuration, onDurationChange }: UsageDurationProps) {
   return (
     <div className="mb-8">
-      <h2 className="mb-4 font-roboto" style={{ fontSize: '18px', color: '#070806', fontWeight: '600' }}>
-        Duración de Uso
-      </h2>
       <div className="flex flex-wrap gap-2 md:gap-3">
         {durationOptions.map((option) => (
           <button
@@ -36,7 +33,7 @@ export function UsageDuration({ selectedDuration, onDurationChange }: UsageDurat
               fontSize: '16px',
               fontWeight: '500',
               color: selectedDuration === option.id ? '#FFFFFF' : '#070806',
-              backgroundColor: selectedDuration === option.id ? '#F2C2C1' : '#B6BABE',
+              backgroundColor: selectedDuration === option.id ? 'var(--color-theme-primary)' : '#F0F0F0',
             }}
           >
             {option.label}

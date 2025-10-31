@@ -88,7 +88,10 @@ export async function POST(request: NextRequest) {
         genero: user.perfilPaciente.genero,
         contactoEmergencia: user.perfilPaciente.contactoEmergencia,
         nicknameAvatar: user.perfilPaciente.nicknameAvatar,
-        psicologoAsignadoId: user.perfilPaciente.psicologoAsignadoId
+        fotoPerfil: (user.perfilPaciente as Record<string, unknown>).fotoPerfil as string,
+        psicologoAsignadoId: user.perfilPaciente.psicologoAsignadoId,
+        horarioUso: user.perfilPaciente.horarioUso,
+        duracionUso: user.perfilPaciente.duracionUso
       };
     } else if (rol === 'Psicólogo' && user.perfilPsicologo) {
       perfilCompleto = true;
@@ -96,7 +99,8 @@ export async function POST(request: NextRequest) {
         identificacion: user.perfilPsicologo.identificacion,
         registroProfesional: user.perfilPsicologo.registroProfesional,
         especialidad: user.perfilPsicologo.especialidad,
-        tituloUniversitario: user.perfilPsicologo.tituloUniversitario
+        tituloUniversitario: user.perfilPsicologo.tituloUniversitario,
+        fotoPerfil: (user.perfilPsicologo as Record<string, unknown>).fotoPerfil as string
       };
     }
 
@@ -186,6 +190,32 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    let perfilCompleto = false;
+    let perfilData = null;
+
+    if (user.rol === 'Paciente' && user.perfilPaciente) {
+      perfilCompleto = true;
+      perfilData = {
+        fechaNacimiento: user.perfilPaciente.fechaNacimiento,
+        genero: user.perfilPaciente.genero,
+        contactoEmergencia: user.perfilPaciente.contactoEmergencia,
+        nicknameAvatar: user.perfilPaciente.nicknameAvatar,
+        psicologoAsignadoId: user.perfilPaciente.psicologoAsignadoId,
+        fotoPerfil: (user.perfilPaciente as Record<string, unknown>).fotoPerfil as string,
+        horarioUso: user.perfilPaciente.horarioUso,
+        duracionUso: user.perfilPaciente.duracionUso
+      };
+    } else if (user.rol === 'Psicólogo' && user.perfilPsicologo) {
+      perfilCompleto = true;
+      perfilData = {
+        identificacion: user.perfilPsicologo.identificacion,
+        registroProfesional: user.perfilPsicologo.registroProfesional,
+        especialidad: user.perfilPsicologo.especialidad,
+        tituloUniversitario: user.perfilPsicologo.tituloUniversitario,
+        fotoPerfil: (user.perfilPsicologo as Record<string, unknown>).fotoPerfil as string
+      };
+    }
+
     return NextResponse.json(
       { 
         success: true, 
@@ -195,9 +225,8 @@ export async function GET(request: NextRequest) {
           email: user.email,
           nombreCompleto: user.nombreCompleto,
           rol: user.rol,
-          perfilCompleto: user.rol === 'Paciente' 
-            ? !!user.perfilPaciente 
-            : !!user.perfilPsicologo
+          perfilCompleto,
+          perfil: perfilData
         }
       },
       { status: 200 }

@@ -23,9 +23,6 @@ const scheduleOptions = [
 export function UsageSchedule({ selectedSchedule, onScheduleChange }: UsageScheduleProps) {
   return (
     <div className="mb-8">
-      <h2 className="mb-4 font-roboto" style={{ fontSize: '18px', color: '#070806', fontWeight: '600' }}>
-        Horario de Uso
-      </h2>
       <div className="flex flex-wrap gap-2 md:gap-3">
         {scheduleOptions.map((option) => (
           <button
@@ -36,7 +33,7 @@ export function UsageSchedule({ selectedSchedule, onScheduleChange }: UsageSched
               fontSize: '16px',
               fontWeight: '500',
               color: selectedSchedule === option.id ? '#FFFFFF' : '#070806',
-              backgroundColor: selectedSchedule === option.id ? '#F2C2C1' : '#B6BABE',
+              backgroundColor: selectedSchedule === option.id ? 'var(--color-theme-primary)' : '#F0F0F0',
             }}
           >
             {option.label}

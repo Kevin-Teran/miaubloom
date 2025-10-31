@@ -1,6 +1,8 @@
 // src/app/ajustes/psicologo/page.tsx
 "use client";
 
+export const dynamic = 'force-dynamic';
+
 /**
  * @file page.tsx
  * @route src/app/ajustes/psicologo/page.tsx
@@ -11,73 +13,46 @@
  * @copyright MiauBloom
  */
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 // import Link from 'next/link'; // <<<--- ELIMINADO (No se usa Link directamente)
 import Image from 'next/image';
 import LoadingIndicator from '@/components/ui/LoadingIndicator'; //
 // <<<--- CORRECCIÓN DE RUTA DE IMPORTACIÓN --->>>
 import { SettingsItemLink, AccountSettingsItemLink, ToggleItem } from '../SettingsComponents'; //
-
-// --- PLACEHOLDER HOOK DE AUTENTICACIÓN ---
-// (sin cambios)
-const useAuth = () => {
-    const [user, setUser] = useState<{ nombreCompleto: string; rol: string; avatarUrl?: string } | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchUser = async () => {
-             setIsLoading(true);
-            try {
-                const response = await fetch('/api/auth/login'); //
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success && data.authenticated) { //
-                        setUser({
-                            nombreCompleto: data.user.nombreCompleto,
-                            rol: data.user.rol,
-                            avatarUrl: "/assets/avatar-psicologo.png" // Placeholder
-                        });
-                    } else { setUser(null); }
-                } else { setUser(null); }
-            } catch (error) { console.error("Error fetching auth status in hook:", error); setUser(null); }
-            finally { setIsLoading(false); }
-        };
-        fetchUser();
-    }, []);
-
-    return { user, isLoading };
-};
-// --- FIN PLACEHOLDER HOOK ---
+import { useRouteProtection } from '@/hooks/useRouteProtection';
 
 
 export default function AjustesPsicologoPage() {
     const router = useRouter();
-    const { user, isLoading } = useAuth();
-
-    // Protección de ruta (sin cambios)
-    useEffect(() => {
-        const isAllowedRole = user?.rol === 'Psicólogo' || user?.rol === 'Psicologo'; //
-        if (!isLoading && (!user || !isAllowedRole)) {
-             console.log("Ajustes Psicologo: Acceso no autorizado o usuario no cargado, redirigiendo...");
-             router.replace('/identificacion'); //
-        }
-    }, [user, isLoading, router]);
+    const { user, hasAccess, isLoading } = useRouteProtection(['Psicólogo']);
 
      // Función para cerrar sesión (sin cambios)
     const handleSignOut = async () => {
         console.log("Cerrando sesión...");
         try {
-            await fetch('/api/auth/logout', { method: 'POST' }); //
+            const response = await fetch('/api/auth/logout', { method: 'POST' });
+            if (response.ok) {
+                // Limpiar localStorage si la aplicación lo usa
+                if (typeof window !== 'undefined') {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                }
+                // Redirigir y recargar para asegurar que se limpie el contexto
+                router.push('/identificacion');
+                // Pequeño delay para permitir que la redirección se procese
+                setTimeout(() => {
+                    window.location.reload();
+                }, 100);
+            }
         } catch (error) {
             console.error("Error de red al cerrar sesión:", error);
-        } finally {
-            router.push('/identificacion'); //
+            router.push('/identificacion');
         }
     };
 
-    // Muestra indicador de carga (sin cambios)
-    if (isLoading || !user) {
+    // Muestra indicador de carga o sin acceso
+    if (isLoading || !hasAccess) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
                  <LoadingIndicator text="Cargando ajustes..." className="[&>p]:text-gray-600 [&>div]:opacity-50 [&>div]:bg-[#F5A0A1] [&>div>div]:bg-[#EE7E7F]" /> {/* */}
@@ -100,10 +75,10 @@ export default function AjustesPsicologoPage() {
                 {/* Perfil */}
                 <div className="flex items-center gap-4 mb-8">
                     <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-white pointer-events-none">
-                        <Image src={user.avatarUrl || "/assets/avatar-psicologo.png"} alt="Avatar" fill className="object-cover"/>
+                        <Image src={user!.avatarUrl || "/assets/avatar-psicologo.png"} alt="Avatar" fill className="object-cover"/>
                     </div>
                     <div>
-                        <h1 className="text-xl font-semibold text-white">{user.nombreCompleto}</h1>
+                        <h1 className="text-xl font-semibold text-white">{user!.nombreCompleto}</h1>
                     </div>
                 </div>
                 {/* Lista de Opciones */}

@@ -60,6 +60,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     image: '/assets/gato-inicio-2.png',
     title: 'Inicia sesión',
     text: 'Para empezar a nutrir tu jardín y avanzar hacia tu bienestar emocional.',
+    buttonText: 'Ir a Login',
     showLogo: false,
   },
 ];
@@ -201,6 +202,9 @@ export default function BienvenidoPage() {
       setTimeout(() => {
         setCurrentStep(currentStep + 1);
       }, 300);
+    } else if (currentStep === totalSteps - 1) {
+      // En el último paso, redirigir a login
+      router.push('/auth/login/paciente');
     }
   };
 

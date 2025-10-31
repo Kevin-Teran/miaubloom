@@ -1,43 +1,46 @@
-/**
- * @file not-found.tsx
- * @route src/app/not-found.tsx
- * @description Página personalizada para errores 404 (No encontrado).
- * @author Kevin Mariano
- * @version 1.0.2
- * @since 1.0.0
- * @copyright MiauBloom
- */
-
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
-
-const THEME_COLOR = '#F1A8A9';
+import { Home } from 'lucide-react';
 
 export default function NotFound() {
   return (
-    <div className="flex flex-col min-h-screen items-center justify-center bg-white p-6 text-center">
-      {/* Error 404 */}
-      <div className="mb-6">
-        <h2 className="text-8xl font-bold" style={{ color: THEME_COLOR }}>
-          404
-        </h2>
+    <div className="flex flex-col min-h-screen items-center justify-center bg-gradient-to-b from-pink-50 to-white p-6">
+      <div className="max-w-md w-full text-center space-y-6">
+        {/* Imagen del gato - más compacta */}
+        <div className="relative w-48 h-48 mx-auto mb-2 -mt-20">
+          <Image
+            src="/assets/cat_404.png"
+            alt="Gato perdido 404"
+            width={192}
+            height={192}
+            className="object-contain drop-shadow-lg"
+            priority
+          />
+        </div>
+
+        {/* Texto del error */}
+        <div className="space-y-3">
+          <h2 className="text-3xl font-bold text-gray-800">
+            ¡Página no encontrada!
+          </h2>
+          <p className="text-gray-600 text-base leading-relaxed px-4">
+            Parece que esta página se perdió como un gato curioso. 
+            No te preocupes, te ayudaremos a encontrar el camino.
+          </p>
+        </div>
+
+        {/* Botón de acción */}
+        <Link
+          href="/"
+          style={{ backgroundColor: '#F1A8A9' }}
+          className="inline-flex items-center gap-2 px-10 py-4 rounded-full font-bold text-lg text-white shadow-lg hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 select-none"
+        >
+          <Home size={20} />
+          Volver al inicio
+        </Link>
       </div>
-
-      <h1 className="text-3xl font-bold mb-3" style={{ color: THEME_COLOR }}>
-        ¡Miau! Página no encontrada
-      </h1>
-      <p className="text-gray-600 text-base mb-8 max-w-xs">
-        No pudimos encontrar la página que buscabas. Quizás se escondió entre las flores.
-      </p>
-
-      <Link
-        href="/"
-        style={{ backgroundColor: THEME_COLOR }}
-        className="px-8 py-3 rounded-full font-bold text-lg text-white shadow-lg hover:shadow-xl active:scale-95 transition-all select-none inline-block"
-      >
-        Volver al inicio
-      </Link>
     </div>
   );
 }

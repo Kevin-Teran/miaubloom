@@ -84,29 +84,9 @@ export default function IdentificacionPage() {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        const response = await fetch('/api/auth/login');
-        if (response.ok) {
-           const authData = await response.json();
-           if (authData.success && authData.authenticated) {
-            const inicioPath = authData.user.rol === 'Paciente'
-              ? '/inicio/paciente' 
-              : '/inicio/psicologo'; 
-            console.log(`User authenticated (${authData.user.rol}), redirecting to ${inicioPath}...`); 
-            router.replace(inicioPath); 
-            return; 
-          }
-        }
-        setIsLoadingAuth(false);
-      } catch (error) {
-        console.error("Error checking authentication status:", error);
-        setIsLoadingAuth(false); 
-      }
-    };
-
-    checkAuthStatus();
-  }, [router]);
+    // Ya no necesitamos verificar aquí, el AuthContext se encarga
+    setIsLoadingAuth(false);
+  }, []);
 
   useLayoutEffect(() => {
      if (isLoadingAuth) return;

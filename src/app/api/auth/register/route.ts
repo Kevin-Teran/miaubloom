@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       email, password, nombreCompleto, rol,
       day, month, year, genero, contactoEmergencia, institucionReferida, nombreInstitucion,
       numeroRegistro, especialidad, tituloUniversitario,
-      idNombreAvatar, horarioUso, duracionUso
+      nicknameAvatar, horarioUso, duracionUso, fotoPerfil
     } = body;
 
     // Validación de datos básicos
@@ -84,6 +84,8 @@ export async function POST(request: NextRequest) {
         },
       });
 
+      console.log('Usuario creado:', user.id);
+
       // 2. Crear el perfil correspondiente
       if (rol === 'Paciente') {
         const fechaNacimiento = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
@@ -94,11 +96,14 @@ export async function POST(request: NextRequest) {
           contactoEmergencia,
           institucionReferida,
           nombreInstitucion: institucionReferida === 'Pública' ? nombreInstitucion : null,
-          nicknameAvatar: idNombreAvatar || 'Nikky01',
+          nicknameAvatar: nicknameAvatar || 'Nikky01',
+          fotoPerfil: fotoPerfil || '/assets/avatar-paciente.png',
           horarioUso,
           duracionUso,
         };
-        await tx.perfilPaciente.create({ data: perfilData as Parameters<typeof tx.perfilPaciente.create>[0]['data'] });
+        console.log('Intentando crear perfil paciente con datos:', perfilData);
+        const perfilCreado = await tx.perfilPaciente.create({ data: perfilData as Parameters<typeof tx.perfilPaciente.create>[0]['data'] });
+        console.log('Perfil paciente creado:', perfilCreado);
       } else if (rol === 'Psicólogo') {
         const perfilData: Record<string, unknown> = {
           userId: user.id,
@@ -106,11 +111,13 @@ export async function POST(request: NextRequest) {
           registroProfesional: numeroRegistro,
           especialidad,
           tituloUniversitario,
-          nicknameAvatar: idNombreAvatar || 'Avatar',
+          nicknameAvatar: nicknameAvatar || 'Avatar',
           horarioUso,
           duracionUso,
         };
-        await tx.perfilPsicologo.create({ data: perfilData as Parameters<typeof tx.perfilPsicologo.create>[0]['data'] });
+        console.log('Intentando crear perfil psicólogo con datos:', perfilData);
+        const perfilCreado = await tx.perfilPsicologo.create({ data: perfilData as Parameters<typeof tx.perfilPsicologo.create>[0]['data'] });
+        console.log('Perfil psicólogo creado:', perfilCreado);
       }
       return user;
     });
@@ -141,6 +148,15 @@ export async function POST(request: NextRequest) {
     
     if (error instanceof Error) {
       errorMessage = error.message;
+      console.error('Stack:', error.stack);
+    } else {
+      console.error('Error desconocido:', JSON.stringify(error));
+    }
+    
+    // Comprobar si es un error de Prisma
+    if (error instanceof Error && 'code' in error) {
+      console.error('Código de error Prisma:', (error as Record<string, unknown>).code);
+      console.error('Meta:', (error as Record<string, unknown>).meta);
     }
     
     return NextResponse.json({ success: false, message: errorMessage }, { status: 500 });

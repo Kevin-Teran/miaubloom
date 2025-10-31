@@ -48,6 +48,7 @@ model PerfilPaciente {
   institucionReferida  String    @default("Privada")
   nombreInstitucion    String?   @map("nombre_institucion")
   nicknameAvatar       String    @map("nickname_avatar")
+  fotoPerfil           String?   @default("/assets/avatar-paciente.png") @map("foto_perfil")
   horarioUso           String?   @default("No especificado") @map("horario_uso")
   duracionUso          String?   @default("No especificado") @map("duracion_uso")
   
@@ -72,6 +73,7 @@ model PerfilPsicologo {
   especialidad         String
   tituloUniversitario  String    @map("titulo_universitario")
   nicknameAvatar       String?   @default("Avatar") @map("nickname_avatar")
+  fotoPerfil           String?   @default("/assets/avatar-psicologo.png") @map("foto_perfil")
   horarioUso           String?   @default("No especificado") @map("horario_uso")
   duracionUso          String?   @default("No especificado") @map("duracion_uso")
   

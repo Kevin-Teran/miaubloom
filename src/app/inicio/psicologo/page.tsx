@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = 'force-dynamic';
+
 /**
  * @file page.tsx
  * @route src/app/inicio/psicologo/page.tsx
@@ -10,41 +12,75 @@
  * @copyright MiauBloom
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import LoadingIndicator from '@/components/ui/LoadingIndicator';
 import Link from 'next/link';
+import { useRouteProtection } from '@/hooks/useRouteProtection';
 
-// --- PLACEHOLDER HOOK DE AUTENTICACIÓN ---
-const useAuth = () => {
-    const [user, setUser] = useState<{ nombreCompleto: string; rol: string; avatarUrl?: string } | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+// Interfaz para Paciente
+interface Paciente {
+  id: string;
+  nombre: string;
+  avatar: string;
+  status: string;
+}
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            setIsLoading(true);
-            try {
-                const response = await fetch('/api/auth/login');
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success && data.authenticated) {
-                        setUser({
-                            nombreCompleto: data.user.nombreCompleto,
-                            rol: data.user.rol,
-                            avatarUrl: "/assets/avatar-psicologo.png"
-                        });
-                    } else { setUser(null); }
-                } else { setUser(null); }
-            } catch (error) { console.error("Error fetching auth status:", error); setUser(null); }
-            finally { setIsLoading(false); }
-        };
-        fetchUser();
-    }, []);
+// Componente Modal de Todos los Pacientes
+const PatientesModal = ({ 
+  pacientes, 
+  onClose 
+}: { 
+  pacientes: Paciente[]; 
+  onClose: () => void;
+}) => {
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-end lg:items-center justify-center">
+      <div className="bg-white w-full lg:w-2/3 lg:max-w-2xl rounded-t-3xl lg:rounded-3xl shadow-2xl max-h-[85vh] overflow-hidden flex flex-col animate-in">
+        {/* Header */}
+        <div className="flex justify-between items-center p-6 border-b border-gray-200 sticky top-0 bg-white">
+          <h2 className="text-2xl font-bold text-gray-800">Todos mis pacientes</h2>
+          <button
+            onClick={onClose}
+            className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors"
+            aria-label="Cerrar"
+          >
+            <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-    return { user, isLoading };
+        {/* Lista scrolleable */}
+        <div className="overflow-y-auto flex-1 px-4 py-4">
+          <div className="space-y-3">
+            {pacientes.map((paciente) => (
+              <div
+                key={paciente.id}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-4 border border-gray-100"
+              >
+                <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 flex-shrink-0" style={{ borderColor: 'var(--color-theme-primary-light)' }}>
+                  <Image src={paciente.avatar} alt={paciente.nombre} fill className="object-cover pointer-events-none" unoptimized />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-800 mb-1">{paciente.nombre}</h3>
+                  <span className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
+                    paciente.status === 'Estable' 
+                      ? 'bg-green-100 text-green-600' 
+                      : 'bg-orange-100 text-orange-600'
+                  }`}>
+                    {paciente.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
-// --- FIN PLACEHOLDER HOOK ---
 
 // Componente de Card de Paciente
 const PatientCard = ({ 
@@ -138,10 +174,37 @@ const NavButton = ({ href, icon, label, isActive = false }: { href: string; icon
 
 export default function InicioPsicologoPage() {
     const router = useRouter();
-    const { user, isLoading } = useAuth();
+    const { user, hasAccess, isLoading } = useRouteProtection(['Psicólogo']);
+    const [pacientes, setPacientes] = useState<Paciente[]>([]);
+    const [showAllModal, setShowAllModal] = useState(false);
 
-    // Estado de carga
-    if (isLoading || !user) {
+    // Cargar pacientes del psicólogo
+    useEffect(() => {
+        const fetchPacientes = async () => {
+            try {
+                const response = await fetch('/api/psicologo/pacientes');
+                if (response.ok) {
+                    const data = await response.json();
+                    const formattedPacientes = (data.pacientes || []).map((p: Record<string, unknown>) => ({
+                        id: p.userId as string,
+                        nombre: p.nombreCompleto as string,
+                        avatar: (p.fotoPerfil as string) || '/assets/avatar-paciente.png',
+                        status: (p.status as string) || 'Estable'
+                    }));
+                    setPacientes(formattedPacientes);
+                }
+            } catch (error) {
+                console.error('Error fetching pacientes:', error);
+            }
+        };
+
+        if (hasAccess) {
+            fetchPacientes();
+        }
+    }, [hasAccess]);
+
+    // Estado de carga o sin acceso
+    if (isLoading || !hasAccess) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-pink-100 via-white to-white">
                 <LoadingIndicator
@@ -158,22 +221,25 @@ export default function InicioPsicologoPage() {
     const formattedMonth = currentDate.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '').toUpperCase();
     const themeColor = 'var(--color-theme-primary)';
 
-    // Placeholder lista de pacientes
-    const pacientes = [
-        { id: 1, nombre: "Lucas Luna", avatar: "/assets/avatar-paciente.png", status: "Estable" },
-        { id: 2, nombre: "Mia Paz", avatar: "/assets/avatar-paciente.png", status: "Ansiedad" },
-        { id: 3, nombre: "Ana Sofía", avatar: "/assets/avatar-paciente.png", status: "Estable" },
-        { id: 4, nombre: "Carlos Ruiz", avatar: "/assets/avatar-paciente.png", status: "Estable" },
-        { id: 5, nombre: "María López", avatar: "/assets/avatar-paciente.png", status: "Ansiedad" },
-    ];
-
     // Función para cerrar sesión
     const handleSignOut = async () => {
         try {
-            await fetch('/api/auth/logout', { method: 'POST' });
+            const response = await fetch('/api/auth/logout', { method: 'POST' });
+            if (response.ok) {
+                // Limpiar localStorage si la aplicación lo usa
+                if (typeof window !== 'undefined') {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                }
+                // Redirigir y recargar para asegurar que se limpie el contexto
+                router.push('/identificacion');
+                // Delay para permitir que la redirección y logout se procesen
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            }
         } catch (error) {
             console.error("Error al cerrar sesión:", error);
-        } finally {
             router.push('/identificacion');
         }
     };
@@ -202,12 +268,12 @@ export default function InicioPsicologoPage() {
                 {/* Saludo y Avatar */}
                 <section className="flex items-center justify-between mb-6 px-2">
                     <div>
-                        <h2 className="text-xl font-semibold text-gray-700">Hola, {user.nombreCompleto}!</h2>
+                        <h2 className="text-xl font-semibold text-gray-700">Hola, {user!.nombreCompleto}!</h2>
                         <p className="text-gray-500 text-sm">Empecemos</p>
                     </div>
                     <div className="relative w-16 h-16 pointer-events-none">
                         <Image
-                            src={user.avatarUrl || "/assets/avatar-psicologo.png"}
+                            src={user!.avatarUrl || "/assets/avatar-psicologo.png"}
                             alt="Avatar Psicólogo"
                             fill
                             className="object-contain"
@@ -231,13 +297,13 @@ export default function InicioPsicologoPage() {
                     <section>
                         <div className="flex justify-between items-center mb-3">
                             <h3 className="text-lg font-semibold text-gray-800">Mis pacientes</h3>
-                            <Link href="/inicio/psicologo/pacientes" className="text-sm text-pink-500 hover:underline">Ver todos ({pacientes.length})</Link>
+                            <button onClick={() => setShowAllModal(true)} className="text-sm text-pink-500 hover:underline">Ver todos ({pacientes.length})</button>
                         </div>
                         <div className="flex space-x-4 overflow-x-auto pb-2 -mx-2 px-2">
-                            {pacientes.map(paciente => (
-                                <Link href={`/inicio/psicologo/paciente/${paciente.id}`} key={paciente.id} className="flex-shrink-0 w-20 text-center group block">
+                            {pacientes.slice(0, 5).map((paciente, index) => (
+                                <Link href={`/inicio/psicologo/paciente/${paciente.id}`} key={paciente.id || index} className="flex-shrink-0 w-20 text-center group block">
                                     <div className="relative w-16 h-16 mx-auto mb-1 rounded-full overflow-hidden border-2 border-pink-100 group-hover:border-pink-300 transition-colors">
-                                        <Image src={paciente.avatar} alt={paciente.nombre} fill className="object-cover pointer-events-none" />
+                                        <Image src={paciente.avatar} alt={paciente.nombre} fill className="object-cover pointer-events-none" unoptimized />
                                     </div>
                                     <span className="block text-xs font-medium text-gray-700 truncate">{paciente.nombre}</span>
                                     <span className={`block text-[10px] ${paciente.status === 'Estable' ? 'text-green-500' : 'text-orange-500'}`}>{paciente.status}</span>
@@ -344,7 +410,7 @@ export default function InicioPsicologoPage() {
                             <Link href="/perfil/psicologo" className="flex items-center gap-3 hover:bg-gray-50 rounded-full pl-3 pr-4 py-2 transition-colors">
                                 <div className="w-10 h-10 relative">
                                     <Image
-                                        src={user.avatarUrl || "/assets/avatar-psicologo.png"}
+                                        src={user!.avatarUrl || "/assets/avatar-psicologo.png"}
                                         alt="Avatar"
                                         fill
                                         className="object-contain rounded-full"
@@ -352,7 +418,7 @@ export default function InicioPsicologoPage() {
                                     />
                                 </div>
                                 <div className="text-left">
-                                    <p className="text-sm font-semibold text-gray-800">{user.nombreCompleto}</p>
+                                    <p className="text-sm font-semibold text-gray-800">{user!.nombreCompleto}</p>
                                     <p className="text-xs text-gray-500">Psicólogo</p>
                                 </div>
                             </Link>
@@ -371,7 +437,7 @@ export default function InicioPsicologoPage() {
                             <div className="bg-gradient-to-br from-[var(--color-theme-primary-light)] to-[var(--color-theme-primary-light)]/60 rounded-3xl p-6 text-center shadow-lg">
                                 <div className="w-32 h-32 relative mx-auto mb-4">
                                     <Image
-                                        src={user.avatarUrl || "/assets/avatar-psicologo.png"}
+                                        src={user!.avatarUrl || "/assets/avatar-psicologo.png"}
                                         alt="Avatar"
                                         fill
                                         className="object-contain"
@@ -380,7 +446,7 @@ export default function InicioPsicologoPage() {
                                     />
                                 </div>
                                 <h2 className="text-xl font-bold text-gray-800 mb-2">
-                                    ¡Hola, Dr. {user.nombreCompleto.split(' ')[0]}!
+                                    ¡Hola, Dr. {user!.nombreCompleto.split(' ')[0]}!
                                 </h2>
                                 <p className="text-gray-600">
                                     Empecemos el día
@@ -443,9 +509,9 @@ export default function InicioPsicologoPage() {
                             <section>
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-2xl font-bold text-gray-800">Mis pacientes</h3>
-                                    <Link href="/inicio/psicologo/pacientes" className="text-sm hover:text-opacity-80 font-semibold transition-colors" style={{ color: 'var(--color-theme-primary)' }}>
+                                    <button onClick={() => setShowAllModal(true)} className="text-sm hover:text-opacity-80 font-semibold transition-colors" style={{ color: 'var(--color-theme-primary)' }}>
                                         Ver todos ({pacientes.length}) →
-                                    </Link>
+                                    </button>
                                 </div>
                                 <div className="space-y-3">
                                     {pacientes.slice(0, 4).map((paciente) => (
@@ -511,6 +577,11 @@ export default function InicioPsicologoPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Modal de Todos los Pacientes */}
+            {showAllModal && (
+                <PatientesModal pacientes={pacientes} onClose={() => setShowAllModal(false)} />
+            )}
         </>
     );
 }

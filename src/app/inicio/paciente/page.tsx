@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = 'force-dynamic';
+
 /**
  * @file page.tsx
  * @route src/app/inicio/paciente/page.tsx
@@ -10,12 +12,27 @@
  * @copyright MiauBloom
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import LoadingIndicator from '@/components/ui/LoadingIndicator';
 import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext';
+import { useRouteProtection } from '@/hooks/useRouteProtection';
+
+// Tipos para tareas
+interface Tarea {
+    id: number;
+    titulo: string;
+    descripcion: string;
+    etiqueta: string;
+}
+
+// Tipos para estadísticas de emociones
+interface Estadistica {
+    nombre: string;
+    porcentaje: number;
+    color: string;
+}
 
 // Componente de Tarea
 const TaskCard = ({ 
@@ -164,23 +181,84 @@ const NavButton = ({
 
 export default function InicioPacientePage() {
     const router = useRouter();
-    const { user, isLoading } = useAuth();
-    const [tasks, setTasks] = useState([
-        {
-            id: 1,
-            title: "Actividad del día: Encuentra tres cosas",
-            description: "Busca tres cosas a tu alrededor que te hagan sentir en calma y enfócate en ellas durante 5 minutos.",
-            tag: "Práctica",
-            isCompleted: false
-        },
-        {
-            id: 2,
-            title: "Enumera 10 cosas de la vida que te hagan sentir agradecido/a",
-            description: "Toma un momento para reflexionar sobre las cosas positivas en tu vida.",
-            tag: "Reflexión",
-            isCompleted: false
+    const { user, hasAccess, isLoading } = useRouteProtection(['Paciente']);
+    
+    // Estados para datos reales
+    const [tasks, setTasks] = useState<Array<{
+        id: number;
+        title: string;
+        description: string;
+        tag: string;
+        isCompleted: boolean;
+    }>>([]);
+    
+    const [emotionStats, setEmotionStats] = useState<Array<{
+        name: string;
+        percentage: number;
+        color: string;
+    }>>([]);
+    
+    const [loadingStats, setLoadingStats] = useState(true);
+
+    // Cargar tareas al montar el componente
+    useEffect(() => {
+        const fetchTasks = async () => {
+            try {
+                const response = await fetch('/api/tareas/list');
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Mapear tareas a formato del componente
+                    const formattedTasks = data.tareas.map((tarea: Tarea) => ({
+                        id: tarea.id,
+                        title: tarea.titulo,
+                        description: tarea.descripcion,
+                        tag: tarea.etiqueta,
+                        isCompleted: tarea.etiqueta === 'Completada'
+                    }));
+                    
+                    setTasks(formattedTasks);
+                }
+            } catch (error) {
+                console.error('Error fetching tasks:', error);
+            } finally {
+                // No necesitamos setLoadingTasks
+            }
+        };
+
+        if (hasAccess) {
+            fetchTasks();
         }
-    ]);
+    }, [hasAccess]);
+
+    // Cargar estadísticas de emociones
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const response = await fetch('/api/actividades/estadisticas');
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Mapear estadísticas a formato del componente
+                    const formattedStats = data.estadisticas.map((stat: Estadistica) => ({
+                        name: stat.nombre,
+                        percentage: stat.porcentaje,
+                        color: stat.color
+                    }));
+                    
+                    setEmotionStats(formattedStats);
+                }
+            } catch (error) {
+                console.error('Error fetching statistics:', error);
+            } finally {
+                setLoadingStats(false);
+            }
+        };
+
+        if (hasAccess) {
+            fetchStats();
+        }
+    }, [hasAccess]);
 
     const toggleTask = (id: number) => {
         setTasks(tasks.map(task => 
@@ -191,16 +269,28 @@ export default function InicioPacientePage() {
     // Función para cerrar sesión
     const handleSignOut = async () => {
         try {
-            await fetch('/api/auth/logout', { method: 'POST' });
+            const response = await fetch('/api/auth/logout', { method: 'POST' });
+            if (response.ok) {
+                // Limpiar localStorage si la aplicación lo usa
+                if (typeof window !== 'undefined') {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                }
+                // Redirigir y recargar para asegurar que se limpie el contexto
+                router.push('/identificacion');
+                // Delay para permitir que la redirección y logout se procesen
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            }
         } catch (error) {
             console.error("Error al cerrar sesión:", error);
-        } finally {
             router.push('/identificacion');
         }
     };
 
-    // Estado de carga
-    if (isLoading || !user) {
+    // Estado de carga o sin acceso
+    if (isLoading || !hasAccess) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-pink-100 via-pink-50 to-white">
                 <LoadingIndicator
@@ -271,7 +361,7 @@ export default function InicioPacientePage() {
 
                         {/* Saludo */}
                         <h2 className="text-xl font-bold text-white drop-shadow-md mb-1">
-                            Hola, {user.nickname}!
+                            Hola, {user!.nickname}!
                         </h2>
                         <p className="text-white/90 text-sm font-medium drop-shadow mb-4">
                             ¿Cómo te sientes hoy?
@@ -330,24 +420,25 @@ export default function InicioPacientePage() {
                             </h3>
                             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-md">
                                 <div className="flex justify-around items-start">
-                                    <EmotionChart
-                                        name="Margarita"
-                                        percentage={95}
-                                        color="#22D3EE"
-                                        dots={10}
-                                    />
-                                    <EmotionChart
-                                        name="Girasol"
-                                        percentage={75}
-                                        color="#FCD34D"
-                                        dots={10}
-                                    />
-                                    <EmotionChart
-                                        name="Cardo"
-                                        percentage={65}
-                                        color="#C084FC"
-                                        dots={10}
-                                    />
+                                    {loadingStats ? (
+                                        <div className="flex justify-around w-full">
+                                            <div className="text-gray-400">Cargando...</div>
+                                        </div>
+                                    ) : emotionStats.length > 0 ? (
+                                        emotionStats.map((stat) => (
+                                            <EmotionChart
+                                                key={stat.name}
+                                                name={stat.name}
+                                                percentage={stat.percentage}
+                                                color={stat.color}
+                                                dots={10}
+                                            />
+                                        ))
+                                    ) : (
+                                        <div className="text-gray-400 w-full text-center">
+                                            Sin datos de actividad aún
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </section>
@@ -459,7 +550,7 @@ export default function InicioPacientePage() {
                             <Link href="/perfil/paciente" className="flex items-center gap-3 hover:bg-gray-50 rounded-full pl-3 pr-4 py-2 transition-colors">
                                 <div className="w-10 h-10 relative">
                                     <Image
-                                        src={user.avatarUrl || "/assets/avatar-paciente.png"}
+                                        src={user!.avatarUrl || "/assets/avatar-paciente.png"}
                                         alt="Avatar"
                                         fill
                                         className="object-contain rounded-full"
@@ -467,7 +558,7 @@ export default function InicioPacientePage() {
                                     />
                                 </div>
                                 <div className="text-left">
-                                    <p className="text-sm font-semibold text-gray-800">{user.nickname}</p>
+                                    <p className="text-sm font-semibold text-gray-800">{user!.nickname}</p>
                                     <p className="text-xs text-gray-500">Paciente</p>
                                 </div>
                             </Link>
@@ -493,7 +584,7 @@ export default function InicioPacientePage() {
                                     />
                                 </div>
                                 <h2 className="text-xl font-bold text-gray-800 mb-2">
-                                    ¡Hola, {user.nickname}!
+                                    ¡Hola, {user!.nickname}!
                                 </h2>
                                 <p className="text-gray-600">
                                     ¿Cómo te sientes hoy?
@@ -580,24 +671,23 @@ export default function InicioPacientePage() {
                             <section>
                                 <h3 className="text-xl font-bold text-gray-800 mb-4">Mi actividad</h3>
                                 <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg space-y-6">
-                                    <EmotionChart
-                                        name="Margarita"
-                                        percentage={95}
-                                        color="#22D3EE"
-                                        dots={10}
-                                    />
-                                    <EmotionChart
-                                        name="Girasol"
-                                        percentage={75}
-                                        color="#FCD34D"
-                                        dots={10}
-                                    />
-                                    <EmotionChart
-                                        name="Cardo"
-                                        percentage={65}
-                                        color="#C084FC"
-                                        dots={10}
-                                    />
+                                    {loadingStats ? (
+                                        <div className="text-gray-400 text-center py-6">Cargando...</div>
+                                    ) : emotionStats.length > 0 ? (
+                                        emotionStats.map((stat) => (
+                                            <EmotionChart
+                                                key={stat.name}
+                                                name={stat.name}
+                                                percentage={stat.percentage}
+                                                color={stat.color}
+                                                dots={10}
+                                            />
+                                        ))
+                                    ) : (
+                                        <div className="text-gray-400 text-center py-6">
+                                            Sin datos de actividad aún
+                                        </div>
+                                    )}
                                 </div>
                             </section>
                         </aside>

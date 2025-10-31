@@ -15,6 +15,7 @@ import Link from 'next/link';
 import React, { Suspense, useState, ChangeEvent, FormEvent } from 'react';
 import Input from '@/components/ui/Input';
 import { EllipseCorner } from '@/components/EllipseCorner';
+import { ProfilePhotoSection } from '@/components/profile/ProfilePhotoSection';
 
 function PaginationDots({ current, total, color = 'var(--color-theme-primary)', inactiveColor = 'var(--color-theme-primary-light)' }: { current: number; total: number; color?: string; inactiveColor?: string }) {
  return (
@@ -50,7 +51,7 @@ function RegisterForm() {
     day: '', month: '', year: '', genero: '', contactoEmergencia: '', institucionReferida: 'Privada', nombreInstitucion: '',
     // Campos Psicólogo
     numeroRegistro: '', especialidad: '', tituloUniversitario: '',
-    idNombreAvatar: 'Nikky01', horarioUso: '', duracionUso: '',
+    nicknameAvatar: '', horarioUso: '', duracionUso: '', fotoPerfil: '/assets/avatar-paciente.png',
    });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -84,7 +85,9 @@ function RegisterForm() {
         if (!formData.tituloUniversitario.trim()) { newErrors.tituloUniversitario = 'Título requerido'; isValid = false; }
       }
     } else if (step === 2) {
-      if (!formData.idNombreAvatar.trim()) { newErrors.idNombreAvatar = 'ID Avatar requerido'; isValid = false; }
+      if (!formData.nicknameAvatar || formData.nicknameAvatar.trim() === '') { newErrors.nicknameAvatar = 'El nombre de usuario es requerido'; isValid = false; }
+      if (formData.nicknameAvatar && (formData.nicknameAvatar.length < 3 || formData.nicknameAvatar.length > 20)) { newErrors.nicknameAvatar = 'Debe tener entre 3 y 20 caracteres'; isValid = false; }
+      if (!formData.fotoPerfil || formData.fotoPerfil.trim() === '') { newErrors.fotoPerfil = 'Selecciona un avatar o sube una foto'; isValid = false; }
       if (!formData.horarioUso) { newErrors.horarioUso = 'Selecciona un horario'; isValid = false; }
       if (!formData.duracionUso) { newErrors.duracionUso = 'Selecciona una duración'; isValid = false; }
     }
@@ -150,7 +153,7 @@ function RegisterForm() {
           COLUMNA IZQUIERDA - SOLO DESKTOP
       ============================================ */}
       <div className="hidden lg:flex lg:w-1/2 bg-white relative items-center justify-center p-12">
-        <div className="max-w-md text-center space-y-8">
+        <div className="max-w-md text-center space-y-8 select-none">
           {/* Logo o ilustración */}
           <div className="relative w-64 h-64 mx-auto">
             <div className="w-full h-full rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-theme-primary-light)', opacity: 0.2 }}>
@@ -178,7 +181,7 @@ function RegisterForm() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <div>
+              <div className="pointer-events-none">
                 <h3 className="font-semibold text-gray-800 mb-1">Proceso rápido</h3>
                 <p className="text-gray-600 text-sm">Solo 3 simples pasos para comenzar</p>
               </div>
@@ -190,7 +193,7 @@ function RegisterForm() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
-              <div>
+              <div className="pointer-events-none">
                 <h3 className="font-semibold text-gray-800 mb-1">100% seguro</h3>
                 <p className="text-gray-600 text-sm">Tus datos están protegidos</p>
               </div>
@@ -202,7 +205,7 @@ function RegisterForm() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
               </div>
-              <div>
+              <div className="pointer-events-none">
                 <h3 className="font-semibold text-gray-800 mb-1">Personalizado</h3>
                 <p className="text-gray-600 text-sm">Adaptado a tus necesidades</p>
               </div>
@@ -217,9 +220,16 @@ function RegisterForm() {
       <div className="flex flex-col flex-1 lg:w-1/2 p-6 lg:p-12 lg:overflow-y-auto relative">
         {/* Botón de retroceso */}
         <button 
-          onClick={() => currentStep > 0 ? setCurrentStep(currentStep - 1) : router.push('/identificacion')} 
+          onClick={() => {
+            if (currentStep > 0) {
+              setCurrentStep(currentStep - 1);
+            } else {
+              const redirectPath = isPatient ? '/bienvenido/paciente' : '/inicio/psicologo';
+              router.push(redirectPath);
+            }
+          }}
           style={{ backgroundColor: themeColor }} 
-          className="absolute top-8 left-6 lg:top-12 lg:left-12 flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-full text-white hover:opacity-90 transition-opacity z-10 cursor-pointer shadow-md" 
+          className="absolute top-6 left-6 lg:top-4 lg:left-4 flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-full text-white hover:opacity-90 transition-opacity z-10 cursor-pointer shadow-md" 
           aria-label="Volver"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
@@ -238,15 +248,6 @@ function RegisterForm() {
                 {subtitles[currentStep]}
               </p>
             </div>
-
-            {/* Avatar preview (último paso) */}
-            {isLastStep && (
-              <div className="flex justify-center mb-4 lg:mb-6">
-                <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden shadow-lg">
-                  <span className="text-gray-400 text-sm lg:text-base">Perfil</span>
-                </div>
-              </div>
-            )}
 
             {/* Formulario */}
             <form onSubmit={handleNextOrSubmit} className="space-y-3 lg:space-y-4">
@@ -525,22 +526,40 @@ function RegisterForm() {
               {/* PASO 2: Personalización */}
               {currentStep === 2 && (
                 <>
-                  <div className="text-center mb-2">
+                  <div className="text-center mb-4">
                     <span className="font-semibold text-lg lg:text-xl text-gray-900">{formData.nombreCompleto}</span>
                   </div>
-                  <Input 
-                    label="ID Nombre avatar" 
-                    type="text" 
-                    id="idNombreAvatar" 
-                    name="idNombreAvatar" 
-                    value={formData.idNombreAvatar} 
-                    onChange={handleInputChange} 
-                    placeholder="Nikky01" 
-                    error={errors.idNombreAvatar} 
-                    disabled={isLoading} 
-                    className={`bg-white border-gray-300 rounded-full text-gray-900 placeholder-gray-400 focus:border-[${themeColor}] focus:ring-1 focus:ring-[${themeColor}] px-5 py-3 lg:py-3.5`} 
-                    labelClassName="text-gray-900 font-semibold mb-1 ml-3 text-sm lg:text-base"
-                  />
+
+                  {/* Avatar / Foto de Perfil Selection */}
+                  <div className="mb-6">
+                    <ProfilePhotoSection 
+                      currentPhoto={formData.fotoPerfil} 
+                      onPhotoChange={(photo) => {
+                        setFormData(prev => ({ ...prev, fotoPerfil: photo }));
+                      }}
+                      userRole={role === 'psicologo' ? 'psicologo' : 'paciente'}
+                      availableAvatars={role === 'paciente' ? [
+                        '/assets/avatar-paciente.png',
+                        '/assets/gato-inicio-1.png',
+                        '/assets/gato-inicio-2.png'
+                      ] : ['/assets/avatar-psicologo.png']}
+                    />
+                  </div>
+                  
+                  {/* Nombre de Usuario */}
+                  <div className="mb-6">
+                    <Input
+                      type="text"
+                      label="Nombre de Usuario"
+                      name="nicknameAvatar"
+                      placeholder="Tu nickname (3-20 caracteres)"
+                      value={formData.nicknameAvatar}
+                      onChange={handleInputChange}
+                      disabled={isLoading}
+                      error={errors.nicknameAvatar}
+                      maxLength={20}
+                    />
+                  </div>
                   
                   <div>
                     <label className="block text-sm lg:text-base font-semibold text-gray-900 mb-2 ml-3">Horario de Uso</label>
