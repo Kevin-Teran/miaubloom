@@ -152,7 +152,7 @@ export default function IdentificacionPage() {
       {/* Contenido Principal */}
       <div className="flex flex-col items-center justify-center flex-1 relative z-10 w-full max-w-md">
         <header className="w-full text-center mb-12">
-          <Image src="/assets/logo.svg" alt="Logo de MiauBloom" width={80} height={80} priority style={{ height: 'auto', width: 'auto' }} className="mx-auto drop-shadow-md mb-4 pointer-events-none" />
+          <Image src="/assets/logo-2.png" alt="Logo de MiauBloom" width={80} height={80} priority style={{ height: 'auto', width: 'auto' }} className="mx-auto drop-shadow-md mb-4 pointer-events-none" />
           <Image src="/assets/MiauBloom-r.svg" alt="MiauBloom Crece y siente" width={200} height={60} style={{ height: 'auto', width: 'auto' }} className="mx-auto pointer-events-none" />
         </header>
         <main className="w-full flex flex-col items-center mb-12">
