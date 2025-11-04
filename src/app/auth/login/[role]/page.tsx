@@ -14,7 +14,8 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import React, { Suspense, useState } from 'react'; 
 import Input from '@/components/ui/Input';
-import { EllipseCorner } from '@/components/EllipseCorner'; 
+import { EllipseCorner } from '@/components/EllipseCorner';
+import IconButton from '@/components/ui/IconButton'; 
 
 /**
  * @component LoginForm
@@ -84,7 +85,15 @@ function LoginForm() {
         if (data.success) { 
             const dashboardRoute = isPatient ? '/inicio/paciente' : '/inicio/psicologo';
             const completeProfileRoute = isPatient ? '/auth/complete-profile/paciente' : '/auth/complete-profile/psicologo';
-            router.push(data.user.perfilCompleto ? dashboardRoute : completeProfileRoute); 
+            
+            // DETERMINAR LA RUTA DE DESTINO
+            const destinationRoute = data.user.perfilCompleto ? dashboardRoute : completeProfileRoute;
+            
+            // ¡ESTA ES LA CORRECCIÓN!
+            // Forzar una recarga completa (hard refresh) en lugar de un router.push()
+            // Esto asegura que AuthContext se recargue y lea la nueva cookie de sesión.
+            window.location.href = destinationRoute;
+            
         } else {
             setApiError(data.message || 'Error al iniciar sesión'); 
         }
@@ -181,20 +190,15 @@ function LoginForm() {
           COLUMNA DERECHA - FORMULARIO
       ============================================ */}
       <div className="flex flex-col flex-1 lg:w-1/2 p-6 lg:p-12 relative">
-        {/* Botón de retroceso */}
-        <button
-          onClick={() => {
-            const redirectPath = isPatient ? '/bienvenido/paciente' : '/inicio/psicologo';
-            router.push(redirectPath);
-          }}
-          style={{ backgroundColor: themeColor }}
-          className="absolute top-6 left-6 lg:top-4 lg:left-4 flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-full text-white hover:opacity-90 transition-opacity z-10 cursor-pointer shadow-md"
+        {/* --- BOTÓN VOLVER ESTANDARIZADO --- */}
+        <IconButton
+          icon="back"
+          onClick={() => router.back()}
+          bgColor={themeColor}
+          className="absolute top-6 left-6 lg:top-4 lg:left-4 z-10 shadow-md"
           aria-label="Volver"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
+        />
+        {/* --- FIN BOTÓN VOLVER --- */}
 
         <main className="flex-grow flex flex-col items-center justify-center">
           <div className="w-full max-w-sm lg:max-w-md">

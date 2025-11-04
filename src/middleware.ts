@@ -1,45 +1,85 @@
-import { NextRequest, NextResponse } from 'next/server';
-
 /**
- * Middleware de protección de rutas por rol
- * Redirija automáticamente según el rol del usuario
+ * @file middleware.ts
+ * @route src/middleware.ts
+ * @description Middleware para proteger rutas y validar JWT en el servidor
+ * @author Kevin Mariano
+ * @version 1.0.0
+ * @since 1.0.0
+ * @copyright MiauBloom
  */
-export function middleware(request: NextRequest) {
-  const pathname = request.nextUrl.pathname;
-  
-  // Rutas públicas que no requieren redirección
-  const publicRoutes = ['/identificacion', '/auth'];
-  if (publicRoutes.some(route => pathname.startsWith(route))) {
+
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { jwtVerify } from 'jose';
+
+// Clave secreta para VERIFICAR el token. DEBE SER LA MISMA que usas en login/register.
+const SECRET_KEY = new TextEncoder().encode(
+  process.env.JWT_SECRET_KEY || 'tu-clave-secreta-muy-segura-aqui'
+);
+
+// Función para verificar el JWT (la cookie de sesión)
+async function verifyAuth(token: string): Promise<Record<string, unknown> | null> {
+  if (!token) {
+    return null;
+  }
+  try {
+    // La clave secreta se usa aquí
+    const { payload } = await jwtVerify(token, SECRET_KEY);
+    return payload as Record<string, unknown>; // Devuelve el { userId, rol, ... }
+  } catch (err) {
+    console.warn('Verificación de JWT fallida:', err instanceof Error ? err.message : String(err));
+    return null;
+  }
+}
+
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const sessionToken = request.cookies.get('miaubloom_session')?.value;
+
+  // Verificar si hay token válido
+  let isAuthenticated = false;
+  let userRole: string | undefined;
+
+  if (sessionToken) {
+    const payload = await verifyAuth(sessionToken);
+    if (payload) {
+      isAuthenticated = true;
+      userRole = payload.rol as string;
+    }
+  }
+
+  // Rutas públicas que NO requieren autenticación
+  const publicRoutes = ['/', '/identificacion', '/bienvenido', '/auth'];
+  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route) || pathname === route);
+
+  // Si es ruta pública
+  if (isPublicRoute) {
+    // Si está logueado y va a auth/login/register, redirigir a su dashboard
+    if (isAuthenticated && pathname.startsWith('/auth')) {
+      const dashboardUrl = userRole === 'Paciente' ? '/inicio/paciente' : '/inicio/psicologo';
+      return NextResponse.redirect(new URL(dashboardUrl, request.url));
+    }
+    // Permitir acceso a rutas públicas
     return NextResponse.next();
   }
 
-  // Obtener la cookie de sesión
-  const sessionCookie = request.cookies.get('miaubloom_session');
-  
-  // Si no hay sesión, no hacer nada aquí (el cliente lo manejará)
-  if (!sessionCookie) {
-    return NextResponse.next();
+  // Si la ruta NO es pública, requiere autenticación
+  // Si NO hay token válido, redirigir a /identificacion
+  if (!isAuthenticated) {
+    return NextResponse.redirect(new URL('/identificacion', request.url));
   }
 
-  // Rutas protegidas según rol
-  const pacienteRoutes = ['/inicio/paciente', '/perfil/paciente', '/ajustes/paciente', '/chat/paciente', '/tareas'];
-  const psicologoRoutes = ['/inicio/psicologo', '/perfil/psicologo', '/ajustes/psicologo', '/chat/psicologo'];
-  
-  // Si intenta acceder a rutas de paciente pero es psicólogo, redirigir al inicio del psicólogo
-  if (pacienteRoutes.some(route => pathname.startsWith(route))) {
-    // El hook en la página lo manejará
-    return NextResponse.next();
-  }
-  
-  // Si intenta acceder a rutas de psicólogo pero es paciente, redirigir al inicio del paciente
-  if (psicologoRoutes.some(route => pathname.startsWith(route))) {
-    // El hook en la página lo manejará
-    return NextResponse.next();
-  }
-
+  // Si llegó aquí, está autenticado. Permitir acceso
   return NextResponse.next();
 }
 
+// Configuración del Matcher
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|public).*)'],
+  matcher: [
+    /*
+     * Coincidir con todas las rutas excepto las que son para archivos estáticos,
+     * API, imágenes, o rutas internas de Next.js.
+     */
+    '/((?!api|_next/static|_next/image|assets|favicon.ico|manifest.json|icons/).*)',
+  ],
 };

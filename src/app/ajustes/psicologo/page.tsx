@@ -20,12 +20,12 @@ import Image from 'next/image';
 import LoadingIndicator from '@/components/ui/LoadingIndicator'; //
 // <<<--- CORRECCIÓN DE RUTA DE IMPORTACIÓN --->>>
 import { SettingsItemLink, AccountSettingsItemLink, ToggleItem } from '../SettingsComponents'; //
-import { useRouteProtection } from '@/hooks/useRouteProtection';
+import { useAuth } from '@/context/AuthContext';
 
 
 export default function AjustesPsicologoPage() {
     const router = useRouter();
-    const { user, hasAccess, isLoading } = useRouteProtection(['Psicólogo']);
+    const { user, isLoading } = useAuth();
 
      // Función para cerrar sesión (sin cambios)
     const handleSignOut = async () => {
@@ -52,7 +52,7 @@ export default function AjustesPsicologoPage() {
     };
 
     // Muestra indicador de carga o sin acceso
-    if (isLoading || !hasAccess) {
+    if (isLoading || !user) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
                  <LoadingIndicator text="Cargando ajustes..." className="[&>p]:text-gray-600 [&>div]:opacity-50 [&>div]:bg-[#F5A0A1] [&>div>div]:bg-[#EE7E7F]" /> {/* */}

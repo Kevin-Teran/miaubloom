@@ -15,6 +15,7 @@ import Link from 'next/link';
 import React, { Suspense, useState, ChangeEvent, FormEvent } from 'react';
 import Input from '@/components/ui/Input';
 import { EllipseCorner } from '@/components/EllipseCorner';
+import IconButton from '@/components/ui/IconButton';
 import { ProfilePhotoSection } from '@/components/profile/ProfilePhotoSection';
 
 function PaginationDots({ current, total, color = 'var(--color-theme-primary)', inactiveColor = 'var(--color-theme-primary-light)' }: { current: number; total: number; color?: string; inactiveColor?: string }) {
@@ -80,6 +81,7 @@ function RegisterForm() {
         if (!formData.contactoEmergencia.trim()) { newErrors.contactoEmergencia = 'Contacto requerido'; isValid = false; }
         if (formData.institucionReferida === 'Pública' && !formData.nombreInstitucion.trim()) { newErrors.nombreInstitucion = 'Nombre de institución requerido'; isValid = false;}
       } else { // Si es Psicólogo
+        if (!formData.genero) { newErrors.genero = 'Género requerido'; isValid = false; }
         if (!formData.numeroRegistro.trim()) { newErrors.numeroRegistro = 'Número de registro requerido'; isValid = false; }
         if (!formData.especialidad.trim()) { newErrors.especialidad = 'Especialidad requerida'; isValid = false; }
         if (!formData.tituloUniversitario.trim()) { newErrors.tituloUniversitario = 'Título requerido'; isValid = false; }
@@ -218,24 +220,21 @@ function RegisterForm() {
           COLUMNA DERECHA - FORMULARIO
       ============================================ */}
       <div className="flex flex-col flex-1 lg:w-1/2 p-6 lg:p-12 lg:overflow-y-auto relative">
-        {/* Botón de retroceso */}
-        <button 
+        {/* --- BOTÓN VOLVER ESTANDARIZADO --- */}
+        <IconButton
+          icon="back"
           onClick={() => {
             if (currentStep > 0) {
               setCurrentStep(currentStep - 1);
             } else {
-              const redirectPath = isPatient ? '/bienvenido/paciente' : '/inicio/psicologo';
-              router.push(redirectPath);
+              router.back();
             }
           }}
-          style={{ backgroundColor: themeColor }} 
-          className="absolute top-6 left-6 lg:top-4 lg:left-4 flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-full text-white hover:opacity-90 transition-opacity z-10 cursor-pointer shadow-md" 
+          bgColor={themeColor}
+          className="absolute top-6 left-6 lg:top-4 lg:left-4 z-10 shadow-md"
           aria-label="Volver"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
+        />
+        {/* --- FIN BOTÓN VOLVER --- */}
 
         <main className="flex-grow flex flex-col items-center justify-center pt-12 lg:pt-4">
           <div className="w-full max-w-sm lg:max-w-md">
@@ -480,6 +479,33 @@ function RegisterForm() {
                         {formData.nombreCompleto || 'Nombre no ingresado'}
                       </div>
                     </div>
+
+                    {/* BLOQUE DE GÉNERO AÑADIDO */}
+                    <div>
+                      <label className="block text-sm lg:text-base font-semibold text-gray-700 mb-2 ml-3">Género</label>
+                      <div className="flex justify-start gap-4 lg:gap-6 px-3">
+                        {['Masculino', 'Femenino', 'Otro'].map(gen => (
+                          <label key={gen} className="flex items-center gap-1.5 cursor-pointer">
+                            <span className={`w-4 h-4 lg:w-5 lg:h-5 rounded-full border-2 flex items-center justify-center ${formData.genero === gen ? `border-[${themeColor}]` : 'border-gray-300'}`}>
+                              {formData.genero === gen && <span className="w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full" style={{ backgroundColor: themeColor }}></span>}
+                            </span>
+                            <input 
+                              type="radio" 
+                              name="genero" 
+                              value={gen} 
+                              checked={formData.genero === gen} 
+                              onChange={handleInputChange} 
+                              disabled={isLoading} 
+                              className="sr-only"
+                            />
+                            <span className="text-gray-700 text-sm lg:text-base">{gen}</span>
+                          </label>
+                        ))}
+                      </div>
+                      {errors.genero && <p className="mt-1 text-sm text-red-600 ml-3">{errors.genero}</p>}
+                    </div>
+                    {/* FIN DEL BLOQUE AÑADIDO */}
+
                     <Input 
                       label="Número de registro profesional o licencia" 
                       type="text" 

@@ -1,17 +1,36 @@
 /**
  * @file route.ts
  * @route src/app/api/actividades/estadisticas/route.ts
- * @description API endpoint para obtener estadísticas de emociones del paciente
+ * @description API endpoint para estadísticas (ACTUALIZADO A JWT)
  * @author Kevin Mariano
- * @version 1.0.0
+ * @version 2.0.0
  * @since 1.0.0
  * @copyright MiauBloom
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { jwtVerify } from 'jose'; // <-- IMPORTAR JOSE
 
 const prisma = new PrismaClient();
+
+// --- LÓGICA DE AUTENTICACIÓN JWT REUTILIZABLE ---
+const SECRET_KEY = new TextEncoder().encode(
+  process.env.JWT_SECRET_KEY || 'tu-clave-secreta-muy-segura-aqui'
+);
+
+async function getAuthPayload(request: NextRequest): Promise<{ userId: string; rol: string } | null> {
+  const token = request.cookies.get('miaubloom_session')?.value;
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, SECRET_KEY);
+    return { userId: payload.userId as string, rol: payload.rol as string };
+  } catch (e) {
+    console.warn('Error al verificar JWT en API:', e instanceof Error ? e.message : String(e));
+    return null;
+  }
+}
+// --- FIN DE LÓGICA DE AUTENTICACIÓN ---
 
 interface EmotionStats {
   nombre: string;
@@ -19,9 +38,6 @@ interface EmotionStats {
   color: string;
 }
 
-/**
- * Map de emociones a sus nombres y colores en el jardín
- */
 const EMOTION_MAP: Record<string, { nombre: string; color: string }> = {
   'Felicidad': { nombre: 'Margarita', color: '#22D3EE' },
   'Alegría': { nombre: 'Margarita', color: '#22D3EE' },
@@ -39,24 +55,21 @@ const EMOTION_MAP: Record<string, { nombre: string; color: string }> = {
 
 /**
  * @function GET
- * @description Obtiene las estadísticas de emociones del paciente de los últimos 30 días
- * @param {NextRequest} request - Petición HTTP con cookie de sesión
- * @returns {Promise<NextResponse>} Estadísticas de emociones del paciente
+ * @description Obtiene las estadísticas (AHORA USA JWT)
  */
 export async function GET(request: NextRequest) {
   try {
-    const sessionCookie = request.cookies.get('miaubloom_session');
-
-    if (!sessionCookie) {
+    // 1. Verificar autenticación
+    const auth = await getAuthPayload(request);
+    if (!auth || auth.rol !== 'Paciente') {
       return NextResponse.json(
-        { success: false, message: 'No autenticado' },
+        { success: false, message: 'No autenticado o rol incorrecto' },
         { status: 401 }
       );
     }
+    const userId = auth.userId;
 
-    const userId = sessionCookie.value;
-
-    // Obtener el perfil del paciente
+    // 2. Obtener el perfil del paciente
     const pacienteProfile = await prisma.perfilPaciente.findUnique({
       where: { userId },
     });
@@ -68,11 +81,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Calcular fecha hace 30 días
+    // 3. Calcular fecha hace 30 días y obtener registros
     const hace30Dias = new Date();
     hace30Dias.setDate(hace30Dias.getDate() - 30);
 
-    // Obtener registros emocionales de los últimos 30 días
     const registros = await prisma.registroEmocional.findMany({
       where: {
         pacienteId: pacienteProfile.userId,
@@ -86,7 +98,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Agregar emociones
+    // 4. Mapear y calcular estadísticas
     const emotionCounts: Record<string, number> = {};
     const emotionTotals: Record<string, number> = {};
 
@@ -99,11 +111,10 @@ export async function GET(request: NextRequest) {
       });
     });
 
-    // Calcular promedios y mapear a flores
     const emotionStats: Record<string, EmotionStats> = {};
 
     Object.entries(emotionCounts).forEach(([emocion, count]) => {
-      const average = Math.round((emotionTotals[emocion] / count) * 10); // Porcentaje
+      const average = Math.round((emotionTotals[emocion] / count) * 10);
       const mappedEmotion = EMOTION_MAP[emocion];
 
       if (mappedEmotion) {
@@ -117,15 +128,13 @@ export async function GET(request: NextRequest) {
           };
         }
 
-        // Promediar si ya existe
         const current = emotionStats[flowerName].porcentaje;
         emotionStats[flowerName].porcentaje = Math.round((current + average) / 2);
       }
     });
 
-    // Si no hay datos, retornar valores por defecto para demo
     const estadisticas = Object.values(emotionStats).length > 0 
-      ? Object.values(emotionStats).slice(0, 3) // Top 3 emociones
+      ? Object.values(emotionStats).slice(0, 3) 
       : [
           { nombre: 'Margarita', porcentaje: 0, color: '#22D3EE' },
           { nombre: 'Girasol', porcentaje: 0, color: '#FCD34D' },

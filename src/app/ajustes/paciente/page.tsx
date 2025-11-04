@@ -20,12 +20,12 @@ import Image from 'next/image';
 import LoadingIndicator from '@/components/ui/LoadingIndicator'; //
 // Importar desde el archivo de componentes compartidos
 import { SettingsItemLink, AccountSettingsItemLink, ToggleItem } from '../SettingsComponents'; //
-import { useRouteProtection } from '@/hooks/useRouteProtection';
+import { useAuth } from '@/context/AuthContext';
 
 
 export default function AjustesPacientePage() {
     const router = useRouter();
-    const { user, hasAccess, isLoading } = useRouteProtection(['Paciente']);
+    const { user, isLoading } = useAuth();
     const [showAppSettings, setShowAppSettings] = useState(false);
 
     // Función para cerrar sesión
@@ -52,7 +52,7 @@ export default function AjustesPacientePage() {
         }
     };
     // Muestra indicador mientras carga o sin acceso
-    if (isLoading || !hasAccess) {
+    if (isLoading || !user) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
                 <LoadingIndicator text="Cargando ajustes..." className="[&>p]:text-gray-600 [&>div]:opacity-50 [&>div]:bg-[var(--color-theme-primary-light)] [&>div>div]:bg-[var(--color-theme-primary)]" /> {/* */}

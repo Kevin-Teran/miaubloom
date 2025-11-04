@@ -11,8 +11,10 @@ import { UsageDuration } from '@/components/profile/UsageDuration';
 import { ProfilePhotoSection } from '@/components/profile/ProfilePhotoSection';
 import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
 import { EllipseCorner } from '@/components/EllipseCorner';
-import { useRouteProtection } from '@/hooks/useRouteProtection';
+import { useAuth } from '@/context/AuthContext';
 import { Save } from 'lucide-react';
+import IconButton from '@/components/ui/IconButton';
+import { SuccessToast } from '@/components/ui/SuccessToast'; // <-- AÑADIDO
 
 interface UserData {
   id?: string;
@@ -33,7 +35,7 @@ const AVATARS = [
 
 export default function PacienteProfilePage() {
   const router = useRouter();
-  const { hasAccess: hasRouteAccess, isLoading: isRouteLoading } = useRouteProtection(['Paciente']);
+  const { user: authUser, isLoading: isAuthLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [selectedSchedule, setSelectedSchedule] = useState('3-8');
@@ -41,42 +43,36 @@ export default function PacienteProfilePage() {
   const [fotoPerfil, setFotoPerfil] = useState('/assets/avatar-paciente.png');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  
+  const [showSuccessToast, setShowSuccessToast] = useState(false); // <-- AÑADIDO
+  const { refetchUser } = useAuth(); // <-- AÑADIDO
 
   useEffect(() => {
-    if (!hasRouteAccess || isRouteLoading) return;
+    if (isAuthLoading || !authUser) return;
 
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch('/api/auth/login');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.authenticated) {
-            setUserData(data.user);
-            setSelectedSchedule(data.user.perfil?.horarioUso || '3-8');
-            setSelectedDuration(data.user.perfil?.duracionUso || '3-8');
-            setFotoPerfil(data.user.perfil?.fotoPerfil || '/assets/avatar-paciente.png');
-          } else {
-            router.push('/auth/login/paciente');
-          }
-        } else {
-          router.push('/auth/login/paciente');
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        router.push('/auth/login/paciente');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, [router, hasRouteAccess, isRouteLoading]);
+    // Usar datos directamente del contexto en lugar de hacer fetch
+    try {
+      setUserData({
+        id: authUser.id,
+        nombreCompleto: authUser.nombreCompleto,
+        perfil: authUser.perfil
+      });
+      setSelectedSchedule(authUser.perfil?.horarioUso || '3-8');
+      setSelectedDuration(authUser.perfil?.duracionUso || '3-8');
+      setFotoPerfil(authUser.perfil?.fotoPerfil || '/assets/avatar-paciente.png');
+    } catch (error) {
+      console.error('Error setting user data:', error);
+      router.push('/auth/login/paciente');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [router, authUser, isAuthLoading]);
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
     try {
       const response = await fetch('/api/perfil/update-profile', {
-        method: 'POST',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           horarioUso: selectedSchedule,
@@ -86,21 +82,17 @@ export default function PacienteProfilePage() {
       });
 
       if (response.ok) {
+        // 1. Refrescar los datos del usuario en el AuthContext
+        await refetchUser(); 
+        
+        // 2. Cerrar el modal de confirmación
         setShowConfirmModal(false);
-        // Actualizar userData con la foto nueva
-        if (userData) {
-          setUserData({
-            ...userData,
-            perfil: {
-              ...userData.perfil,
-              fotoPerfil: fotoPerfil,
-            }
-          });
-        }
-        // Esperar un momento antes de redirigir para que se vea el cambio
+
+        // 3. Mostrar el toast de éxito
+        setShowSuccessToast(true);
         setTimeout(() => {
-          router.push('/inicio/paciente');
-        }, 500);
+          setShowSuccessToast(false);
+        }, 3000); // Ocultar después de 3 segundos
       } else {
         alert('Error al guardar el perfil');
       }
@@ -112,7 +104,7 @@ export default function PacienteProfilePage() {
     }
   };
 
-  if (isRouteLoading || isLoading) {
+  if (isAuthLoading || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-white">
         <LoadingIndicator text="Cargando tu perfil..." />
@@ -120,10 +112,20 @@ export default function PacienteProfilePage() {
     );
   }
 
-  if (!hasRouteAccess || !userData) return null;
+  if (!authUser || !userData) return null;
 
   return (
     <div className="min-h-screen bg-white pb-12 md:pb-16 relative">
+      {/* --- BOTÓN VOLVER --- */}
+      <IconButton
+        icon="back"
+        onClick={() => router.back()}
+        ariaLabel="Volver"
+        bgColor="var(--color-theme-primary)"
+        className="fixed top-6 left-6 z-50 shadow-md"
+      />
+      {/* --- FIN BOTÓN VOLVER --- */}
+
       <div className="absolute inset-0 z-0 pointer-events-none">
         <EllipseCorner />
       </div>
@@ -307,6 +309,12 @@ export default function PacienteProfilePage() {
         onConfirm={handleSaveProfile}
         onCancel={() => setShowConfirmModal(false)}
         isLoading={isSaving}
+      />
+
+      {/* --- AÑADIR ESTO --- */}
+      <SuccessToast 
+        message="Perfil guardado exitosamente" 
+        isOpen={showSuccessToast} 
       />
     </div>
   );

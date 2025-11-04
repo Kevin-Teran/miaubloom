@@ -1,9 +1,9 @@
 /**
  * @file route.ts
  * @route src/app/api/auth/login/route.ts
- * @description API endpoint para autenticación de usuarios (Pacientes y Psicólogos)
+ * @description API endpoint para autenticación. AHORA CREA JWT.
  * @author Kevin Mariano
- * @version 1.0.0
+ * @version 2.0.0
  * @since 1.0.0
  * @copyright MiauBloom
  */
@@ -11,12 +11,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { SignJWT, jwtVerify } from 'jose';
 
 const prisma = new PrismaClient();
 
+// Clave secreta para FIRMAR el token. Guárdala en .env en producción
+const SECRET_KEY = new TextEncoder().encode(
+  process.env.JWT_SECRET_KEY || 'tu-clave-secreta-muy-segura-aqui'
+);
+
 /**
  * @interface LoginRequestBody
- * @description Estructura del cuerpo de la petición de login
  */
 interface LoginRequestBody {
   email: string;
@@ -26,9 +31,7 @@ interface LoginRequestBody {
 
 /**
  * @function POST
- * @description Maneja el inicio de sesión de usuarios
- * @param {NextRequest} request - Petición HTTP
- * @returns {Promise<NextResponse>} Respuesta con datos del usuario o error
+ * @description Maneja el inicio de sesión y CREA UN JWT
  */
 export async function POST(request: NextRequest) {
   try {
@@ -37,10 +40,7 @@ export async function POST(request: NextRequest) {
 
     if (!email || !password || !rol) {
       return NextResponse.json(
-        { 
-          success: false, 
-          message: 'Email, contraseña y rol son requeridos' 
-        },
+        { success: false, message: 'Email, contraseña y rol son requeridos' },
         { status: 400 }
       );
     }
@@ -58,10 +58,7 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { 
-          success: false, 
-          message: 'Credenciales inválidas' 
-        },
+        { success: false, message: 'Credenciales inválidas' },
         { status: 401 }
       );
     }
@@ -70,40 +67,46 @@ export async function POST(request: NextRequest) {
     
     if (!isPasswordValid) {
       return NextResponse.json(
-        { 
-          success: false, 
-          message: 'Credenciales inválidas' 
-        },
+        { success: false, message: 'Credenciales inválidas' },
         { status: 401 }
       );
     }
 
     let perfilCompleto = false;
-    let perfilData = null;
+    let perfilData: Record<string, unknown> = {}; // Objeto para el payload
 
     if (rol === 'Paciente' && user.perfilPaciente) {
       perfilCompleto = true;
       perfilData = {
-        fechaNacimiento: user.perfilPaciente.fechaNacimiento,
         genero: user.perfilPaciente.genero,
-        contactoEmergencia: user.perfilPaciente.contactoEmergencia,
         nicknameAvatar: user.perfilPaciente.nicknameAvatar,
         fotoPerfil: (user.perfilPaciente as Record<string, unknown>).fotoPerfil as string,
-        psicologoAsignadoId: user.perfilPaciente.psicologoAsignadoId,
-        horarioUso: user.perfilPaciente.horarioUso,
-        duracionUso: user.perfilPaciente.duracionUso
       };
     } else if (rol === 'Psicólogo' && user.perfilPsicologo) {
       perfilCompleto = true;
       perfilData = {
-        identificacion: user.perfilPsicologo.identificacion,
-        registroProfesional: user.perfilPsicologo.registroProfesional,
+        genero: user.perfilPsicologo.genero,
         especialidad: user.perfilPsicologo.especialidad,
-        tituloUniversitario: user.perfilPsicologo.tituloUniversitario,
-        fotoPerfil: (user.perfilPsicologo as Record<string, unknown>).fotoPerfil as string
+        numeroRegistro: user.perfilPsicologo.registroProfesional,
       };
     }
 
+    // --- LÓGICA DE CREACIÓN DE JWT ---
+    const payload = {
+      userId: user.id,
+      email: user.email,
+      rol: user.rol,
+      nombreCompleto: user.nombreCompleto,
+      ...perfilData
+    };
+
+    const token = await new SignJWT(payload)
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('7d') // 7 días de expiración
+      .sign(SECRET_KEY);
+    
+    // --- CORRECCIÓN CRÍTICA: Usar response.cookies.set() ---
     const responseData = {
       success: true,
       message: 'Inicio de sesión exitoso',
@@ -113,30 +116,28 @@ export async function POST(request: NextRequest) {
         nombreCompleto: user.nombreCompleto,
         rol: user.rol,
         perfilCompleto,
-        perfil: perfilData
+        perfil: perfilData // Devuelve los datos del perfil si es necesario
       }
     };
 
+    // Crear la respuesta PRIMERO
     const response = NextResponse.json(responseData, { status: 200 });
-    
-    response.cookies.set('miaubloom_session', user.id, {
+
+    // Establecer la cookie EN LA RESPUESTA (no en server context)
+    response.cookies.set('miaubloom_session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60, 
+      maxAge: 60 * 60 * 24 * 7, // 7 días
       path: '/'
     });
-
+    
     return response;
 
   } catch (error) {
     console.error('Error en el login:', error);
-    
     return NextResponse.json(
-      { 
-        success: false, 
-        message: 'Error interno del servidor' 
-      },
+      { success: false, message: 'Error interno del servidor' },
       { status: 500 }
     );
   } finally {
@@ -146,15 +147,15 @@ export async function POST(request: NextRequest) {
 
 /**
  * @function GET
- * @description Verifica si existe una sesión activa
+ * @description Retorna los datos del usuario autenticado basado en el JWT
  * @param {NextRequest} request - Petición HTTP
- * @returns {Promise<NextResponse>} Estado de la sesión
+ * @returns {Promise<NextResponse>} Datos del usuario autenticado o error
  */
 export async function GET(request: NextRequest) {
   try {
     const sessionCookie = request.cookies.get('miaubloom_session');
 
-    if (!sessionCookie) {
+    if (!sessionCookie?.value) {
       return NextResponse.json(
         { 
           success: false, 
@@ -165,15 +166,44 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const userId = sessionCookie.value;
+    // Verificar el JWT
+    let payload: Record<string, unknown>;
+    try {
+      const { payload: decodedPayload } = await jwtVerify(
+        sessionCookie.value,
+        SECRET_KEY
+      );
+      payload = decodedPayload as Record<string, unknown>;
+    } catch (err) {
+      console.error('[Login GET] Error al verificar JWT:', err);
+      return NextResponse.json(
+        { 
+          success: false, 
+          authenticated: false,
+          message: 'Sesión inválida o expirada' 
+        },
+        { status: 401 }
+      );
+    }
 
+    const userId = payload.userId as string;
+    const userRole = payload.rol as string;
+
+    if (!userId) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          authenticated: false,
+          message: 'Token inválido' 
+        },
+        { status: 401 }
+      );
+    }
+
+    // Obtener datos del usuario desde la base de datos
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        nombreCompleto: true,
-        rol: true,
+      include: {
         perfilPaciente: true,
         perfilPsicologo: true
       }
@@ -184,32 +214,34 @@ export async function GET(request: NextRequest) {
         { 
           success: false, 
           authenticated: false,
-          message: 'Sesión inválida' 
+          message: 'Usuario no encontrado' 
         },
         { status: 401 }
       );
     }
 
+    // Preparar datos del perfil
     let perfilCompleto = false;
     let perfilData = null;
 
-    if (user.rol === 'Paciente' && user.perfilPaciente) {
+    if (userRole === 'Paciente' && user.perfilPaciente) {
       perfilCompleto = true;
       perfilData = {
         fechaNacimiento: user.perfilPaciente.fechaNacimiento,
         genero: user.perfilPaciente.genero,
         contactoEmergencia: user.perfilPaciente.contactoEmergencia,
         nicknameAvatar: user.perfilPaciente.nicknameAvatar,
-        psicologoAsignadoId: user.perfilPaciente.psicologoAsignadoId,
         fotoPerfil: (user.perfilPaciente as Record<string, unknown>).fotoPerfil as string,
+        psicologoAsignadoId: user.perfilPaciente.psicologoAsignadoId,
         horarioUso: user.perfilPaciente.horarioUso,
         duracionUso: user.perfilPaciente.duracionUso
       };
-    } else if (user.rol === 'Psicólogo' && user.perfilPsicologo) {
+    } else if (userRole === 'Psicólogo' && user.perfilPsicologo) {
       perfilCompleto = true;
       perfilData = {
+        genero: user.perfilPsicologo.genero,
         identificacion: user.perfilPsicologo.identificacion,
-        registroProfesional: user.perfilPsicologo.registroProfesional,
+        numeroRegistro: user.perfilPsicologo.registroProfesional,
         especialidad: user.perfilPsicologo.especialidad,
         tituloUniversitario: user.perfilPsicologo.tituloUniversitario,
         fotoPerfil: (user.perfilPsicologo as Record<string, unknown>).fotoPerfil as string
@@ -217,8 +249,8 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { 
-        success: true, 
+      {
+        success: true,
         authenticated: true,
         user: {
           id: user.id,

@@ -1,9 +1,9 @@
 /**
  * @file route.ts
  * @route src/app/api/auth/register/route.ts
- * @description API endpoint para registro de nuevos usuarios (Pacientes y Psicólogos)
+ * @description API endpoint para registro. AHORA CREA JWT.
  * @author Kevin Mariano
- * @version 1.0.1
+ * @version 2.0.0
  * @since 1.0.0
  * @copyright MiauBloom
  */
@@ -11,8 +11,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { SignJWT } from 'jose';
 
 const prisma = new PrismaClient();
+
+// Clave secreta para FIRMAR el token.
+const SECRET_KEY = new TextEncoder().encode(
+  process.env.JWT_SECRET_KEY || 'tu-clave-secreta-muy-segura-aqui'
+);
 
 export async function POST(request: NextRequest) {
   try {
@@ -72,6 +78,7 @@ export async function POST(request: NextRequest) {
     }
     
     const hashedPassword = await bcrypt.hash(password, 12);
+    let userPayload: Record<string, unknown> = {}; // Para el JWT
 
     const newUser = await prisma.$transaction(async (tx) => {
       // 1. Crear el usuario
@@ -84,9 +91,14 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      console.log('Usuario creado:', user.id);
+      // 2. Crear el perfil correspondiente y definir el payload del JWT
+      userPayload = {
+        userId: user.id,
+        email: user.email,
+        rol: user.rol,
+        nombreCompleto: user.nombreCompleto,
+      };
 
-      // 2. Crear el perfil correspondiente
       if (rol === 'Paciente') {
         const fechaNacimiento = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
         const perfilData: Record<string, unknown> = {
@@ -101,12 +113,16 @@ export async function POST(request: NextRequest) {
           horarioUso,
           duracionUso,
         };
-        console.log('Intentando crear perfil paciente con datos:', perfilData);
-        const perfilCreado = await tx.perfilPaciente.create({ data: perfilData as Parameters<typeof tx.perfilPaciente.create>[0]['data'] });
-        console.log('Perfil paciente creado:', perfilCreado);
+        await tx.perfilPaciente.create({ data: perfilData as Parameters<typeof tx.perfilPaciente.create>[0]['data'] });
+        
+        // Añadir datos del perfil al payload del token
+        userPayload.genero = genero;
+        userPayload.nicknameAvatar = nicknameAvatar;
+
       } else if (rol === 'Psicólogo') {
         const perfilData: Record<string, unknown> = {
           userId: user.id,
+          genero,
           identificacion: numeroRegistro,
           registroProfesional: numeroRegistro,
           especialidad,
@@ -114,10 +130,14 @@ export async function POST(request: NextRequest) {
           nicknameAvatar: nicknameAvatar || 'Avatar',
           horarioUso,
           duracionUso,
+          fotoPerfil: fotoPerfil || '/assets/avatar-psicologo.png',
         };
-        console.log('Intentando crear perfil psicólogo con datos:', perfilData);
-        const perfilCreado = await tx.perfilPsicologo.create({ data: perfilData as Parameters<typeof tx.perfilPsicologo.create>[0]['data'] });
-        console.log('Perfil psicólogo creado:', perfilCreado);
+        await tx.perfilPsicologo.create({ data: perfilData as Parameters<typeof tx.perfilPsicologo.create>[0]['data'] });
+
+        // Añadir datos del perfil al payload del token
+        userPayload.genero = genero;
+        userPayload.especialidad = especialidad;
+        userPayload.numeroRegistro = numeroRegistro;
       }
       return user;
     });
@@ -126,20 +146,32 @@ export async function POST(request: NextRequest) {
         throw new Error("La creación del usuario falló.");
     }
 
+    // --- LÓGICA DE CREACIÓN DE JWT ---
+    const token = await new SignJWT(userPayload)
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('7d')
+      .sign(SECRET_KEY);
+    
+    // --- CORRECCIÓN CRÍTICA: Usar response.cookies.set() ---
     const responseData = {
       success: true,
       message: 'Usuario registrado exitosamente',
-      user: { id: newUser.id, email: newUser.email, nombreCompleto: newUser.nombreCompleto, rol: newUser.rol }
+      user: userPayload // Devuelve el payload completo
     };
 
+    // Crear la respuesta PRIMERO
     const response = NextResponse.json(responseData, { status: 201 });
-    response.cookies.set('miaubloom_session', newUser.id, {
+
+    // Establecer la cookie EN LA RESPUESTA (no en server context)
+    response.cookies.set('miaubloom_session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60,
+      maxAge: 60 * 60 * 24 * 7,
       path: '/'
     });
+
     return response;
 
   } catch (error) {

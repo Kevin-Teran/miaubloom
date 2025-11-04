@@ -9,8 +9,111 @@ import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ProfilePhotoSection } from '@/components/profile/ProfilePhotoSection';
 import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
 import { EllipseCorner } from '@/components/EllipseCorner';
-import { useRouteProtection } from '@/hooks/useRouteProtection';
-import { Save } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import Input from '@/components/ui/Input';
+import { Save, Edit2, X } from 'lucide-react';
+import IconButton from '@/components/ui/IconButton';
+import { SuccessToast } from '@/components/ui/SuccessToast'; // <-- AÑADIDO
+
+interface ProfileFieldProps {
+  label: string;
+  value: string | undefined;
+  placeholder: string;
+}
+
+function ProfileField({ label, value, placeholder }: ProfileFieldProps) {
+  return (
+    <div>
+      <label className="block font-roboto font-semibold mb-3" style={{ fontSize: '17px', color: '#070806' }}>
+        {label}
+      </label>
+      <div className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-gray-50 font-roboto text-gray-700" style={{ fontSize: '16px' }}>
+        {value || <span className="text-gray-400">{placeholder}</span>}
+      </div>
+    </div>
+  );
+}
+
+type ProfileEditData = {
+  especialidad: string;
+  tituloUniversitario: string;
+  numeroRegistro: string;
+};
+
+interface EditModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: (data: ProfileEditData) => void;
+  initialData: ProfileEditData;
+}
+
+function ProfileEditModal({ isOpen, onClose, onConfirm, initialData }: EditModalProps) {
+  const [data, setData] = useState(initialData);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setData({ ...data, [e.target.name]: e.target.value });
+  };
+
+  const handleConfirmClick = () => {
+    onConfirm(data);
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-lg w-full z-51">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-gray-800">Editar Perfil Profesional</h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+            <X size={20} className="text-gray-500" />
+          </button>
+        </div>
+        
+        <div className="space-y-4">
+          <Input
+            label="Especialidad"
+            name="especialidad"
+            value={data.especialidad}
+            onChange={handleChange}
+            placeholder="Ej: Psicología clínica..."
+          />
+          <Input
+            label="Título Universitario"
+            name="tituloUniversitario"
+            value={data.tituloUniversitario}
+            onChange={handleChange}
+            placeholder="Ej: Psicólogo Clínico, Universidad Nacional..."
+          />
+          <Input
+            label="Número de Registro Profesional"
+            name="numeroRegistro"
+            value={data.numeroRegistro}
+            onChange={handleChange}
+            placeholder="Ej: CP-12345"
+          />
+        </div>
+
+        <div className="flex gap-3 mt-8">
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-3 rounded-full font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleConfirmClick}
+            style={{ backgroundColor: 'var(--color-theme-primary)' }}
+            className="flex-1 px-4 py-3 rounded-full font-semibold text-white hover:opacity-90 transition-opacity"
+          >
+            Confirmar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface UserData {
   id?: string;
@@ -21,51 +124,60 @@ interface UserData {
     especialidad?: string;
     tituloUniversitario?: string;
     numeroRegistro?: string;
+    genero?: string;
   };
 }
 
 export default function PerfilPsicologoPage() {
   const router = useRouter();
-  const { hasAccess: hasRouteAccess, isLoading: isRouteLoading } = useRouteProtection(['Psicólogo']);
+  const { user: authUser, isLoading: isAuthLoading } = useAuth();
+  
   const [isLoading, setIsLoading] = useState(true);
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [fotoPerfil, setFotoPerfil] = useState('/assets/avatar-psicologo.png');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const [showSuccessToast, setShowSuccessToast] = useState(false); // <-- AÑADIDO
+  const { refetchUser } = useAuth(); // <-- AÑADIDO
+  
+  const [fotoPerfil, setFotoPerfil] = useState('/assets/avatar-psicologo.png');
   const [especialidad, setEspecialidad] = useState('');
   const [tituloUniversitario, setTituloUniversitario] = useState('');
   const [numeroRegistro, setNumeroRegistro] = useState('');
 
   useEffect(() => {
-    if (!hasRouteAccess || isRouteLoading) return;
+    if (!authUser || isAuthLoading) return;
 
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch('/api/auth/login');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.authenticated) {
-            setUserData(data.user);
-            setFotoPerfil(data.user.perfil?.fotoPerfil || '/assets/avatar-psicologo.png');
-            setEspecialidad(data.user.perfil?.especialidad || '');
-            setTituloUniversitario(data.user.perfil?.tituloUniversitario || '');
-            setNumeroRegistro(data.user.perfil?.numeroRegistro || '');
-          } else {
-            router.push('/auth/login/psicologo');
-          }
-        } else {
-          router.push('/auth/login/psicologo');
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        router.push('/auth/login/psicologo');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    // Usar datos directamente del contexto en lugar de hacer fetch
+    try {
+      setUserData({
+        id: authUser.id,
+        nombreCompleto: authUser.nombreCompleto,
+        perfil: authUser.perfil
+      });
+      setFotoPerfil(authUser.perfil?.fotoPerfil || '/assets/avatar-psicologo.png');
+      setEspecialidad(authUser.perfil?.especialidad || '');
+      setTituloUniversitario(authUser.perfil?.tituloUniversitario || '');
+      setNumeroRegistro(authUser.perfil?.numeroRegistro || '');
+    } catch (error) {
+      console.error('Error setting user data:', error);
+      router.push('/auth/login/psicologo');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [router, authUser, isAuthLoading]);
 
-    fetchUserData();
-  }, [router, hasRouteAccess, isRouteLoading]);
+  const handleOpenModal = () => {
+    setIsEditModalOpen(true);
+  };
+
+  const handleModalConfirm = (newData: ProfileEditData) => {
+    setEspecialidad(newData.especialidad);
+    setTituloUniversitario(newData.tituloUniversitario);
+    setNumeroRegistro(newData.numeroRegistro);
+    setIsEditModalOpen(false);
+  };
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
@@ -82,26 +194,21 @@ export default function PerfilPsicologoPage() {
       });
 
       if (response.ok) {
+        // 1. Refrescar los datos del usuario en el AuthContext
+        await refetchUser(); 
+        
+        // 2. Cerrar el modal de confirmación
         setShowConfirmModal(false);
-        // Actualizar userData con los cambios
-        if (userData) {
-          setUserData({
-            ...userData,
-            perfil: {
-              ...userData.perfil,
-              fotoPerfil: fotoPerfil,
-              especialidad: especialidad,
-              tituloUniversitario: tituloUniversitario,
-              numeroRegistro: numeroRegistro,
-            }
-          });
-        }
-        // Esperar un momento antes de redirigir para que se vea el cambio
+
+        // 3. Mostrar el toast de éxito
+        setShowSuccessToast(true);
         setTimeout(() => {
-          router.push('/inicio/psicologo');
-        }, 500);
+          setShowSuccessToast(false);
+        }, 3000); // Ocultar después de 3 segundos
       } else {
-        alert('Error al guardar el perfil');
+        const errorData = await response.json();
+        console.error('Error al guardar:', errorData.message);
+        alert(`Error al guardar el perfil: ${errorData.message}`);
       }
     } catch (error) {
       console.error('Error saving profile:', error);
@@ -111,7 +218,7 @@ export default function PerfilPsicologoPage() {
     }
   };
 
-  if (isRouteLoading || isLoading) {
+  if (isAuthLoading || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-white">
         <LoadingIndicator text="Cargando tu perfil..." />
@@ -119,10 +226,25 @@ export default function PerfilPsicologoPage() {
     );
   }
 
-  if (!hasRouteAccess || !userData) return null;
+  if (!authUser || !userData) return null;
+
+  const themeBorderColor = authUser?.perfil?.genero === 'Masculino' ? '#4A90E2' : 'var(--color-theme-primary)';
+  const themeBgColor = authUser?.perfil?.genero === 'Masculino' ? '#4A90E2' : 'var(--color-theme-primary)';
+  const themeTextColor = authUser?.perfil?.genero === 'Masculino' ? 'text-blue-600' : 'text-[var(--color-theme-primary)]';
+  const themeFromBg = authUser?.perfil?.genero === 'Masculino' ? 'from-blue-100' : 'from-[var(--color-theme-primary-light)]';
 
   return (
     <div className="min-h-screen bg-white pb-12 md:pb-16 relative">
+      {/* --- BOTÓN VOLVER --- */}
+      <IconButton
+        icon="back"
+        onClick={() => router.back()}
+        ariaLabel="Volver"
+        bgColor={themeBgColor}
+        className="fixed top-6 left-6 z-50 shadow-md"
+      />
+      {/* --- FIN BOTÓN VOLVER --- */}
+
       <div className="absolute inset-0 z-0 pointer-events-none">
         <EllipseCorner />
       </div>
@@ -132,7 +254,7 @@ export default function PerfilPsicologoPage() {
         <div className="hidden lg:grid lg:grid-cols-12 lg:gap-8 lg:pt-8">
           {/* COLUMNA IZQUIERDA */}
           <div className="lg:col-span-4 space-y-6">
-            <div className="bg-white rounded-3xl shadow-lg p-8 border-t-4 border-blue-500">
+            <div className="bg-white rounded-3xl shadow-lg p-8 border-t-4" style={{ borderColor: themeBorderColor }}>
               <ProfileHeader
                 nombre={userData.nombreCompleto}
                 avatar={fotoPerfil}
@@ -140,7 +262,7 @@ export default function PerfilPsicologoPage() {
               />
 
               <div className="mt-8 space-y-4">
-                <div className="bg-gradient-to-r from-blue-100 to-transparent rounded-xl p-4 border-l-4 border-blue-500">
+                <div className={`bg-gradient-to-r ${themeFromBg} to-transparent rounded-xl p-4 border-l-4`} style={{ borderColor: themeBorderColor }}>
                   <h3 className="font-roboto font-semibold text-[#070806] mb-2" style={{ fontSize: '17px' }}>
                     Completa tu perfil
                   </h3>
@@ -154,9 +276,9 @@ export default function PerfilPsicologoPage() {
 
           {/* COLUMNA DERECHA */}
           <div className="lg:col-span-8">
-            <div className="bg-white rounded-3xl shadow-xl p-8 md:p-10 border-t-4 border-blue-500">
+            <div className="bg-white rounded-3xl shadow-xl p-8 md:p-10 border-t-4" style={{ borderColor: themeBorderColor }}>
               <div className="text-center mb-10">
-                <h2 className="mb-3 font-roboto font-bold text-blue-600" style={{ fontSize: '32px' }}>
+                <h2 className={`mb-3 font-roboto font-bold ${themeTextColor}`} style={{ fontSize: '32px' }}>
                   Tu Perfil Profesional
                 </h2>
                 <p className="font-roboto font-medium text-[#070806]" style={{ fontSize: '20px' }}>
@@ -178,48 +300,30 @@ export default function PerfilPsicologoPage() {
                   />
                 </div>
 
-                {/* Sección de Especialidad */}
-                <div>
-                  <label className="block font-roboto font-semibold mb-3" style={{ fontSize: '17px', color: '#070806' }}>
-                    Especialidad
-                  </label>
-                  <input
-                    type="text"
+                {/* Campos bloqueados con botón de editar */}
+                <div className="relative space-y-8">
+                  <button
+                    onClick={handleOpenModal}
+                    className="absolute top-0 right-0 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+                    aria-label="Editar perfil profesional"
+                  >
+                    <Edit2 size={18} className="text-gray-600" />
+                  </button>
+
+                  <ProfileField
+                    label="Especialidad"
                     value={especialidad}
-                    onChange={(e) => setEspecialidad(e.target.value)}
-                    placeholder="Ej: Psicología clínica, Terapia cognitivo-conductual..."
-                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:outline-none font-roboto"
-                    style={{ fontSize: '16px' }}
+                    placeholder="Ej: Psicología clínica..."
                   />
-                </div>
-
-                {/* Sección de Título Universitario */}
-                <div>
-                  <label className="block font-roboto font-semibold mb-3" style={{ fontSize: '17px', color: '#070806' }}>
-                    Título Universitario
-                  </label>
-                  <input
-                    type="text"
+                  <ProfileField
+                    label="Título Universitario"
                     value={tituloUniversitario}
-                    onChange={(e) => setTituloUniversitario(e.target.value)}
                     placeholder="Ej: Psicólogo Clínico, Universidad Nacional..."
-                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:outline-none font-roboto"
-                    style={{ fontSize: '16px' }}
                   />
-                </div>
-
-                {/* Sección de Número de Registro */}
-                <div>
-                  <label className="block font-roboto font-semibold mb-3" style={{ fontSize: '17px', color: '#070806' }}>
-                    Número de Registro Profesional
-                  </label>
-                  <input
-                    type="text"
+                  <ProfileField
+                    label="Número de Registro Profesional"
                     value={numeroRegistro}
-                    onChange={(e) => setNumeroRegistro(e.target.value)}
                     placeholder="Ej: CP-12345"
-                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:outline-none font-roboto"
-                    style={{ fontSize: '16px' }}
                   />
                 </div>
               </div>
@@ -236,7 +340,7 @@ export default function PerfilPsicologoPage() {
                 <button
                   onClick={() => setShowConfirmModal(true)}
                   className="flex-1 flex items-center justify-center gap-2 px-8 py-4 rounded-full font-roboto font-semibold text-white hover:opacity-90 transition-opacity"
-                  style={{ fontSize: '17px', backgroundColor: '#4A90E2' }}
+                  style={{ fontSize: '17px', backgroundColor: themeBgColor }}
                 >
                   <Save size={20} />
                   Guardar
@@ -254,8 +358,8 @@ export default function PerfilPsicologoPage() {
             nicknameAvatar={userData.perfil?.nicknameAvatar || 'psicólogo'}
           />
 
-          <div className="mt-6 rounded-3xl shadow-lg p-6 bg-white border-t-4 border-blue-500">
-            <h2 className="mb-2 font-roboto font-bold text-center text-blue-600" style={{ fontSize: '28px' }}>
+          <div className="mt-6 rounded-3xl shadow-lg p-6 bg-white border-t-4" style={{ borderColor: themeBorderColor }}>
+            <h2 className={`mb-2 font-roboto font-bold text-center ${themeTextColor}`} style={{ fontSize: '28px' }}>
               Tu Perfil
             </h2>
             <p className="font-roboto font-medium text-center text-[#070806] mb-8" style={{ fontSize: '18px' }}>
@@ -275,43 +379,42 @@ export default function PerfilPsicologoPage() {
                 />
               </div>
 
-              <div>
-                <label className="block font-roboto font-semibold mb-3" style={{ fontSize: '16px', color: '#070806' }}>
-                  Especialidad
-                </label>
-                <input
-                  type="text"
-                  value={especialidad}
-                  onChange={(e) => setEspecialidad(e.target.value)}
-                  placeholder="Ej: Psicología clínica..."
-                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:outline-none font-roboto text-sm"
-                />
-              </div>
+              {/* Campos bloqueados en móvil */}
+              <div className="relative space-y-6">
+                <button
+                  onClick={handleOpenModal}
+                  className="absolute -top-2 right-0 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+                  aria-label="Editar perfil profesional"
+                >
+                  <Edit2 size={16} className="text-gray-600" />
+                </button>
+                
+                <div>
+                  <label className="block font-roboto font-semibold mb-2" style={{ fontSize: '16px', color: '#070806' }}>
+                    Especialidad
+                  </label>
+                  <div className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-700 text-sm">
+                    {especialidad || <span className="text-gray-400">Ej: Psicología clínica...</span>}
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block font-roboto font-semibold mb-2" style={{ fontSize: '16px', color: '#070806' }}>
+                    Título Universitario
+                  </label>
+                  <div className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-700 text-sm">
+                    {tituloUniversitario || <span className="text-gray-400">Ej: Psicólogo Clínico...</span>}
+                  </div>
+                </div>
 
-              <div>
-                <label className="block font-roboto font-semibold mb-3" style={{ fontSize: '16px', color: '#070806' }}>
-                  Título Universitario
-                </label>
-                <input
-                  type="text"
-                  value={tituloUniversitario}
-                  onChange={(e) => setTituloUniversitario(e.target.value)}
-                  placeholder="Ej: Psicólogo Clínico..."
-                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:outline-none font-roboto text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block font-roboto font-semibold mb-3" style={{ fontSize: '16px', color: '#070806' }}>
-                  Número de Registro
-                </label>
-                <input
-                  type="text"
-                  value={numeroRegistro}
-                  onChange={(e) => setNumeroRegistro(e.target.value)}
-                  placeholder="Ej: CP-12345"
-                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:outline-none font-roboto text-sm"
-                />
+                <div>
+                  <label className="block font-roboto font-semibold mb-2" style={{ fontSize: '16px', color: '#070806' }}>
+                    Número de Registro
+                  </label>
+                  <div className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-gray-50 text-gray-700 text-sm">
+                    {numeroRegistro || <span className="text-gray-400">Ej: CP-12345</span>}
+                  </div>
+                </div>
               </div>
 
               <div className="flex gap-3 mt-8">
@@ -325,7 +428,7 @@ export default function PerfilPsicologoPage() {
                 <button
                   onClick={() => setShowConfirmModal(true)}
                   className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-full font-roboto font-semibold text-white"
-                  style={{ fontSize: '16px', backgroundColor: '#4A90E2' }}
+                  style={{ fontSize: '16px', backgroundColor: themeBgColor }}
                 >
                   <Save size={18} />
                   Guardar
@@ -336,7 +439,7 @@ export default function PerfilPsicologoPage() {
         </div>
       </div>
 
-      {/* Modal de Confirmación */}
+      {/* Modal de Confirmación de Guardado Final */}
       <ConfirmationModal
         isOpen={showConfirmModal}
         title="¿Guardar cambios?"
@@ -346,6 +449,24 @@ export default function PerfilPsicologoPage() {
         onConfirm={handleSaveProfile}
         onCancel={() => setShowConfirmModal(false)}
         isLoading={isSaving}
+      />
+
+      {/* Modal de Edición de Perfil */}
+      <ProfileEditModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onConfirm={handleModalConfirm}
+        initialData={{
+          especialidad,
+          tituloUniversitario,
+          numeroRegistro,
+        }}
+      />
+
+      {/* --- AÑADIR ESTO --- */}
+      <SuccessToast 
+        message="Perfil guardado exitosamente" 
+        isOpen={showSuccessToast} 
       />
     </div>
   );

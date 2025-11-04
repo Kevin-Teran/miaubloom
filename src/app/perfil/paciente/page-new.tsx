@@ -11,7 +11,7 @@ import { UsageDuration } from '@/components/profile/UsageDuration';
 import { ProfilePhotoSection } from '@/components/profile/ProfilePhotoSection';
 import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
 import { EllipseCorner } from '@/components/EllipseCorner';
-import { useRouteProtection } from '@/hooks/useRouteProtection';
+import { useAuth } from '@/context/AuthContext';
 import { Save } from 'lucide-react';
 
 interface UserData {
@@ -33,7 +33,7 @@ const AVATARS = [
 
 export default function PacienteProfilePage() {
   const router = useRouter();
-  const { hasAccess: hasRouteAccess, isLoading: isRouteLoading } = useRouteProtection(['Paciente']);
+  const { user: authUser, isLoading: isAuthLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [selectedSchedule, setSelectedSchedule] = useState('3-8');
@@ -43,7 +43,7 @@ export default function PacienteProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (!hasRouteAccess || isRouteLoading) return;
+    if (isAuthLoading || !authUser) return;
 
     const fetchUserData = async () => {
       try {
@@ -70,7 +70,7 @@ export default function PacienteProfilePage() {
     };
 
     fetchUserData();
-  }, [router, hasRouteAccess, isRouteLoading]);
+  }, [router, authUser, isAuthLoading]);
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
@@ -99,7 +99,7 @@ export default function PacienteProfilePage() {
     }
   };
 
-  if (isRouteLoading || isLoading) {
+  if (isAuthLoading || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-white">
         <LoadingIndicator text="Cargando tu perfil..." />
@@ -107,7 +107,7 @@ export default function PacienteProfilePage() {
     );
   }
 
-  if (!hasRouteAccess || !userData) return null;
+  if (!authUser || !userData) return null;
 
   return (
     <div className="min-h-screen bg-white pb-12 md:pb-16 relative">

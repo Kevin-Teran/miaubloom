@@ -10,7 +10,7 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 
 // Definimos la estructura del usuario que manejaremos
@@ -25,6 +25,13 @@ interface User {
     genero?: 'Masculino' | 'Femenino' | 'Otro';
     nicknameAvatar?: string;
     fotoPerfil?: string;
+    // Campos adicionales para Paciente
+    horarioUso?: string;
+    duracionUso?: string;
+    // Campos adicionales para Psicólogo
+    especialidad?: string;
+    tituloUniversitario?: string;
+    numeroRegistro?: string;
   };
 }
 
@@ -33,6 +40,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   theme: 'pink' | 'blue';
+  refetchUser: () => Promise<void>; // <-- AÑADIDO
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -45,11 +53,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const hasCheckedRef = useRef(false);
   const lastUserIdRef = useRef<string | null>(null);
 
-  const checkUserSession = async () => {
+  // 1. Mover applyTheme aquí arriba y hacer que maneje 'null'
+  const applyTheme = useCallback((user: User | null) => {
+    if (!user) {
+      setTheme('pink');
+      document.body.classList.remove('theme-blue');
+      return;
+    }
+    const dynamicThemeRoutes = ['/perfil', '/inicio/paciente', '/inicio/psicologo'];
+    if (dynamicThemeRoutes.some(route => pathname?.startsWith(route))) {
+      if (user.perfil?.genero === 'Masculino') {
+        setTheme('blue');
+        document.body.classList.add('theme-blue');
+      } else {
+        setTheme('pink');
+        document.body.classList.remove('theme-blue');
+      }
+    } else {
+      setTheme('pink');
+      document.body.classList.remove('theme-blue');
+    }
+  }, [pathname]);
+
+  // 2. Envolver checkUserSession en useCallback
+  const checkUserSession = useCallback(async () => {
     try {
-      const response = await fetch('/api/auth/login', {
-        cache: 'no-store',
-      });
+      const response = await fetch('/api/auth/login', { cache: 'no-store' });
       
       if (response.ok) {
         const data = await response.json();
@@ -66,90 +95,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           if (lastUserIdRef.current !== data.user.id) {
             lastUserIdRef.current = data.user.id;
           }
-          
           setUser(fetchedUser);
           applyTheme(fetchedUser);
         } else {
           setUser(null);
+          applyTheme(null);
           lastUserIdRef.current = null;
         }
       } else {
         setUser(null);
+        applyTheme(null);
         lastUserIdRef.current = null;
       }
     } catch (error) {
       console.error("[Auth] Error al verificar sesión:", error);
       setUser(null);
+      applyTheme(null);
       lastUserIdRef.current = null;
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const applyTheme = (user: User) => {
-    if (pathname?.startsWith('/perfil') || pathname === '/inicio/paciente' || pathname === '/inicio/psicologo') {
-      // Para pacientes, usar el género si está disponible
-      if (user.rol === 'Paciente' && user.perfil?.genero === 'Masculino') {
-        setTheme('blue');
-        document.body.classList.add('theme-blue');
-      }
-      // Para psicólogos, detectar género por prefijo de título (Dr. = masculino)
-      else if (user.rol === 'Psicólogo' && user.nombreCompleto.toLowerCase().startsWith('dr.')) {
-        setTheme('blue');
-        document.body.classList.add('theme-blue');
-      } 
-      else {
-        setTheme('pink');
-        document.body.classList.remove('theme-blue');
-      }
-    } else {
-      setTheme('pink');
-      document.body.classList.remove('theme-blue');
-    }
-  };
+  }, [applyTheme]);
 
   useEffect(() => {
     if (hasCheckedRef.current) return;
     hasCheckedRef.current = true;
-
     checkUserSession();
     
-    // Verificar sesión cuando el documento se vuelve visible (usuario vuelve a la pestaña)
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         checkUserSession();
       }
     };
-    
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [checkUserSession]); // <-- Usar la versión de useCallback
 
-  // Monitorear cambios de ruta para aplicar/remover tema
   useEffect(() => {
-    if (!user) return;
-    
-    // Aplicar tema dinámico en rutas de perfil e inicio paciente
-    if (pathname?.startsWith('/perfil') || pathname === '/inicio/paciente') {
-      // Aplicar tema dinámico solo para pacientes hombres
-      if (user.rol === 'Paciente' && user.perfil?.genero === 'Masculino') {
-        setTheme('blue');
-        document.body.classList.add('theme-blue');
-      } else {
-        setTheme('pink');
-        document.body.classList.remove('theme-blue');
-      }
-    } else {
-      // En otras rutas, siempre rosa
-      setTheme('pink');
-      document.body.classList.remove('theme-blue');
-    }
-  }, [pathname, user]);
+    applyTheme(user);
+  }, [pathname, user, applyTheme]);
 
-  // El valor que proveemos a los componentes hijos
-  const value = { user, isLoading, theme };
+  // 3. Proveer la función 'refetchUser'
+  const value = { user, isLoading, theme, refetchUser: checkUserSession };
 
   return (
     <AuthContext.Provider value={value}>

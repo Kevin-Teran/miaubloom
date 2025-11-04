@@ -17,7 +17,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import LoadingIndicator from '@/components/ui/LoadingIndicator';
 import Link from 'next/link';
-import { useRouteProtection } from '@/hooks/useRouteProtection';
+import { useAuth } from '@/context/AuthContext';
 
 // Tipos para tareas
 interface Tarea {
@@ -181,7 +181,7 @@ const NavButton = ({
 
 export default function InicioPacientePage() {
     const router = useRouter();
-    const { user, hasAccess, isLoading } = useRouteProtection(['Paciente']);
+    const { user, isLoading } = useAuth();
     
     // Estados para datos reales
     const [tasks, setTasks] = useState<Array<{
@@ -199,66 +199,80 @@ export default function InicioPacientePage() {
     }>>([]);
     
     const [loadingStats, setLoadingStats] = useState(true);
+    const [dataError, setDataError] = useState<string | null>(null);
+    const [isRetrying, setIsRetrying] = useState(false);
 
     // Cargar tareas al montar el componente
-    useEffect(() => {
-        const fetchTasks = async () => {
-            try {
-                const response = await fetch('/api/tareas/list');
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    // Mapear tareas a formato del componente
-                    const formattedTasks = data.tareas.map((tarea: Tarea) => ({
-                        id: tarea.id,
-                        title: tarea.titulo,
-                        description: tarea.descripcion,
-                        tag: tarea.etiqueta,
-                        isCompleted: tarea.etiqueta === 'Completada'
-                    }));
-                    
-                    setTasks(formattedTasks);
-                }
-            } catch (error) {
-                console.error('Error fetching tasks:', error);
-            } finally {
-                // No necesitamos setLoadingTasks
+    const fetchTasks = async () => {
+        try {
+            const response = await fetch('/api/tareas/list');
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Mapear tareas a formato del componente
+                const formattedTasks = data.tareas.map((tarea: Tarea) => ({
+                    id: tarea.id,
+                    title: tarea.titulo,
+                    description: tarea.descripcion,
+                    tag: tarea.etiqueta,
+                    isCompleted: tarea.etiqueta === 'Completada'
+                }));
+                
+                setTasks(formattedTasks);
+            } else if (response.status !== 401) {
+                setDataError('Error al cargar tareas');
             }
-        };
+        } catch (error) {
+            console.error('Error fetching tasks:', error);
+            setDataError('Error de conexión al cargar tareas');
+        }
+    };
 
-        if (hasAccess) {
+    useEffect(() => {
+        if (user) {
             fetchTasks();
         }
-    }, [hasAccess]);
+    }, [user]);
 
     // Cargar estadísticas de emociones
-    useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const response = await fetch('/api/actividades/estadisticas');
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    // Mapear estadísticas a formato del componente
-                    const formattedStats = data.estadisticas.map((stat: Estadistica) => ({
-                        name: stat.nombre,
-                        percentage: stat.porcentaje,
-                        color: stat.color
-                    }));
-                    
-                    setEmotionStats(formattedStats);
-                }
-            } catch (error) {
-                console.error('Error fetching statistics:', error);
-            } finally {
-                setLoadingStats(false);
+    const fetchStats = async () => {
+        try {
+            const response = await fetch('/api/actividades/estadisticas');
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Mapear estadísticas a formato del componente
+                const formattedStats = data.estadisticas.map((stat: Estadistica) => ({
+                    name: stat.nombre,
+                    percentage: stat.porcentaje,
+                    color: stat.color
+                }));
+                
+                setEmotionStats(formattedStats);
+            } else if (response.status !== 401) {
+                setDataError('Error al cargar estadísticas');
             }
-        };
+        } catch (error) {
+            console.error('Error fetching statistics:', error);
+            setDataError('Error de conexión al cargar estadísticas');
+        } finally {
+            setLoadingStats(false);
+        }
+    };
 
-        if (hasAccess) {
+    useEffect(() => {
+        if (user) {
             fetchStats();
         }
-    }, [hasAccess]);
+    }, [user]);
+
+    const handleRetry = async () => {
+        setIsRetrying(true);
+        setDataError(null);
+        setLoadingStats(true);
+        await Promise.all([fetchTasks(), fetchStats()]);
+        setIsRetrying(false);
+    };
 
     const toggleTask = (id: number) => {
         setTasks(tasks.map(task => 
@@ -290,13 +304,37 @@ export default function InicioPacientePage() {
     };
 
     // Estado de carga o sin acceso
-    if (isLoading || !hasAccess) {
+    if (isLoading || !user) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-pink-100 via-pink-50 to-white">
                 <LoadingIndicator
                     text="Cargando tu jardín emocional..."
                     className="[&>p]:text-gray-600"
                 />
+            </div>
+        );
+    }
+
+    // Mostrar error si existe
+    if (dataError) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-pink-100 via-pink-50 to-white px-4">
+                <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-md">
+                    <div className="mb-4">
+                        <svg className="mx-auto h-12 w-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h2 className="text-xl font-semibold text-gray-800 mb-2">Error al cargar</h2>
+                    <p className="text-gray-600 mb-6">{dataError}</p>
+                    <button
+                        onClick={handleRetry}
+                        disabled={isRetrying}
+                        className="px-6 py-2 bg-[var(--color-theme-primary)] text-white rounded-lg font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+                    >
+                        {isRetrying ? 'Reintentando...' : 'Reintentar'}
+                    </button>
+                </div>
             </div>
         );
     }

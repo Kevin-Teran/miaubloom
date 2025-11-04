@@ -1,17 +1,36 @@
 /**
  * @file route.ts
  * @route src/app/api/psicologo/pacientes/route.ts
- * @description API endpoint para obtener los pacientes asignados al psicólogo
+ * @description API endpoint para obtener pacientes (ACTUALIZADO A JWT)
  * @author Kevin Mariano
- * @version 1.0.0
+ * @version 2.0.0
  * @since 1.0.0
  * @copyright MiauBloom
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { jwtVerify } from 'jose'; // <-- IMPORTAR JOSE
 
 const prisma = new PrismaClient();
+
+// --- LÓGICA DE AUTENTICACIÓN JWT REUTILIZABLE ---
+const SECRET_KEY = new TextEncoder().encode(
+  process.env.JWT_SECRET_KEY || 'tu-clave-secreta-muy-segura-aqui'
+);
+
+async function getAuthPayload(request: NextRequest): Promise<{ userId: string; rol: string } | null> {
+  const token = request.cookies.get('miaubloom_session')?.value;
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, SECRET_KEY);
+    return { userId: payload.userId as string, rol: payload.rol as string };
+  } catch (e) {
+    console.warn('Error al verificar JWT en API:', e instanceof Error ? e.message : String(e));
+    return null;
+  }
+}
+// --- FIN DE LÓGICA DE AUTENTICACIÓN ---
 
 interface PacienteConUsuario {
   userId: string;
@@ -25,24 +44,21 @@ interface PacienteConUsuario {
 
 /**
  * @function GET
- * @description Obtiene la lista de pacientes asignados al psicólogo autenticado
- * @param {NextRequest} request - Petición HTTP con cookie de sesión
- * @returns {Promise<NextResponse>} Lista de pacientes asignados
+ * @description Obtiene la lista de pacientes (AHORA USA JWT)
  */
 export async function GET(request: NextRequest) {
   try {
-    const sessionCookie = request.cookies.get('miaubloom_session');
-
-    if (!sessionCookie) {
+    // 1. Verificar autenticación
+    const auth = await getAuthPayload(request);
+    if (!auth || auth.rol !== 'Psicólogo') {
       return NextResponse.json(
-        { success: false, message: 'No autenticado' },
+        { success: false, message: 'No autenticado o rol incorrecto' },
         { status: 401 }
       );
     }
+    const userId = auth.userId;
 
-    const userId = sessionCookie.value;
-
-    // Obtener el perfil del psicólogo
+    // 2. Obtener el perfil del psicólogo
     const psicologoProfile = await prisma.perfilPsicologo.findUnique({
       where: { userId },
     });
@@ -54,7 +70,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Obtener pacientes asignados
+    // 3. Obtener pacientes asignados (lógica existente)
     const pacientes = await prisma.perfilPaciente.findMany({
       where: {
         psicologoAsignadoId: psicologoProfile.userId,
@@ -73,14 +89,14 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Mapear pacientes a formato más legible
+    // 4. Mapear pacientes (lógica existente)
     const pacientesFormateados = pacientes.map((paciente: PacienteConUsuario) => ({
       id: paciente.userId,
       nombre: paciente.user.nombreCompleto,
       nickname: paciente.nicknameAvatar,
       genero: paciente.genero,
       avatar: paciente.fotoPerfil || '/assets/avatar-paciente.png',
-      estado: 'Activo', // Puedes obtener esto de los registros emocionales
+      estado: 'Activo', // TODO: Implementar lógica de estado
     }));
 
     return NextResponse.json(

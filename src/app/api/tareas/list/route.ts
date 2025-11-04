@@ -1,38 +1,54 @@
 /**
  * @file route.ts
  * @route src/app/api/tareas/list/route.ts
- * @description API endpoint para obtener las tareas del paciente autenticado
+ * @description API endpoint para tareas (ACTUALIZADO A JWT)
  * @author Kevin Mariano
- * @version 1.0.0
+ * @version 2.0.0
  * @since 1.0.0
  * @copyright MiauBloom
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { jwtVerify } from 'jose'; // <-- IMPORTAR JOSE
 
 const prisma = new PrismaClient();
 
+// --- LÓGICA DE AUTENTICACIÓN JWT REUTILIZABLE ---
+const SECRET_KEY = new TextEncoder().encode(
+  process.env.JWT_SECRET_KEY || 'tu-clave-secreta-muy-segura-aqui'
+);
+
+async function getAuthPayload(request: NextRequest): Promise<{ userId: string; rol: string } | null> {
+  const token = request.cookies.get('miaubloom_session')?.value;
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, SECRET_KEY);
+    return { userId: payload.userId as string, rol: payload.rol as string };
+  } catch (e) {
+    console.warn('Error al verificar JWT en API:', e instanceof Error ? e.message : String(e));
+    return null;
+  }
+}
+// --- FIN DE LÓGICA DE AUTENTICACIÓN ---
+
 /**
  * @function GET
- * @description Obtiene las tareas pendientes del paciente autenticado
- * @param {NextRequest} request - Petición HTTP con cookie de sesión
- * @returns {Promise<NextResponse>} Lista de tareas del paciente
+ * @description Obtiene las tareas (AHORA USA JWT)
  */
 export async function GET(request: NextRequest) {
   try {
-    const sessionCookie = request.cookies.get('miaubloom_session');
-
-    if (!sessionCookie) {
+    // 1. Verificar autenticación
+    const auth = await getAuthPayload(request);
+    if (!auth || auth.rol !== 'Paciente') {
       return NextResponse.json(
-        { success: false, message: 'No autenticado' },
+        { success: false, message: 'No autenticado o rol incorrecto' },
         { status: 401 }
       );
     }
+    const userId = auth.userId;
 
-    const userId = sessionCookie.value;
-
-    // Obtener el perfil del paciente para acceder a las tareas
+    // 2. Obtener el perfil del paciente
     const pacienteProfile = await prisma.perfilPaciente.findUnique({
       where: { userId },
     });
@@ -44,7 +60,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Obtener tareas del paciente
+    // 3. Obtener tareas (lógica existente)
     const tareas = await prisma.tarea.findMany({
       where: {
         pacienteId: pacienteProfile.userId,
@@ -69,10 +85,10 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Mapear tareas a formato más legible
+    // 4. Mapear tareas (lógica existente)
     const tareasFormateadas = tareas.map(tarea => ({
       id: tarea.id,
-      titulo: tarea.descripcion.split('\n')[0], // Primera línea como título
+      titulo: tarea.descripcion.split('\n')[0],
       descripcion: tarea.descripcion,
       fechaLimite: tarea.fechaLimite,
       estado: tarea.estado,

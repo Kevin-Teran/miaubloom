@@ -12,10 +12,10 @@
 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Input from '@/components/ui/Input';
-import LoadingIndicator from '@/components/ui/LoadingIndicator';
 import { EllipseCorner } from '@/components/EllipseCorner';
+import IconButton from '@/components/ui/IconButton';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -23,28 +23,6 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        const response = await fetch('/api/auth/login');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.authenticated) {
-            console.log("Usuario ya autenticado, redirigiendo desde olvidó contraseña...");
-            router.replace('/identificacion');
-            return;
-          }
-        }
-        setIsLoadingAuth(false);
-      } catch (authError) {
-        console.error("Error verificando estado de autenticación:", authError);
-        setIsLoadingAuth(false);
-      }
-    };
-    checkAuthStatus();
-  }, [router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -106,30 +84,20 @@ export default function ForgotPasswordPage() {
 
   const themeColor = '#F1A8A9';
 
-  if (isLoadingAuth) {
-   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-          <LoadingIndicator text="Cargando tu experiencia..." className="[&>p]:text-gray-600 [&>div]:opacity-50 [&>div]:bg-[#F5A0A1] [&>div>div]:bg-[#EE7E7F]"/> {/* */}
-    </div>
-   );
-  }
-
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 p-6 relative select-none">
       {/* FRANJA ROSA DECORATIVA */}
       <EllipseCorner />
 
-      {/* Botón Volver */}
-      <button
+      {/* --- BOTÓN VOLVER ESTANDARIZADO --- */}
+      <IconButton
+        icon="back"
         onClick={() => router.back()}
-        style={{ backgroundColor: themeColor }}
-        className="absolute top-8 left-6 flex items-center justify-center w-10 h-10 rounded-full text-white hover:opacity-90 transition-opacity z-10 cursor-pointer"
+        bgColor={themeColor}
+        className="absolute top-8 left-6 z-10"
         aria-label="Volver"
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
+      />
+      {/* --- FIN BOTÓN VOLVER --- */}
 
       {/* Contenido Centrado */}
       <main className="flex-grow flex flex-col items-center justify-center">
