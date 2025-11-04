@@ -1,113 +1,50 @@
-"use client";
+'use client';
 
-/**
- * @file not-found.tsx
- * @route src/app/not-found.tsx
- * @description Página personalizada para errores 404 (No encontrado).
- * @author Kevin Mariano
- * @version 1.0.1 
- * @since 1.0.0
- * @copyright MiauBloom
- */
-
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import React, { useState, useEffect } from 'react';
-
-const THEME_COLOR = '#F4A9A0';
-
-interface Dot {
-  id: number;
-  style: React.CSSProperties;
-}
+import Link from 'next/link';
+import { Home } from 'lucide-react';
 
 export default function NotFound() {
-  const router = useRouter();
-  const [dots, setDots] = useState<Dot[]>([]);
-
-  useEffect(() => {
-    const generatedDots: Dot[] = [];
-    for (let i = 0; i < 15; i++) {
-      const size = Math.random() * 3 + 2;
-      generatedDots.push({
-        id: i,
-        style: {
-          position: 'absolute',
-          width: `${size}px`,
-          height: `${size}px`,
-          left: `${Math.random() * 100}%`,
-          top: `${Math.random() * 100}%`,
-          animation: `float-bubble ${Math.random() * 12 + 10}s infinite ease-in-out alternate`,
-          animationDelay: `${Math.random() * 10}s`,
-          zIndex: 0,
-        },
-      });
-    }
-    setDots(generatedDots);
-  }, []);
-
-
-  const handleRestart = () => {
-    router.push('/');
-  };
-
   return (
-    <div
-      className="flex flex-col min-h-screen items-center justify-center bg-gray-50 p-6 text-center relative overflow-hidden"
-    >
-        {/* Fondo decorativo */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
-             <div className="absolute -top-16 -right-16 w-3/4 h-1/2 max-w-sm opacity-60">
-                <Image
-                  src="/assets/ellipse-corner.svg"
-                  alt=""
-                  fill
-                  priority 
-                  className="object-contain object-top-right"
-                  unoptimized />
-             </div>
-             {/* Renderizar los puntos */}
-             {dots.map((dot) => (
-               <div key={dot.id} style={dot.style}>
-                 <Image
-                   src="/assets/punto.png"
-                   alt=""
-                   fill
-                   className="opacity-40"
-                   unoptimized/>
-               </div>
-             ))}
+    <div className="flex flex-col min-h-screen items-center justify-center bg-gradient-to-b from-pink-50 to-white p-6">
+      <div className="max-w-md w-full text-center space-y-8">
+        
+        {/* Gato 404 - Arriba del texto */}
+        <div className="relative w-40 h-40 mx-auto">
+          <Image
+            src="/assets/cat_404.png"
+            alt="Gato perdido 404"
+            width={160}
+            height={160}
+            className="object-contain drop-shadow-lg"
+            priority
+          />
         </div>
 
-        {/* Contenido Principal */}
-        <div className="relative z-10 flex flex-col items-center">
-            {/* Imagen del Gato */}
-            <div className="relative w-48 h-48 mb-8">
-                 <Image
-                    src="/assets/gato-inicio-1.png"
-                    alt="Gato confundido"
-                    fill
-                    priority 
-                    className="object-contain filter drop-shadow-md"
-                    unoptimized
-                 />
-            </div>
-
-          <h1 className="text-3xl font-bold mb-3" style={{ color: THEME_COLOR }}>
-            ¡Miau! Algo no está aquí
-          </h1>
-          <p className="text-gray-600 text-base mb-8 max-w-xs">
-            No pudimos encontrar la página que buscabas. Quizás se escondió entre las flores.
+        {/* Texto del error */}
+        <div className="space-y-3">
+          <h2 className="text-4xl font-bold text-gray-800">
+            404
+          </h2>
+          <h3 className="text-2xl font-bold text-gray-700">
+            ¡Página no encontrada!
+          </h3>
+          <p className="text-gray-600 text-base leading-relaxed px-4">
+            Parece que esta página se perdió como un gato curioso. 
+            No te preocupes, te ayudaremos a encontrar el camino.
           </p>
-
-          <button
-            onClick={handleRestart}
-            style={{ backgroundColor: THEME_COLOR }}
-            className="px-8 py-3 rounded-full font-bold text-lg text-white shadow-lg hover:shadow-xl active:scale-95 transition-all select-none"
-          >
-            Volver al inicio
-          </button>
         </div>
+
+        {/* Botón de acción */}
+        <Link
+          href="/identificacion"
+          style={{ backgroundColor: '#F1A8A9' }}
+          className="inline-flex items-center gap-2 px-10 py-4 rounded-full font-bold text-lg text-white shadow-lg hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 select-none"
+        >
+          <Home size={20} />
+          Volver al inicio
+        </Link>
+      </div>
     </div>
   );
 }

@@ -1,0 +1,45 @@
+/**
+ * @file UsageSchedule.tsx
+ * @description Componente para seleccionar horario de uso
+ * 
+ * Tipografía (Roboto):
+ * - Título: 18px SemiBold (#070806)
+ * - Botones: 16px Medium (#070806)
+ */
+
+interface UsageScheduleProps {
+  selectedSchedule: string;
+  onScheduleChange: (schedule: string) => void;
+}
+
+const scheduleOptions = [
+  { id: '3-8', label: '3-8 Horas' },
+  { id: '8-14', label: '8-14 Horas' },
+  { id: '14-20', label: '14-20 Horas' },
+  { id: '20-24', label: '20-24 Horas' },
+  { id: '24-30', label: '24-30 Horas' },
+];
+
+export function UsageSchedule({ selectedSchedule, onScheduleChange }: UsageScheduleProps) {
+  return (
+    <div className="mb-8">
+      <div className="flex flex-wrap gap-2 md:gap-3">
+        {scheduleOptions.map((option) => (
+          <button
+            key={option.id}
+            onClick={() => onScheduleChange(option.id)}
+            className="px-4 md:px-5 py-2 rounded-full font-roboto text-sm md:text-base transition-all duration-300"
+            style={{
+              fontSize: '16px',
+              fontWeight: '500',
+              color: selectedSchedule === option.id ? '#FFFFFF' : '#070806',
+              backgroundColor: selectedSchedule === option.id ? 'var(--color-theme-primary)' : '#F0F0F0',
+            }}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}

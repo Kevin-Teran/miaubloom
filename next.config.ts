@@ -1,8 +1,9 @@
-/** @type {import('next').NextConfig} */
+import withPWAInit from 'next-pwa';
+import type { NextConfig } from 'next';
 
 const isProd = process.env.NODE_ENV === 'production';
 
-const withPWA = require('next-pwa')({
+const withPWA = (withPWAInit as unknown as (config: { dest: string; disable: boolean; register: boolean; skipWaiting: boolean }) => (config: NextConfig) => NextConfig)({
   dest: 'public',
   disable: !isProd, 
   register: true,
@@ -10,6 +11,11 @@ const withPWA = require('next-pwa')({
 });
 
 const nextConfig = {
+  // Deshabilitar prerendering estático para evitar problemas con dynamic pages
+  onDemandEntries: {
+    maxInactiveAge: 25 * 1000,
+    pagesBufferLength: 5,
+  }
 };
 
-module.exports = withPWA(nextConfig);
+export default withPWA(nextConfig);

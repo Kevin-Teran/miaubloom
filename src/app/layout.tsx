@@ -9,11 +9,16 @@
  */
 
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Roboto } from 'next/font/google';
 import './globals.css';
 import { LenisScroll } from '@/components/LenisScroll';
+import { AuthProvider } from '@/context/AuthContext';
 
-const inter = Inter({ subsets: ['latin'] });
+const roboto = Roboto({ 
+  weight: ['400', '500', '700'],
+  subsets: ['latin'],
+  variable: '--font-roboto'
+});
 
 export const metadata: Metadata = {
   title: 'MiauBloom',
@@ -43,8 +48,20 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="MiauBloom" />
       </head>
-      <body className={inter.className}>
-        <LenisScroll>{children}</LenisScroll>
+      <body className={roboto.className} style={{ fontFamily: 'Roboto, sans-serif' }}>
+        <style>{`
+          img {
+            user-select: none !important;
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            pointer-events: none !important;
+            -webkit-touch-callout: none !important;
+          }
+        `}</style>
+        <AuthProvider>
+          <LenisScroll>{children}</LenisScroll>
+        </AuthProvider>
       </body>
     </html>
   );

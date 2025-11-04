@@ -1,6 +1,8 @@
 // src/app/ajustes/psicologo/page.tsx
 "use client";
 
+export const dynamic = 'force-dynamic';
+
 /**
  * @file page.tsx
  * @route src/app/ajustes/psicologo/page.tsx
@@ -11,73 +13,45 @@
  * @copyright MiauBloom
  */
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 // import Link from 'next/link'; // <<<--- ELIMINADO (No se usa Link directamente)
 import Image from 'next/image';
 import LoadingIndicator from '@/components/ui/LoadingIndicator'; //
 // <<<--- CORRECCIÓN DE RUTA DE IMPORTACIÓN --->>>
 import { SettingsItemLink, AccountSettingsItemLink, ToggleItem } from '../SettingsComponents'; //
-
-// --- PLACEHOLDER HOOK DE AUTENTICACIÓN ---
-// (sin cambios)
-const useAuth = () => {
-    const [user, setUser] = useState<{ nombreCompleto: string; rol: string; avatarUrl?: string } | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchUser = async () => {
-             setIsLoading(true);
-            try {
-                const response = await fetch('/api/auth/login'); //
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success && data.authenticated) { //
-                        setUser({
-                            nombreCompleto: data.user.nombreCompleto,
-                            rol: data.user.rol,
-                            avatarUrl: "/assets/avatar-psicologo.png" // Placeholder
-                        });
-                    } else { setUser(null); }
-                } else { setUser(null); }
-            } catch (error) { console.error("Error fetching auth status in hook:", error); setUser(null); }
-            finally { setIsLoading(false); }
-        };
-        fetchUser();
-    }, []);
-
-    return { user, isLoading };
-};
-// --- FIN PLACEHOLDER HOOK ---
+import { useAuth } from '@/context/AuthContext';
 
 
 export default function AjustesPsicologoPage() {
     const router = useRouter();
     const { user, isLoading } = useAuth();
-    const [showAppSettings, setShowAppSettings] = useState(false);
-
-    // Protección de ruta (sin cambios)
-    useEffect(() => {
-        const isAllowedRole = user?.rol === 'Psicólogo' || user?.rol === 'Psicologo'; //
-        if (!isLoading && (!user || !isAllowedRole)) {
-             console.log("Ajustes Psicologo: Acceso no autorizado o usuario no cargado, redirigiendo...");
-             router.replace('/identificacion'); //
-        }
-    }, [user, isLoading, router]);
 
      // Función para cerrar sesión (sin cambios)
     const handleSignOut = async () => {
         console.log("Cerrando sesión...");
         try {
-            await fetch('/api/auth/logout', { method: 'POST' }); //
+            const response = await fetch('/api/auth/logout', { method: 'POST' });
+            if (response.ok) {
+                // Limpiar localStorage si la aplicación lo usa
+                if (typeof window !== 'undefined') {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                }
+                // Redirigir y recargar para asegurar que se limpie el contexto
+                router.push('/identificacion');
+                // Pequeño delay para permitir que la redirección se procese
+                setTimeout(() => {
+                    window.location.reload();
+                }, 100);
+            }
         } catch (error) {
             console.error("Error de red al cerrar sesión:", error);
-        } finally {
-            router.push('/identificacion'); //
+            router.push('/identificacion');
         }
     };
 
-    // Muestra indicador de carga (sin cambios)
+    // Muestra indicador de carga o sin acceso
     if (isLoading || !user) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -86,27 +60,25 @@ export default function AjustesPsicologoPage() {
         );
     }
 
-    const themeColor = '#F4A9A0'; //
-
-    // --- JSX (Usa componentes importados correctamente) ---
+    // --- JSX REESTRUCTURADO ---
     return (
-        <div className="min-h-screen bg-gray-100">
-
-            {/* ----- VISTA PRINCIPAL (ROSA) ----- */}
-            <div className={`min-h-screen p-6 ${showAppSettings ? 'hidden' : 'block'} select-none`} style={{ backgroundColor: themeColor }}>
-                 {/* Botón de volver */}
-                 <button onClick={() => router.back()} className="mb-4 text-white hover:opacity-75">
-                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                     </svg>
-                 </button>
+        <div className="flex min-h-screen bg-gray-100">
+            {/* COLUMNA IZQUIERDA (Menú Rosa - Sidebar en Desktop) */}
+            <aside className="w-full md:w-72 lg:w-80 flex-shrink-0 bg-[var(--color-primary)] p-6 md:fixed md:h-screen md:block">
+                {/* Botón Volver */}
+                <button onClick={() => router.back()} className="mb-4 text-white hover:opacity-75 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    <span className="font-medium text-sm">Volver</span>
+                </button>
                 {/* Perfil */}
                 <div className="flex items-center gap-4 mb-8">
                     <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-white pointer-events-none">
-                        <Image src={user.avatarUrl || "/assets/avatar-psicologo.png"} alt="Avatar" fill className="object-cover"/> {/* */}
+                        <Image src={user!.avatarUrl || "/assets/avatar-psicologo.png"} alt="Avatar" fill className="object-cover"/>
                     </div>
                     <div>
-                        <h1 className="text-xl font-semibold text-white">{user.nombreCompleto}</h1>
+                        <h1 className="text-xl font-semibold text-white">{user!.nombreCompleto}</h1>
                     </div>
                 </div>
                 {/* Lista de Opciones */}
@@ -116,12 +88,7 @@ export default function AjustesPsicologoPage() {
                     <SettingsItemLink href="/inicio/psicologo/citas">Citas pendientes</SettingsItemLink>
                     <SettingsItemLink href="/notificaciones/psicologo">Notificaciones</SettingsItemLink>
                     <hr className="border-white/20 my-3"/>
-                    <button onClick={() => setShowAppSettings(true)} className="flex items-center justify-between py-3 px-4 rounded-lg hover:bg-white/10 transition-colors w-full text-left group">
-                        <span className="text-white text-sm">Ajustes</span>
-                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white/50 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                         </svg>
-                    </button>
+                    <SettingsItemLink href="#">Ajustes</SettingsItemLink>
                     <SettingsItemLink href="/ayuda">Help Center</SettingsItemLink>
                     <SettingsItemLink href="/privacidad">Privacy & Policy</SettingsItemLink>
                      <hr className="border-white/20 my-3"/>
@@ -129,22 +96,17 @@ export default function AjustesPsicologoPage() {
                         Sign Out
                     </button>
                 </nav>
-            </div>
+            </aside>
 
-            {/* ----- VISTA SECUNDARIA (BLANCA - Ajustes App) ----- */}
-            <div className={`min-h-screen bg-white p-6 ${showAppSettings ? 'block' : 'hidden'} select-none`}>
+            {/* COLUMNA DERECHA (Contenido Blanco) */}
+            <main className="w-full bg-white p-6 md:ml-72 lg:ml-80">
                 {/* Encabezado */}
                 <div className="flex items-center mb-6 relative h-10">
-                     <button onClick={() => setShowAppSettings(false)} className="absolute left-0 top-1/2 -translate-y-1/2 p-2 text-gray-600 hover:text-gray-900">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                        </svg>
-                     </button>
                     <h1 className="text-lg font-semibold text-gray-800 text-center flex-grow">Account & Settings</h1>
                 </div>
                 {/* Sección Ajustes */}
-                <section className="mb-8">
-                     <h2 className="text-xs uppercase text-gray-500 font-semibold px-4 mb-2 tracking-wide">Ajustes</h2>
+                <section className="mb-8 max-w-2xl mx-auto">
+                    <h2 className="text-xs uppercase text-gray-500 font-semibold px-4 mb-2 tracking-wide">Ajustes</h2>
                     <div className="bg-gray-50/70 rounded-lg divide-y divide-gray-200 border border-gray-200">
                         <AccountSettingsItemLink href="/ajustes/psicologo/notificaciones">Notificaciones</AccountSettingsItemLink>
                         <AccountSettingsItemLink href="#">Configuración de horario</AccountSettingsItemLink>
@@ -155,16 +117,15 @@ export default function AjustesPsicologoPage() {
                     </div>
                 </section>
                 {/* Sección App Settings */}
-                 <section>
-                     <h2 className="text-xs uppercase text-gray-500 font-semibold px-4 mb-2 tracking-wide">App Settings</h2>
+                 <section className="max-w-2xl mx-auto">
+                     <h2 className="text-xs uppercase text-gray-500 font-semibold px-4 mb-2 tracking-wide">Configuración de la aplicación</h2>
                     <div className="bg-gray-50/70 rounded-lg divide-y divide-gray-200 border border-gray-200">
-                        <ToggleItem label="Activar Face ID para iniciar sesión" />
                         <ToggleItem label="Activar notificaciones" initialValue={true}/>
                         <ToggleItem label="Servicio de ubicación" />
                         <ToggleItem label="Dark Mode" />
                     </div>
                 </section>
-            </div>
+            </main>
         </div>
     );
 }
