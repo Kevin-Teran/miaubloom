@@ -186,7 +186,7 @@ const NavButton = ({ href, icon, label, isActive = false }: { href: string; icon
 
 export default function InicioPsicologoPage() {
     const router = useRouter();
-    const { user } = useAuth();
+    const { user, isLoading } = useAuth();
     const [pacientes, setPacientes] = useState<Paciente[]>([]);
     const [showAllModal, setShowAllModal] = useState(false);
 
@@ -248,18 +248,7 @@ export default function InicioPsicologoPage() {
         fetchData();
     }, [user]);
 
-    // Redirigir a login si no hay usuario después de esperar
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (!user) {
-                router.push('/auth/login/psicologo');
-            }
-        }, 3000); // Esperar 3 segundos antes de redirigir
-        
-        return () => clearTimeout(timer);
-    }, [user, router]);
-
-    if (isDataLoading || !user) {
+    if (isLoading || isDataLoading || !user) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[var(--color-theme-primary-light)] via-white to-white">
                 <LoadingIndicator
@@ -311,12 +300,11 @@ export default function InicioPsicologoPage() {
                     localStorage.clear();
                     sessionStorage.clear();
                 }
-                // Usar router.push en lugar de window.location.href para evitar doble recarga
-                router.push('/identificacion');
+                window.location.href = '/identificacion';
             }
         } catch (error) {
             console.error("Error al cerrar sesión:", error);
-            router.push('/identificacion');
+            window.location.href = '/identificacion';
         }
     };
 

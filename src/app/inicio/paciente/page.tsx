@@ -181,7 +181,7 @@ const NavButton = ({
 
 export default function InicioPacientePage() {
     const router = useRouter();
-    const { user } = useAuth();
+    const { user, isLoading } = useAuth();
     
     // Estados para datos reales
     const [tasks, setTasks] = useState<Array<{
@@ -234,17 +234,6 @@ export default function InicioPacientePage() {
         }
     }, [user]);
 
-    // Redirigir a login si no hay usuario después de esperar
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (!user) {
-                router.push('/auth/login/paciente');
-            }
-        }, 3000); // Esperar 3 segundos antes de redirigir
-        
-        return () => clearTimeout(timer);
-    }, [user, router]);
-
     // Cargar estadísticas de emociones
     const fetchStats = async () => {
         try {
@@ -296,13 +285,17 @@ export default function InicioPacientePage() {
         try {
             const response = await fetch('/api/auth/logout', { method: 'POST' });
             if (response.ok) {
-                // Limpiar localStorage
+                // Limpiar localStorage si la aplicación lo usa
                 if (typeof window !== 'undefined') {
                     localStorage.clear();
                     sessionStorage.clear();
                 }
-                // Solo redirigir sin recargar para evitar doble recarga
+                // Redirigir y recargar para asegurar que se limpie el contexto
                 router.push('/identificacion');
+                // Delay para permitir que la redirección y logout se procesen
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
             }
         } catch (error) {
             console.error("Error al cerrar sesión:", error);
@@ -311,8 +304,7 @@ export default function InicioPacientePage() {
     };
 
     // Estado de carga o sin acceso
-    // Solo mostrar loading si no hay usuario (no si solo isLoading es true)
-    if (!user) {
+    if (isLoading || !user) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-pink-100 via-pink-50 to-white">
                 <LoadingIndicator

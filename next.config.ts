@@ -15,7 +15,7 @@ const nextConfig = {
   onDemandEntries: {
     maxInactiveAge: 25 * 1000,
     pagesBufferLength: 5,
-  }
+  },
 };
 
 export default withPWA(nextConfig);
