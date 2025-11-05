@@ -86,6 +86,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     hasCheckedRef.current = true;
     
     try {
+      // Pequeño delay para asegurar que la cookie está establecida
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
       const response = await fetch('/api/auth/login', { cache: 'no-store' });
       
       if (response.ok) {

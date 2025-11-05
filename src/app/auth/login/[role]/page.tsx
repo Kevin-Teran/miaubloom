@@ -89,10 +89,14 @@ function LoginForm() {
             // DETERMINAR LA RUTA DE DESTINO
             const destinationRoute = data.user.perfilCompleto ? dashboardRoute : completeProfileRoute;
             
-            // ¡ESTA ES LA CORRECCIÓN!
-            // Forzar una recarga completa (hard refresh) en lugar de un router.push()
-            // Esto asegura que AuthContext se recargue y lea la nueva cookie de sesión.
-            window.location.href = destinationRoute;
+            // Usar router.push() y esperar a que se complete antes de cambiar isLoading
+            // Esto permite que el AuthContext se sincronice correctamente
+            setIsLoading(false);
+            
+            // Dar un pequeño delay para asegurar que la cookie está establecida
+            setTimeout(() => {
+                router.push(destinationRoute);
+            }, 100);
             
         } else {
             setApiError(data.message || 'Error al iniciar sesión'); 
