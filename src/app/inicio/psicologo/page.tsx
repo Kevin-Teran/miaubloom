@@ -186,7 +186,7 @@ const NavButton = ({ href, icon, label, isActive = false }: { href: string; icon
 
 export default function InicioPsicologoPage() {
     const router = useRouter();
-    const { user, isLoading } = useAuth();
+    const { user } = useAuth();
     const [pacientes, setPacientes] = useState<Paciente[]>([]);
     const [showAllModal, setShowAllModal] = useState(false);
 
@@ -248,7 +248,7 @@ export default function InicioPsicologoPage() {
         fetchData();
     }, [user]);
 
-    if (isLoading || isDataLoading || !user) {
+    if (isDataLoading || !user) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[var(--color-theme-primary-light)] via-white to-white">
                 <LoadingIndicator

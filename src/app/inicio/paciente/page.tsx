@@ -181,7 +181,7 @@ const NavButton = ({
 
 export default function InicioPacientePage() {
     const router = useRouter();
-    const { user, isLoading } = useAuth();
+    const { user } = useAuth();
     
     // Estados para datos reales
     const [tasks, setTasks] = useState<Array<{
@@ -304,7 +304,8 @@ export default function InicioPacientePage() {
     };
 
     // Estado de carga o sin acceso
-    if (isLoading || !user) {
+    // Solo mostrar loading si no hay usuario (no si solo isLoading es true)
+    if (!user) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-pink-100 via-pink-50 to-white">
                 <LoadingIndicator
