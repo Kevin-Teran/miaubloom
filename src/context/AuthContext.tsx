@@ -51,6 +51,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<'pink' | 'blue'>('pink');
   const pathname = usePathname();
   const hasCheckedRef = useRef(false);
+  const isCheckingRef = useRef(false);
   const lastUserIdRef = useRef<string | null>(null);
 
   // 1. Mover applyTheme aquí arriba y hacer que maneje 'null'
@@ -75,8 +76,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [pathname]);
 
-  // 2. Envolver checkUserSession en useCallback
-  const checkUserSession = useCallback(async () => {
+  // 2. Envolver checkUserSession en useCallback - MEJORADO PARA EVITAR DOBLE LLAMADA
+  const checkUserSession = useCallback(async (force: boolean = false) => {
+    // Evitar llamadas concurrentes
+    if (isCheckingRef.current && !force) return;
+    if (hasCheckedRef.current && !force) return;
+    
+    isCheckingRef.current = true;
+    hasCheckedRef.current = true;
+    
     try {
       const response = await fetch('/api/auth/login', { cache: 'no-store' });
       
@@ -114,6 +122,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       lastUserIdRef.current = null;
     } finally {
       setIsLoading(false);
+      isCheckingRef.current = false;
     }
   }, [applyTheme]);
 
@@ -124,12 +133,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        checkUserSession();
+        // Permitir re-check cuando vuelve a focus
+        hasCheckedRef.current = false;
+        isCheckingRef.current = false;
+        checkUserSession(true);
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [checkUserSession]); // <-- Usar la versión de useCallback
+  }, [checkUserSession]);
 
   useEffect(() => {
     applyTheme(user);
