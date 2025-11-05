@@ -248,6 +248,17 @@ export default function InicioPsicologoPage() {
         fetchData();
     }, [user]);
 
+    // Redirigir a login si no hay usuario después de esperar
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (!user) {
+                router.push('/auth/login/psicologo');
+            }
+        }, 3000); // Esperar 3 segundos antes de redirigir
+        
+        return () => clearTimeout(timer);
+    }, [user, router]);
+
     if (isDataLoading || !user) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[var(--color-theme-primary-light)] via-white to-white">

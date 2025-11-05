@@ -234,6 +234,17 @@ export default function InicioPacientePage() {
         }
     }, [user]);
 
+    // Redirigir a login si no hay usuario después de esperar
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (!user) {
+                router.push('/auth/login/paciente');
+            }
+        }, 3000); // Esperar 3 segundos antes de redirigir
+        
+        return () => clearTimeout(timer);
+    }, [user, router]);
+
     // Cargar estadísticas de emociones
     const fetchStats = async () => {
         try {
