@@ -300,11 +300,12 @@ export default function InicioPsicologoPage() {
                     localStorage.clear();
                     sessionStorage.clear();
                 }
-                window.location.href = '/identificacion';
+                // Usar router.push en lugar de window.location.href para evitar doble recarga
+                router.push('/identificacion');
             }
         } catch (error) {
             console.error("Error al cerrar sesión:", error);
-            window.location.href = '/identificacion';
+            router.push('/identificacion');
         }
     };
 

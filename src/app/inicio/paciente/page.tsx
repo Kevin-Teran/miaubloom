@@ -285,17 +285,13 @@ export default function InicioPacientePage() {
         try {
             const response = await fetch('/api/auth/logout', { method: 'POST' });
             if (response.ok) {
-                // Limpiar localStorage si la aplicación lo usa
+                // Limpiar localStorage
                 if (typeof window !== 'undefined') {
                     localStorage.clear();
                     sessionStorage.clear();
                 }
-                // Redirigir y recargar para asegurar que se limpie el contexto
+                // Solo redirigir sin recargar para evitar doble recarga
                 router.push('/identificacion');
-                // Delay para permitir que la redirección y logout se procesen
-                setTimeout(() => {
-                    window.location.reload();
-                }, 500);
             }
         } catch (error) {
             console.error("Error al cerrar sesión:", error);
