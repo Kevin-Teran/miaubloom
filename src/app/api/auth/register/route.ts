@@ -80,7 +80,8 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12);
     let userPayload: Record<string, unknown> = {}; // Para el JWT
 
-    const newUser = await prisma.$transaction(async (tx) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const newUser = await prisma.$transaction(async (tx: any) => {
       // 1. Crear el usuario
       const user = await tx.user.create({
         data: {
@@ -113,7 +114,8 @@ export async function POST(request: NextRequest) {
           horarioUso,
           duracionUso,
         };
-        await tx.perfilPaciente.create({ data: perfilData as Parameters<typeof tx.perfilPaciente.create>[0]['data'] });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await tx.perfilPaciente.create({ data: perfilData as any });
         
         // Añadir datos del perfil al payload del token
         userPayload.genero = genero;
@@ -132,7 +134,8 @@ export async function POST(request: NextRequest) {
           duracionUso,
           fotoPerfil: fotoPerfil || '/assets/avatar-psicologo.png',
         };
-        await tx.perfilPsicologo.create({ data: perfilData as Parameters<typeof tx.perfilPsicologo.create>[0]['data'] });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await tx.perfilPsicologo.create({ data: perfilData as any });
 
         // Añadir datos del perfil al payload del token
         userPayload.genero = genero;
