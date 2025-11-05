@@ -13,11 +13,11 @@ export const dynamic = 'force-dynamic';
  */
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import LoadingIndicator from '@/components/ui/LoadingIndicator';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { PatientCard } from '@/components/psicologo/PatientCard';
 
 // Interfaz para Paciente
 interface Paciente {
@@ -26,111 +26,6 @@ interface Paciente {
   avatar: string;
   status: string;
 }
-
-// Componente Modal de Todos los Pacientes
-const PatientesModal = ({ 
-  pacientes, 
-  onClose 
-}: { 
-  pacientes: Paciente[]; 
-  onClose: () => void;
-}) => {
-  return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-end lg:items-center justify-center">
-      <div className="bg-white w-full lg:w-2/3 lg:max-w-2xl rounded-t-3xl lg:rounded-3xl shadow-2xl max-h-[85vh] overflow-hidden flex flex-col animate-in">
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200 sticky top-0 bg-white">
-          <h2 className="text-2xl font-bold text-gray-800">Todos mis pacientes</h2>
-          <button
-            onClick={onClose}
-            className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors"
-            aria-label="Cerrar"
-          >
-            <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Lista scrolleable */}
-        <div className="overflow-y-auto flex-1 px-4 py-4">
-          <div className="space-y-3">
-            {pacientes.map((paciente, index) => (
-              <div
-                key={paciente.id || index}
-                className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-4 border border-gray-100"
-              >
-                <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 flex-shrink-0" style={{ borderColor: 'var(--color-theme-primary-light)' }}>
-                  <Image 
-                    src={paciente.avatar} 
-                    alt={paciente.nombre || 'Avatar de Paciente'} 
-                    fill 
-                    className="object-cover pointer-events-none" 
-                    unoptimized 
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-800 mb-1">{paciente.nombre}</h3>
-                  <span className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
-                    paciente.status === 'Estable' 
-                      ? 'bg-green-100 text-green-600' 
-                      : 'bg-orange-100 text-orange-600'
-                  }`}>
-                    {paciente.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Componente de Card de Paciente
-const PatientCard = ({ 
-    nombre, 
-    avatar, 
-    status,
-    onClick 
-}: { 
-    nombre: string; 
-    avatar: string; 
-    status: string;
-    onClick?: () => void;
-}) => {
-    return (
-        <button
-            onClick={onClick}
-            className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-300 w-full text-left"
-        >
-            <div className="flex items-center gap-3">
-                <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 flex-shrink-0" style={{ borderColor: 'var(--color-theme-primary-light)' }}>
-                    <Image 
-                      src={avatar} 
-                      alt={nombre || 'Avatar de Paciente'} 
-                      fill 
-                      className="object-cover pointer-events-none" 
-                      unoptimized
-                    />
-                </div>
-                <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-gray-800 mb-1 truncate">
-                        {nombre}
-                    </h4>
-                    <span className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
-                        status === 'Estable' 
-                            ? 'bg-green-100 text-green-600' 
-                            : 'bg-orange-100 text-orange-600'
-                    }`}>
-                        {status}
-                    </span>
-                </div>
-            </div>
-        </button>
-    );
-};
 
 // Componente de Gráfico Circular de Estadística
 const StatChart = ({ 
@@ -185,10 +80,8 @@ const NavButton = ({ href, icon, label, isActive = false }: { href: string; icon
 };
 
 export default function InicioPsicologoPage() {
-    const router = useRouter();
     const { user, isLoading } = useAuth();
     const [pacientes, setPacientes] = useState<Paciente[]>([]);
-    const [showAllModal, setShowAllModal] = useState(false);
 
     const [stats, setStats] = useState({
       citasSemana: 0,
@@ -392,15 +285,15 @@ export default function InicioPsicologoPage() {
                                 </Link>
                             ))}
                             {pacientes.length > 4 && (
-                                <button 
-                                    onClick={() => setShowAllModal(true)}
+                                <Link 
+                                    href="/inicio/psicologo/pacientes"
                                     className="flex-shrink-0 text-center"
                                 >
                                     <div className="bg-white/60 rounded-2xl p-3 shadow-sm mb-2 w-20 h-[88px] flex items-center justify-center">
                                         <span className="text-2xl text-gray-400">+{pacientes.length - 4}</span>
                                     </div>
                                     <span className="text-xs text-gray-600 font-medium">Ver más</span>
-                                </button>
+                                </Link>
                             )}
                         </div>
                     </section>
@@ -442,6 +335,25 @@ export default function InicioPsicologoPage() {
                                 <div className="w-12 h-12 bg-white/60 rounded-2xl flex items-center justify-center">
                                     <svg className="w-6 h-6" style={{ color: themeColor }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </Link>
+
+                        <Link 
+                            href="/inicio/psicologo/tareas" 
+                            className="block bg-orange-100/60 rounded-3xl p-5 shadow-sm active:scale-98 transition-transform"
+                        >
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h4 className="font-bold text-gray-800 text-base mb-1">Asignar Tareas</h4>
+                                    <p className="text-xs text-gray-600">
+                                        Crear nuevas tareas
+                                    </p>
+                                </div>
+                                <div className="w-12 h-12 bg-white/60 rounded-2xl flex items-center justify-center">
+                                    <svg className="w-6 h-6" style={{ color: '#FF9800' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                                     </svg>
                                 </div>
                             </div>
@@ -638,18 +550,20 @@ export default function InicioPsicologoPage() {
                             <section>
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-2xl font-bold text-gray-800">Mis pacientes</h3>
-                                    <button onClick={() => setShowAllModal(true)} className="text-sm hover:text-opacity-80 font-semibold transition-colors" style={{ color: 'var(--color-theme-primary)' }}>
+                                    <Link 
+                                        href="/inicio/psicologo/pacientes" 
+                                        className="text-sm hover:text-opacity-80 font-semibold transition-colors" 
+                                        style={{ color: 'var(--color-theme-primary)' }}
+                                    >
                                         Ver todos ({pacientes.length}) →
-                                    </button>
+                                    </Link>
                                 </div>
                                 <div className="space-y-3">
                                     {pacientes.slice(0, 4).map((paciente, index) => (
                                         <PatientCard
                                             key={paciente.id || index}
-                                            nombre={paciente.nombre}
-                                            avatar={paciente.avatar}
-                                            status={paciente.status}
-                                            onClick={() => router.push(`/inicio/psicologo/paciente/${paciente.id}`)}
+                                            paciente={paciente}
+                                            href={`/inicio/psicologo/paciente/${paciente.id}`}
                                         />
                                     ))}
                                 </div>
@@ -718,10 +632,7 @@ export default function InicioPsicologoPage() {
                 </div>
             </div>
 
-            {/* Modal de Todos los Pacientes */}
-            {showAllModal && (
-                <PatientesModal pacientes={pacientes} onClose={() => setShowAllModal(false)} />
-            )}
+
         </>
     );
 }

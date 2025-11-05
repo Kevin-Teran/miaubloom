@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
 
     // 4. Mapear tareas (lógica existente)
     interface TareaType {
-      id: string;
+      id: number;
       descripcion: string;
       fechaLimite: Date;
       estado: string;
@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
     }
 
     const tareasFormateadas = tareas.map((tarea: TareaType) => ({
-      id: tarea.id,
+      id: tarea.id.toString(),
       titulo: tarea.descripcion.split('\n')[0],
       descripcion: tarea.descripcion,
       fechaLimite: tarea.fechaLimite,

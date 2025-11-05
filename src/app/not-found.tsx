@@ -1,8 +1,9 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import Image from 'next/image';
 import Link from 'next/link';
-import { Home } from 'lucide-react';
 
 export default function NotFound() {
   return (
@@ -41,7 +42,10 @@ export default function NotFound() {
           style={{ backgroundColor: '#F1A8A9' }}
           className="inline-flex items-center gap-2 px-10 py-4 rounded-full font-bold text-lg text-white shadow-lg hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 select-none"
         >
-          <Home size={20} />
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
           Volver al inicio
         </Link>
       </div>
