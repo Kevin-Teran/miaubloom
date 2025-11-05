@@ -134,6 +134,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     hasCheckedRef.current = true;
     checkUserSession();
     
+    // Timeout de seguridad: si checkUserSession no completa en 5 segundos, establecer isLoading a false
+    const safetyTimer = setTimeout(() => {
+      setIsLoading(false);
+    }, 5000);
+    
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         // Permitir re-check cuando vuelve a focus
@@ -143,7 +148,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      clearTimeout(safetyTimer);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [checkUserSession]);
 
   useEffect(() => {
