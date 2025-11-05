@@ -57,6 +57,12 @@ const EMOTION_MAP: Record<string, { nombre: string; color: string }> = {
  * @function GET
  * @description Obtiene las estadísticas (AHORA USA JWT)
  */
+// --- INTERFAZ PARA ESTADÍSTICAS ---
+interface EmotionRecord {
+  emocionPrincipal: string;
+  nivelAfectacion: number;
+}
+
 export async function GET(request: NextRequest) {
   try {
     // 1. Verificar autenticación
@@ -102,10 +108,10 @@ export async function GET(request: NextRequest) {
     const emotionCounts: Record<string, number> = {};
     const emotionTotals: Record<string, number> = {};
 
-    registros.forEach(registro => {
-      const emociones = registro.emocionPrincipal.split(',').map(e => e.trim());
+    registros.forEach((registro: EmotionRecord) => {
+      const emociones = registro.emocionPrincipal.split(',').map((e: string) => e.trim());
       
-      emociones.forEach(emocion => {
+      emociones.forEach((emocion: string) => {
         emotionCounts[emocion] = (emotionCounts[emocion] || 0) + 1;
         emotionTotals[emocion] = (emotionTotals[emocion] || 0) + registro.nivelAfectacion;
       });

@@ -86,7 +86,19 @@ export async function GET(request: NextRequest) {
     });
 
     // 4. Mapear tareas (lógica existente)
-    const tareasFormateadas = tareas.map(tarea => ({
+    interface TareaType {
+      id: string;
+      descripcion: string;
+      fechaLimite: Date;
+      estado: string;
+      psicologo?: {
+        user?: {
+          nombreCompleto: string;
+        };
+      };
+    }
+
+    const tareasFormateadas = tareas.map((tarea: TareaType) => ({
       id: tarea.id,
       titulo: tarea.descripcion.split('\n')[0],
       descripcion: tarea.descripcion,
