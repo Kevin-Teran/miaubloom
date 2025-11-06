@@ -55,6 +55,9 @@ model PerfilPaciente {
   psicologoAsignadoId  String?   @map("psicologo_asignado_id") @db.VarChar(36)
   psicologoAsignado    PerfilPsicologo? @relation(fields: [psicologoAsignadoId], references: [userId], onDelete: SetNull, name: "AssignedPatients")
 
+  diagnostico          String?   @default("No definido") @map("diagnostico") @db.Text
+  duracionTratamiento  String?   @default("No definida") @map("duracion_tratamiento")
+
   registrosEmocionales RegistroEmocional[]
   tareasRecibidas      Tarea[]   @relation("PacienteTareas")
   citasInvolucradas    Cita[]    @relation("PacienteCitas")
@@ -113,6 +116,7 @@ model RegistroEmocional {
   emocionPrincipal    String   @map("emocion_principal")
   nivelAfectacion     Int      @map("nivel_afectacion")
   queSucedio          String?  @map("que_sucedio") @db.Text
+  lugar               String?  @map("lugar")
   compartirPsicologo  Boolean  @map("compartir_psicologo") @default(false)
   
   jardinMetadata      Json?    @map("jardin_metadata")

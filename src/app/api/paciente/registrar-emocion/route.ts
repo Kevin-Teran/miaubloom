@@ -26,6 +26,7 @@ interface RegistroEmocionalBody {
   queOcurrio?: string;
   quePense?: string;
   queHice?: string;
+  lugar?: string;
   pensamiento?: string;
   accion?: string;
 }
@@ -60,18 +61,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Crear registro de emoción
-    const registroCreado = await prisma.registroEmocional.create({
-      data: {
-        pacienteId,
-        emocionPrincipal: body.emocionPrincipal,
-        nivelAfectacion: body.nivelAfectacion,
-        queSucedio: `
+    const createData = {
+      pacienteId,
+      emocionPrincipal: body.emocionPrincipal,
+      nivelAfectacion: body.nivelAfectacion,
+      queSucedio: `
 Qué ocurrió: ${body.queOcurrio || ''}
 Qué pensé: ${body.quePense || ''}
 Qué hice: ${body.queHice || ''}
-        `.trim(),
-        timestamp: new Date(),
-      },
+      `.trim(),
+      lugar: body.lugar || '',
+      timestamp: new Date(),
+    };
+
+    const registroCreado = await prisma.registroEmocional.create({
+      data: createData,
     });
 
     return NextResponse.json({

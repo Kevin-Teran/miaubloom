@@ -1,16 +1,16 @@
 /**
- * @file page.tsx
- * @route src/app/auth/forgot-password/page.tsx
- * @description Página de recuperación de contraseña. Verifica auth, usa API real, redirige al LOGIN DEL ROL tras éxito. Usa LoadingIndicator.
- * @author Kevin Mariano
- * @version 1.0.2 
- * @since 1.0.0
- * @copyright MiauBloom
- */
+ * @file page.tsx
+ * @route src/app/auth/forgot-password/page.tsx
+ * @description Página de recuperación de contraseña. Verifica auth, usa API real, redirige al LOGIN DEL ROL tras éxito. Usa LoadingIndicator.
+ * @author Kevin Mariano
+ * @version 1.0.2 
+ * @since 1.0.0
+ * @copyright MiauBloom
+ */
 
 "use client";
 
-import { useRouter } from 'next/navigation';
+export const dynamic = 'force-dynamic';import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import React, { useState } from 'react';
 import Input from '@/components/ui/Input';

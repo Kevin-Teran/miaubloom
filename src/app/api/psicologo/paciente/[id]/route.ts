@@ -37,28 +37,21 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ success: false, message: 'ID de paciente requerido' }, { status: 400 });
     }
 
-    // Obtener datos del paciente
+    // Obtener datos del paciente incluyendo el perfil completo
     const user = await prisma.user.findUnique({
       where: { id: pacienteId },
-      select: {
-        id: true,
-        nombreCompleto: true,
-        email: true,
-        perfilPaciente: {
-          select: {
-            fotoPerfil: true,
-            nicknameAvatar: true,
-            fechaNacimiento: true,
-            genero: true,
-            horarioUso: true,
-            duracionUso: true,
-          },
-        },
+      include: {
+        perfilPaciente: true,
       },
     });
 
     if (!user) {
       return NextResponse.json({ success: false, message: 'Paciente no encontrado' }, { status: 404 });
+    }
+
+    // Validar que el paciente pertenezca a este psicólogo
+    if (user.perfilPaciente?.psicologoAsignadoId !== auth.userId) {
+      return NextResponse.json({ success: false, message: 'No tiene permiso para ver este paciente' }, { status: 403 });
     }
 
     // Calcular fecha hace 30 días y obtener registros
@@ -101,17 +94,23 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       };
     });
 
+    const perfilPaciente = user.perfilPaciente as Record<string, unknown>;
     const pacienteResponse = {
       id: user.id,
       nombreCompleto: user.nombreCompleto,
       email: user.email,
-      perfil: user.perfilPaciente || null,
+      perfil: {
+        fotoPerfil: user.perfilPaciente?.fotoPerfil || '/assets/avatar-paciente.png',
+        nicknameAvatar: user.perfilPaciente?.nicknameAvatar,
+        genero: user.perfilPaciente?.genero,
+        diagnostico: (perfilPaciente?.diagnostico as string) || 'No definido',
+        duracionTratamiento: (perfilPaciente?.duracionTratamiento as string) || 'No definida',
+      },
     };
 
     return NextResponse.json({
       success: true,
       paciente: pacienteResponse,
-      diagnostico: 'Diagnóstico: 6 meses',
       estadisticasEmocionales,
     });
 

@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import LoadingIndicator from '@/components/ui/LoadingIndicator';
 import IconButton from '@/components/ui/IconButton';
-import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import { SuccessToast } from '@/components/ui/SuccessToast';
 
@@ -132,40 +131,55 @@ export default function AsignarTareasPage() {
               value={pacienteId}
               onChange={(e) => setPacienteId(e.target.value)}
               required
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-1 focus:border-pink-400 focus:ring-pink-400"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-1 focus:border-pink-400 focus:ring-pink-400 text-gray-900 bg-white"
             >
-              <option value="" disabled>Selecciona un paciente...</option>
+              <option value="" disabled className="text-gray-500">Selecciona un paciente...</option>
               {pacientes.map(p => (
-                <option key={p.id} value={p.id}>{p.nombre}</option>
+                <option key={p.id} value={p.id} className="text-gray-900">{p.nombre}</option>
               ))}
             </select>
           </div>
           
-          <Input
-            label="Título de la Tarea"
-            type="text"
-            value={titulo}
-            onChange={(e) => setTitulo(e.target.value)}
-            placeholder="Ej: Ejercicio de respiración"
-            required
-          />
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Título de la Tarea <span className="text-pink-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={titulo}
+              onChange={(e) => setTitulo(e.target.value)}
+              placeholder="Ej: Ejercicio de respiración"
+              required
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-1 focus:border-pink-400 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400"
+            />
+          </div>
 
-          <Input
-            label="Descripción"
-            type="text"
-            value={descripcion}
-            onChange={(e) => setDescripcion(e.target.value)}
-            placeholder="Detalles de la actividad..."
-            required
-          />
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Descripción <span className="text-pink-500">*</span>
+            </label>
+            <textarea
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
+              placeholder="Detalles de la actividad..."
+              required
+              rows={4}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-1 focus:border-pink-400 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400"
+            />
+          </div>
 
-          <Input
-            label="Fecha Límite"
-            type="date"
-            value={fechaLimite}
-            onChange={(e) => setFechaLimite(e.target.value)}
-            required
-          />
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Fecha Límite <span className="text-pink-500">*</span>
+            </label>
+            <input
+              type="date"
+              value={fechaLimite}
+              onChange={(e) => setFechaLimite(e.target.value)}
+              required
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-1 focus:border-pink-400 focus:ring-pink-400 text-gray-900 bg-white"
+            />
+          </div>
 
           <div className="pt-2">
             <Button 

@@ -10,6 +10,8 @@
 
 "use client";
 
+export const dynamic = 'force-dynamic';
+
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useState, useEffect, Suspense } from 'react';
 import Input from '@/components/ui/Input';

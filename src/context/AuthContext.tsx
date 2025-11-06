@@ -10,7 +10,7 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useRef, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 
 // Definimos la estructura del usuario que manejaremos

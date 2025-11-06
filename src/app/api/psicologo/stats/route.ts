@@ -3,7 +3,7 @@
  * @route src/app/api/psicologo/stats/route.ts
  * @description API endpoint para obtener estadísticas del psicólogo
  * @author Kevin Mariano
- * @version 1.0.0
+ * @version 1.1.0 (Lógica de citas corregida - cuenta citas reales)
  * @since 1.0.0
  * @copyright MiauBloom
  */
@@ -82,19 +82,28 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Calcular fecha de hace 7 días
-    const unaSemanaAtras = new Date();
-    unaSemanaAtras.setDate(unaSemanaAtras.getDate() - 7);
+    // --- LÓGICA DE ESTADÍSTICAS CORREGIDA ---
 
-    // Contar citas esta semana (si tienes tabla de citas)
-    // Por ahora usamos pacientes asignados como aproximación
-    const citasSemana = await prisma.perfilPaciente.count({
+    // 1. Calcular rango de fechas para "esta semana" (Hoy + 7 días)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Inicio del día de hoy
+
+    const oneWeekFromNow = new Date(today);
+    oneWeekFromNow.setDate(today.getDate() + 7);
+    oneWeekFromNow.setHours(23, 59, 59, 999); // Fin del día en 7 días
+
+    // 2. Contar Citas REALES en esa semana
+    const citasSemana = await prisma.cita.count({
       where: {
-        psicologoAsignadoId: userId,
+        psicologoId: userId,
+        fechaHora: {
+          gte: today,
+          lte: oneWeekFromNow,
+        },
       },
     });
 
-    // Contar seguimientos activos (pacientes con últimos registros esta semana)
+    // 3. Contar Seguimientos (Total de pacientes asignados)
     const seguimientos = await prisma.perfilPaciente.count({
       where: {
         psicologoAsignadoId: userId,
