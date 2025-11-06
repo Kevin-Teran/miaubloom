@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = 'force-dynamic';
-
 /**
  * @file page.tsx
  * @route src/app/inicio/psicologo/page.tsx
