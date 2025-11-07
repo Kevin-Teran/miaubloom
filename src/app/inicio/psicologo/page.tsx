@@ -52,67 +52,6 @@ const getThemeColors = (genero?: string) => {
   };
 };
 
-// Componente Modal de Todos los Pacientes
-const PatientesModal = ({ 
-  pacientes, 
-  onClose 
-}: { 
-  pacientes: Paciente[]; 
-  onClose: () => void;
-}) => {
-  return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-end lg:items-center justify-center">
-      <div className="bg-white w-full lg:w-2/3 lg:max-w-2xl rounded-t-3xl lg:rounded-3xl shadow-2xl max-h-[85vh] overflow-hidden flex flex-col animate-in">
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200 sticky top-0 bg-white">
-          <h2 className="text-2xl font-bold text-gray-800">Todos mis pacientes</h2>
-          <button
-            onClick={onClose}
-            className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors"
-            aria-label="Cerrar"
-          >
-            <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Lista scrolleable */}
-        <div className="overflow-y-auto flex-1 px-4 py-4">
-          <div className="space-y-3">
-            {pacientes.map((paciente, index) => (
-              <div
-                key={paciente.id || index}
-                className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-4 border border-gray-100"
-              >
-                <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 flex-shrink-0" style={{ borderColor: '#F2C2C1' }}>
-                  <Image 
-                    src={paciente.avatar} 
-                    alt={paciente.nombre || 'Avatar de Paciente'} 
-                    fill 
-                    className="object-cover pointer-events-none" 
-                    unoptimized 
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-800 mb-1">{paciente.nombre}</h3>
-                  <span className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
-                    paciente.status === 'Estable' 
-                      ? 'bg-green-100 text-green-600' 
-                      : 'bg-orange-100 text-orange-600'
-                  }`}>
-                    {paciente.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 // Componente de Card de Paciente
 const PatientCard = ({ 
     nombre, 
@@ -213,7 +152,6 @@ export default function InicioPsicologoPage() {
     const router = useRouter();
     const { user, isLoading } = useAuth();
     const [pacientes, setPacientes] = useState<Paciente[]>([]);
-    const [showAllModal, setShowAllModal] = useState(false);
     const [proximas, setProximas] = useState<Cita[]>([]);
 
     const [stats, setStats] = useState({
@@ -441,15 +379,15 @@ export default function InicioPsicologoPage() {
                                 </Link>
                             ))}
                             {pacientes.length > 4 && (
-                                <button 
-                                    onClick={() => setShowAllModal(true)}
+                                <Link 
+                                    href="/inicio/psicologo/pacientes"
                                     className="flex-shrink-0 text-center"
                                 >
                                     <div className="bg-gray-50 rounded-2xl p-3 shadow-sm mb-2 w-24 h-[96px] flex items-center justify-center border-2 border-dashed border-gray-200">
                                         <span className="text-2xl font-bold text-gray-400">+{pacientes.length - 4}</span>
                                     </div>
                                     <span className="text-xs text-gray-600 font-medium">Ver más</span>
-                                </button>
+                                </Link>
                             )}
                         </div>
                     </section>
@@ -706,9 +644,9 @@ export default function InicioPsicologoPage() {
                             <section>
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-2xl font-bold text-gray-800">Mis pacientes</h3>
-                                    <button onClick={() => setShowAllModal(true)} className="text-sm hover:text-opacity-80 font-semibold transition-colors" style={{ color: themeColors.primaryDark }}>
+                                    <Link href="/inicio/psicologo/pacientes" className="text-sm hover:text-opacity-80 font-semibold transition-colors" style={{ color: themeColors.primaryDark }}>
                                         Ver todos ({pacientes.length}) →
-                                    </button>
+                                    </Link>
                                 </div>
                                 <div className="space-y-3">
                                     {pacientes.slice(0, 4).map((paciente, index) => (
@@ -785,11 +723,6 @@ export default function InicioPsicologoPage() {
                     </div>
                 </div>
             </div>
-
-            {/* Modal de Todos los Pacientes */}
-            {showAllModal && (
-                <PatientesModal pacientes={pacientes} onClose={() => setShowAllModal(false)} />
-            )}
         </>
     );
 }
