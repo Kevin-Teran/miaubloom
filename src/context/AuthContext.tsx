@@ -77,8 +77,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const checkUserSession = useCallback(async () => {
     try {
       const response = await fetch('/api/auth/user', { 
-        cache: 'no-store',
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate'
+        }
       });
       
       if (response.ok) {

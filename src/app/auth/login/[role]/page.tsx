@@ -99,7 +99,7 @@ function LoginForm() {
             // Dar un pequeño delay para asegurar que la cookie está establecida
             setTimeout(() => {
                 router.push(destinationRoute);
-            }, 100);
+            }, 500);
             
         } else {
             setApiError(data.message || 'Error al iniciar sesión'); 
