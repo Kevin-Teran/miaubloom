@@ -171,7 +171,9 @@ export default function InicioPsicologoPage() {
       setDataError(null);
       try {
           // Fetch Pacientes
-          const responsePacientes = await fetch('/api/psicologo/pacientes');
+          const responsePacientes = await fetch('/api/psicologo/pacientes', {
+              credentials: 'include'
+          });
           if (responsePacientes.ok) {
               const data = await responsePacientes.json();
               setPacientes(data.pacientes || []);
@@ -180,7 +182,9 @@ export default function InicioPsicologoPage() {
           }
 
           // Fetch Citas Próximas
-          const responseCitas = await fetch('/api/psicologo/citas');
+          const responseCitas = await fetch('/api/psicologo/citas', {
+              credentials: 'include'
+          });
           if (responseCitas.ok) {
               const citasData = await responseCitas.json();
               const citas = citasData.citas || [];
@@ -193,7 +197,9 @@ export default function InicioPsicologoPage() {
           }
 
           // Fetch Estadísticas
-          const responseStats = await fetch('/api/psicologo/stats');
+          const responseStats = await fetch('/api/psicologo/stats', {
+              credentials: 'include'
+          });
           if (responseStats.ok) {
               const statsData = await responseStats.json();
               if (statsData.success && statsData.stats) {
@@ -269,7 +275,10 @@ export default function InicioPsicologoPage() {
     // Función para cerrar sesión
     const handleSignOut = async () => {
         try {
-            const response = await fetch('/api/auth/logout', { method: 'POST' });
+            const response = await fetch('/api/auth/logout', { 
+                method: 'POST',
+                credentials: 'include' 
+            });
             if (response.ok) {
                 if (typeof window !== 'undefined') {
                     localStorage.clear();
@@ -564,8 +573,8 @@ export default function InicioPsicologoPage() {
                             >
                                 <div className="w-32 h-32 relative mx-auto mb-4">
                                     <Image
-                                        src={user!.avatarUrl || "/assets/avatar-psicologo.png"}
-                                        alt="Avatar"
+                                        src="/assets/avatar-psicologo.png"
+                                        alt="Gato Psicólogo"
                                         fill
                                         className="object-contain"
                                         priority

@@ -36,7 +36,9 @@ export default function AsignarTareasPage() {
       const fetchPacientes = async () => {
         setIsLoading(true);
         try {
-          const res = await fetch('/api/psicologo/pacientes');
+          const res = await fetch('/api/psicologo/pacientes', {
+            credentials: 'include'
+          });
           if (!res.ok) throw new Error('Error al cargar pacientes');
           const data = await res.json();
           setPacientes(data.pacientes || []);
@@ -59,6 +61,7 @@ export default function AsignarTareasPage() {
       const response = await fetch('/api/psicologo/tareas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           pacienteId,
           titulo,

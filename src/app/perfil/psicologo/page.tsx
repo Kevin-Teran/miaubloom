@@ -185,6 +185,7 @@ export default function PerfilPsicologoPage() {
       const response = await fetch('/api/perfil/update-psicologo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           fotoPerfil: fotoPerfil,
           especialidad: especialidad,

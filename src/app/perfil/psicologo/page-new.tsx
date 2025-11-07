@@ -41,7 +41,9 @@ export default function PerfilPsicologoPage() {
 
     const fetchUserData = async () => {
       try {
-        const response = await fetch('/api/auth/login');
+        const response = await fetch('/api/auth/user', {
+          credentials: 'include'
+        });
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.authenticated) {
@@ -73,6 +75,7 @@ export default function PerfilPsicologoPage() {
       const response = await fetch('/api/perfil/update-psicologo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           fotoPerfil: fotoPerfil,
           especialidad: especialidad,

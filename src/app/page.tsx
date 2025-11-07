@@ -10,10 +10,8 @@
 
 "use client";
 
-export const dynamic = 'force-dynamic';
-
 import Image from 'next/image';
-import React, { useEffect, useState, useLayoutEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface PlacedElement {
   id: string;
@@ -29,7 +27,7 @@ interface PlacedElement {
 
 const useScreenSize = () => {
   const [size, setSize] = useState({ width: 0, height: 0 });
-  useLayoutEffect(() => {
+  useEffect(() => {
     const updateSize = () => setSize({
       width: window.innerWidth,
       height: window.innerHeight

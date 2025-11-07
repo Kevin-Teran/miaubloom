@@ -25,6 +25,11 @@
   --color-secondary-dark: #A1A4A8;
   --color-secondary-light: #D1D5DB;
   
+  /* Colores de tema (dinámicos por género) - Valores por defecto (rosa/paciente) */
+  --color-theme-primary: #F2C2C1;
+  --color-theme-primary-dark: #E8B0AF;
+  --color-theme-primary-light: #FDE6E6;
+  
   /* Colores neutros (CORREGIDOS SEGÚN PDF) */
   --color-background: #FFFFFF;
   --color-background-alt: #FAFAFA;
@@ -80,6 +85,13 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tema azul para psicólogos (genero: Masculino) */
+body.theme-blue {
+  --color-theme-primary: #4A90E2;
+  --color-theme-primary-dark: #3B7AC9;
+  --color-theme-primary-light: #E3EEF9;
 }
 
 /* ================================================

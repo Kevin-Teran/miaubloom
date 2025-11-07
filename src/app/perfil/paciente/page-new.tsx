@@ -47,7 +47,9 @@ export default function PacienteProfilePage() {
 
     const fetchUserData = async () => {
       try {
-        const response = await fetch('/api/auth/login');
+        const response = await fetch('/api/auth/user', {
+          credentials: 'include'
+        });
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.authenticated) {
@@ -78,6 +80,7 @@ export default function PacienteProfilePage() {
       const response = await fetch('/api/perfil/update-profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           horarioUso: selectedSchedule,
           duracionUso: selectedDuration,

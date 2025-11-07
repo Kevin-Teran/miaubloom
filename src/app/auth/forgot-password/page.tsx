@@ -82,7 +82,7 @@ export default function ForgotPasswordPage() {
     }
   };
 
-  const themeColor = '#F1A8A9';
+  const themeColor = 'var(--color-theme-primary)';
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 p-6 relative select-none">

@@ -109,6 +109,7 @@ function RegisterForm() {
         const response = await fetch('/api/auth/register', {
           method: 'POST', 
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({
             ...formData,
             rol: isPatient ? 'Paciente' : 'Psicólogo',
@@ -138,7 +139,7 @@ function RegisterForm() {
     console.log("Google Sign In - Placeholder");
   };
 
-  const themeColor = '#F1A9A0';
+  const themeColor = 'var(--color-theme-primary)';
   const titles = ["Crea Tu Cuenta", "Información", "Personaliza"];
   const subtitles = ["Creemos una cuenta juntos", "Personal", "Tu perfil"];
 

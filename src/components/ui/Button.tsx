@@ -68,10 +68,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const getVariantStyles = (): string => {
       const variants = {
         primary: `
-          bg-gradient-to-r from-pink-400 to-pink-500 
-          hover:from-pink-500 hover:to-pink-600 
+          bg-[var(--color-theme-primary)] 
+          hover:bg-[var(--color-theme-primary-dark)] 
           text-white shadow-lg hover:shadow-xl
-          disabled:from-gray-300 disabled:to-gray-400
+          disabled:bg-gray-300
         `,
         secondary: `
           bg-gradient-to-r from-purple-400 to-purple-500 
@@ -80,13 +80,13 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           disabled:from-gray-300 disabled:to-gray-400
         `,
         outline: `
-          bg-white border-2 border-pink-400 
-          text-pink-500 hover:bg-pink-50
+          bg-white border-2 border-[var(--color-theme-primary)] 
+          text-[var(--color-theme-primary)] hover:bg-[var(--color-theme-primary-light)]
           disabled:border-gray-300 disabled:text-gray-400
         `,
         ghost: `
-          bg-transparent text-pink-500 
-          hover:bg-pink-50
+          bg-transparent text-[var(--color-theme-primary)] 
+          hover:bg-[var(--color-theme-primary-light)]
           disabled:text-gray-400
         `,
         danger: `
@@ -124,7 +124,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           inline-flex items-center justify-center gap-2
           font-bold rounded-full
           transition-all duration-200
-          focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2
+          focus:outline-none focus:ring-2 focus:ring-[var(--color-theme-primary)] focus:ring-offset-2
           disabled:cursor-not-allowed disabled:opacity-50
           transform hover:-translate-y-0.5 active:translate-y-0
           disabled:transform-none

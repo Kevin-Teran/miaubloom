@@ -13,6 +13,8 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { SignJWT } from 'jose';
 
+export const dynamic = 'force-dynamic';
+
 const prisma = new PrismaClient();
 
 // Clave secreta para FIRMAR el token.

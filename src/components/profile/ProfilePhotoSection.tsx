@@ -110,6 +110,7 @@ export function ProfilePhotoSection({
 
       const response = await fetch('/api/perfil/update-photo', {
         method: 'POST',
+        credentials: 'include',
         body: formData
       });
 

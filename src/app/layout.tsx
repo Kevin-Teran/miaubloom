@@ -14,6 +14,8 @@ import './globals.css';
 import { LenisScroll } from '@/components/LenisScroll';
 import { AuthProvider } from '@/context/AuthContext';
 
+export const dynamic = 'force-dynamic';
+
 const roboto = Roboto({ 
   weight: ['400', '500', '700'],
   subsets: ['latin'],

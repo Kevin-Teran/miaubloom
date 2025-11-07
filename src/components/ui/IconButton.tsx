@@ -26,7 +26,7 @@ interface IconButtonProps {
   href?: string;
   /**
    * Color del botón (background)
-   * @default '#F1A8A9'
+   * @default 'var(--color-theme-primary)'
    */
   bgColor?: string;
   /**
@@ -131,7 +131,7 @@ const IconButton = React.forwardRef<HTMLButtonElement | HTMLAnchorElement, IconB
       icon = 'back',
       onClick,
       href,
-      bgColor = '#F1A8A9',
+      bgColor = 'var(--color-theme-primary)',
       iconColor = 'white',
       size = 40,
       className = '',

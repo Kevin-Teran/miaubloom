@@ -205,7 +205,9 @@ export default function InicioPacientePage() {
     // Cargar tareas al montar el componente
     const fetchTasks = async () => {
         try {
-            const response = await fetch('/api/tareas/list');
+            const response = await fetch('/api/tareas/list', {
+                credentials: 'include'
+            });
             if (response.ok) {
                 const data = await response.json();
                 
@@ -237,7 +239,9 @@ export default function InicioPacientePage() {
     // Cargar estadísticas de emociones
     const fetchStats = async () => {
         try {
-            const response = await fetch('/api/actividades/estadisticas');
+            const response = await fetch('/api/actividades/estadisticas', {
+                credentials: 'include'
+            });
             if (response.ok) {
                 const data = await response.json();
                 
@@ -283,7 +287,10 @@ export default function InicioPacientePage() {
     // Función para cerrar sesión
     const handleSignOut = async () => {
         try {
-            const response = await fetch('/api/auth/logout', { method: 'POST' });
+            const response = await fetch('/api/auth/logout', { 
+                method: 'POST',
+                credentials: 'include' 
+            });
             if (response.ok) {
                 // Limpiar localStorage si la aplicación lo usa
                 if (typeof window !== 'undefined') {

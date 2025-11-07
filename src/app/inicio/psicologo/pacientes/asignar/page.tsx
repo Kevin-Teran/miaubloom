@@ -37,7 +37,9 @@ export default function AsignarPacientePage() {
     setIsDataLoading(true);
     setDataError(null);
     try {
-      const response = await fetch('/api/psicologo/pacientes-disponibles');
+      const response = await fetch('/api/psicologo/pacientes-disponibles', {
+        credentials: 'include'
+      });
       if (!response.ok) throw new Error('Error al cargar pacientes disponibles');
       const data = await response.json();
       setPacientesDisponibles(data.pacientes || []);
@@ -67,6 +69,7 @@ export default function AsignarPacientePage() {
       const response = await fetch('/api/psicologo/asignar-paciente-por-id', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ pacienteId }),
       });
 
@@ -86,7 +89,7 @@ export default function AsignarPacientePage() {
 
   if (isAuthLoading || isDataLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#FFF5F5] via-white to-[#FFF5F5]">
+      <div className="flex items-center justify-center min-h-screen bg-white">
         <LoadingIndicator text="Cargando pacientes disponibles..." />
       </div>
     );
@@ -95,7 +98,7 @@ export default function AsignarPacientePage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFF5F5] via-white to-[#FFF5F5]">
+    <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm p-4 shadow-sm sticky top-0 z-10 border-b border-[#F2C2C1]/20">
         <div className="max-w-5xl mx-auto flex items-center gap-4">

@@ -34,7 +34,9 @@ export default function NuevaCitaPage() {
       const fetchPacientes = async () => {
         setIsLoading(true);
         try {
-          const res = await fetch('/api/psicologo/pacientes');
+          const res = await fetch('/api/psicologo/pacientes', {
+            credentials: 'include'
+          });
           if (!res.ok) throw new Error('Error al cargar pacientes');
           const data = await res.json();
           setPacientes(data.pacientes || []);
@@ -57,6 +59,7 @@ export default function NuevaCitaPage() {
       const response = await fetch('/api/psicologo/citas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           pacienteId,
           fecha,
@@ -81,14 +84,14 @@ export default function NuevaCitaPage() {
 
   if (isAuthLoading || isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#FFF5F5] via-white to-[#FFF5F5]">
+      <div className="flex items-center justify-center min-h-screen bg-white">
         <LoadingIndicator text="Cargando formulario..." />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFF5F5] via-white to-[#FFF5F5]">
+    <div className="min-h-screen bg-white">
       {/* Encabezado */}
       <header className="bg-white/80 backdrop-blur-sm p-4 shadow-sm sticky top-0 z-10 border-b border-[#F2C2C1]/20">
         <div className="max-w-3xl mx-auto flex items-center gap-4">

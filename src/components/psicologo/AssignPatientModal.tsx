@@ -26,6 +26,7 @@ export function AssignPatientModal({ isOpen, onClose }: AssignPatientModalProps)
       const response = await fetch('/api/psicologo/asignar-paciente', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email }),
       });
 

@@ -35,7 +35,9 @@ export default function AsignarPacientePage() {
     setIsDataLoading(true);
     setDataError(null);
     try {
-      const response = await fetch('/api/psicologo/pacientes-disponibles');
+      const response = await fetch('/api/psicologo/pacientes-disponibles', {
+        credentials: 'include'
+      });
       if (!response.ok) throw new Error('Error al cargar pacientes disponibles');
       const data = await response.json();
       setPacientesDisponibles(data.pacientes || []);
@@ -65,6 +67,7 @@ export default function AsignarPacientePage() {
       const response = await fetch('/api/psicologo/asignar-paciente-por-id', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ pacienteId }),
       });
 
@@ -93,7 +96,7 @@ export default function AsignarPacientePage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[var(--color-theme-primary-light)] via-white to-white">
+    <div className="min-h-screen bg-white">
       <div className="max-w-6xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">

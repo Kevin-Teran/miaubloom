@@ -81,8 +81,6 @@ model PerfilPsicologo {
   horarioUso           String?   @default("No especificado") @map("horario_uso")
   duracionUso          String?   @default("No especificado") @map("duracion_uso")
   
-  pacientesAsignadosIds Json?    @map("pacientes_asignados_ids")
-  
   pacientesAsignados   PerfilPaciente[] @relation("AssignedPatients")
   tareasAsignadas      Tarea[]          @relation("PsicologoTareas")
   citasAgendadas       Cita[]           @relation("PsicologoCitas")
@@ -115,7 +113,9 @@ model RegistroEmocional {
   timestamp           DateTime @default(now())
   emocionPrincipal    String   @map("emocion_principal")
   nivelAfectacion     Int      @map("nivel_afectacion")
-  queSucedio          String?  @map("que_sucedio") @db.Text
+  queOcurrio          String?  @map("que_ocurrio") @db.Text
+  quePense            String?  @map("que_pense") @db.Text
+  queHice             String?  @map("que_hice") @db.Text
   lugar               String?  @map("lugar")
   compartirPsicologo  Boolean  @map("compartir_psicologo") @default(false)
   

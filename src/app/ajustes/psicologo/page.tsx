@@ -31,7 +31,10 @@ export default function AjustesPsicologoPage() {
     const handleSignOut = async () => {
         console.log("Cerrando sesión...");
         try {
-            const response = await fetch('/api/auth/logout', { method: 'POST' });
+            const response = await fetch('/api/auth/logout', { 
+                method: 'POST',
+                credentials: 'include'
+            });
             if (response.ok) {
                 // Limpiar localStorage si la aplicación lo usa
                 if (typeof window !== 'undefined') {

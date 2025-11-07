@@ -74,6 +74,7 @@ export default function PacienteProfilePage() {
       const response = await fetch('/api/perfil/update-profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           horarioUso: selectedSchedule,
           duracionUso: selectedDuration,

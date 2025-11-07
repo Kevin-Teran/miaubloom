@@ -116,6 +116,7 @@ export default function FormularioEmocionPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           emocionPrincipal: formData.emocionPrincipal,
           nivelAfectacion: formData.nivelAfectacion,

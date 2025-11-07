@@ -92,7 +92,9 @@ const CitasContent = () => {
         setIsLoading(true);
         setError(null);
         try {
-          const resCitas = await fetch('/api/psicologo/citas');
+          const resCitas = await fetch('/api/psicologo/citas', {
+            credentials: 'include'
+          });
           if (!resCitas.ok) throw new Error('Error al cargar citas');
           const dataCitas = await resCitas.json();
           setCitas(dataCitas.citas || []);
@@ -115,7 +117,7 @@ const CitasContent = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFF5F5] via-white to-[#FFF5F5] pb-12">
+    <div className="min-h-screen bg-white pb-12">
       {/* Encabezado */}
       <header className="bg-white/80 backdrop-blur-sm p-4 shadow-sm sticky top-0 z-10 border-b border-[#F2C2C1]/20">
         <div className="max-w-6xl mx-auto flex items-center justify-between">

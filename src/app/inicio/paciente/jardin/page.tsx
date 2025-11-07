@@ -56,7 +56,9 @@ export default function JardinPage() {
         setLoading(true);
         setError(null);
 
-        const response = await fetch('/api/paciente/calendario');
+        const response = await fetch('/api/paciente/calendario', {
+          credentials: 'include'
+        });
 
         if (!response.ok) {
           if (response.status === 403) {

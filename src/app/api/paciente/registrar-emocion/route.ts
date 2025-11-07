@@ -65,11 +65,9 @@ export async function POST(request: NextRequest) {
       pacienteId,
       emocionPrincipal: body.emocionPrincipal,
       nivelAfectacion: body.nivelAfectacion,
-      queSucedio: `
-Qué ocurrió: ${body.queOcurrio || ''}
-Qué pensé: ${body.quePense || ''}
-Qué hice: ${body.queHice || ''}
-      `.trim(),
+      queOcurrio: body.queOcurrio || '',
+      quePense: body.quePense || '',
+      queHice: body.queHice || '',
       lugar: body.lugar || '',
       timestamp: new Date(),
     };

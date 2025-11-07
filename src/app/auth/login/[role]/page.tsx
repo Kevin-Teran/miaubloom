@@ -77,6 +77,7 @@ function LoginForm() {
         const response = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({
                 email: formData.email,
                 password: formData.password,
@@ -120,7 +121,7 @@ function LoginForm() {
     setIsGoogleLoading(false);
   };
 
-  const themeColor = '#F1A8A9';
+  const themeColor = 'var(--color-theme-primary)';
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-gray-50 relative select-none">
@@ -334,7 +335,7 @@ function LoginForm() {
   );
 }
 
-const themeColorForFallback = '#F1A8A9';
+const themeColorForFallback = 'var(--color-theme-primary)';
 
 export default function LoginPage() {
   return (

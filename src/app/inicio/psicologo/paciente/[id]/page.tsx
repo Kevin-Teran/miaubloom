@@ -223,7 +223,7 @@ export default function PacientePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FFF5F5] via-white to-[#FFF5F5]">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <LoadingIndicator text="Cargando datos del paciente..." />
       </div>
     );
@@ -231,7 +231,7 @@ export default function PacientePage() {
 
   if (error || !pacienteData) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#FFF5F5] via-white to-[#FFF5F5] p-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white p-4">
         <div className="bg-white rounded-3xl p-8 text-center shadow-sm border border-red-200 max-w-md">
           <div className="w-16 h-16 mx-auto bg-red-50 rounded-full flex items-center justify-center mb-4">
             <span className="text-3xl">⚠️</span>
@@ -255,7 +255,7 @@ export default function PacientePage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFF5F5] via-white to-[#FFF5F5] pb-20">
+    <div className="min-h-screen bg-white pb-20">
       {/* Header - RESPONSIVE: Oculto en mobile, visible en desktop */}
       <div className="hidden md:block sticky top-0 z-10 bg-white/80 backdrop-blur-md shadow-sm border-b border-[#F2C2C1]/20">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">

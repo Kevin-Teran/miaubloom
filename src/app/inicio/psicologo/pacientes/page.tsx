@@ -11,11 +11,11 @@ export const dynamic = 'force-dynamic';
  */
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import LoadingIndicator from '@/components/ui/LoadingIndicator';
 import Button from '@/components/ui/Button';
+import IconButton from '@/components/ui/IconButton';
 import { PatientCard } from '@/components/psicologo/PatientCard';
 
 interface Paciente {
@@ -43,7 +43,9 @@ export default function PacientesPage() {
         setIsDataLoading(true);
         setDataError(null);
 
-        const response = await fetch('/api/psicologo/pacientes');
+        const response = await fetch('/api/psicologo/pacientes', {
+          credentials: 'include'
+        });
 
         if (response.status === 401) {
           setDataError('No autorizado. Por favor inicia sesión.');
@@ -79,7 +81,7 @@ export default function PacientesPage() {
 
   if (isLoading || isDataLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[var(--color-theme-primary-light)] via-white to-white">
+      <div className="flex items-center justify-center min-h-screen bg-white">
         <LoadingIndicator
           text="Cargando pacientes..."
           className="[&>p]:text-gray-600 [&>div]:opacity-50"
@@ -95,19 +97,16 @@ export default function PacientesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[var(--color-theme-primary-light)] via-white to-white">
+    <div className="min-h-screen bg-white">
       <div className="max-w-6xl mx-auto px-4 py-6">
         {/* Header MODIFICADO */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <Link
+            <IconButton
+              icon="back"
               href="/inicio/psicologo"
-              className="w-10 h-10 rounded-full hover:bg-gray-200 flex items-center justify-center transition-colors"
-            >
-              <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </Link>
+              ariaLabel="Volver al inicio"
+            />
             <h1 className="text-3xl font-bold text-gray-800">Mis Pacientes</h1>
           </div>
           <div className="flex items-center gap-3">
@@ -153,7 +152,7 @@ export default function PacientesPage() {
               placeholder="Buscar por nombre..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-full border-2 border-gray-200 focus:border-[var(--color-theme-primary)] focus:outline-none bg-white shadow-sm transition-colors"
+              className="w-full pl-12 pr-4 py-3 rounded-full border-2 border-gray-200 focus:border-[var(--color-theme-primary)] focus:outline-none bg-white shadow-sm transition-colors placeholder-gray-600"
             />
           </div>
         </div>

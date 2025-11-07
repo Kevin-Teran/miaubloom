@@ -10,9 +10,7 @@
 
 "use client";
 
-export const dynamic = 'force-dynamic';
-
-import { useState, useEffect, useLayoutEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import LoadingIndicator from '@/components/ui/LoadingIndicator';
@@ -88,7 +86,7 @@ export default function IdentificacionPage() {
     setIsLoadingAuth(false);
   }, []);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
      if (isLoadingAuth) return;
 
     const generatedDots: Dot[] = [];

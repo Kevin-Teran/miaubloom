@@ -40,6 +40,7 @@ export function CreatePatientModal({ isOpen, onClose }: CreatePatientModalProps)
       const response = await fetch('/api/psicologo/crear-paciente', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(formData),
       });
 

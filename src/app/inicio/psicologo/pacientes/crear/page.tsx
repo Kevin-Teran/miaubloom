@@ -38,6 +38,7 @@ export default function CrearPacientePage() {
       const response = await fetch('/api/psicologo/crear-paciente', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(formData),
       });
 
@@ -57,7 +58,7 @@ export default function CrearPacientePage() {
 
   if (isAuthLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#FFF5F5] via-white to-[#FFF5F5]">
+      <div className="flex items-center justify-center min-h-screen bg-white">
         <LoadingIndicator text="Cargando..." />
       </div>
     );
@@ -66,7 +67,7 @@ export default function CrearPacientePage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFF5F5] via-white to-[#FFF5F5]">
+    <div className="min-h-screen bg-white">
       {/* Encabezado */}
       <header className="bg-white/80 backdrop-blur-sm p-4 shadow-sm sticky top-0 z-10 border-b border-[#F2C2C1]/20">
         <div className="max-w-3xl mx-auto flex items-center gap-4">
