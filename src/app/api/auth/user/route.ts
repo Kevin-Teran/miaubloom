@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { jwtVerify } from 'jose';
 
 export const dynamic = 'force-dynamic';
 
 const prisma = new PrismaClient();
+
+// Clave secreta para verificar el JWT
+const SECRET_KEY = new TextEncoder().encode(
+  process.env.JWT_SECRET_KEY || 'tu-clave-secreta-muy-segura-aqui'
+);
 
 /**
  * @function GET
@@ -26,7 +32,22 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const userId = sessionCookie.value;
+    // Verificar el JWT
+    let userId: string;
+    try {
+      const { payload } = await jwtVerify(sessionCookie.value, SECRET_KEY);
+      userId = payload.userId as string;
+    } catch (error) {
+      console.error('Error verificando JWT:', error);
+      return NextResponse.json(
+        { 
+          success: false, 
+          authenticated: false,
+          message: 'Token inválido' 
+        },
+        { status: 401 }
+      );
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
