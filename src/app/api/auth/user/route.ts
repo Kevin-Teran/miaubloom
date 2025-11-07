@@ -1,3 +1,13 @@
+/**
+ * @file route.ts
+ * @route src/app/api/auth/user/route.ts
+ * @description API endpoint para obtener datos de usuario. AHORA LEE DESDE COOKIE.
+ * @author Kevin Mariano
+ * @version 2.0.0 (CORREGIDO)
+ * @since 1.0.0
+ * @copyright MiauBloom
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { jwtVerify } from 'jose';
@@ -13,39 +23,72 @@ const SECRET_KEY = new TextEncoder().encode(
 
 /**
  * @function GET
- * @description Obtiene los datos completos del usuario autenticado incluyendo perfil
+ * @description Obtiene los datos completos del usuario autenticado (LEYENDO DESDE COOKIE)
  * @param {NextRequest} request - Petición HTTP
  * @returns {Promise<NextResponse>} Datos del usuario con perfil completo
  */
 export async function GET(request: NextRequest) {
   try {
-    const sessionCookie = request.cookies.get('miaubloom_session');
+    // --- CORRECCIÓN CRÍTICA: LEER DE COOKIE ---
+    const sessionToken = request.cookies.get('miaubloom_session')?.value;
+    // --- FIN DE CORRECCIÓN ---
 
-    if (!sessionCookie) {
+    console.log('[AUTH/USER] Verificando sesión desde cookie:', {
+      hasSessionToken: !!sessionToken,
+    });
+
+    if (!sessionToken) {
+      console.log('[AUTH/USER] No hay cookie de sesión');
       return NextResponse.json(
         { 
           success: false, 
           authenticated: false,
           message: 'No hay sesión activa' 
         },
-        { status: 401 }
+        { 
+          status: 401,
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'Surrogate-Control': 'no-store',
+          }
+        }
       );
     }
 
     // Verificar el JWT
+    let payload: Record<string, unknown>;
     let userId: string;
+    let userRole: string;
+
     try {
-      const { payload } = await jwtVerify(sessionCookie.value, SECRET_KEY);
+      const { payload: decodedPayload } = await jwtVerify(sessionToken, SECRET_KEY);
+      payload = decodedPayload as Record<string, unknown>;
       userId = payload.userId as string;
+      userRole = payload.rol as string;
+      
+      if (!userId || !userRole) {
+        throw new Error('Payload de JWT inválido');
+      }
+
     } catch (error) {
-      console.error('Error verificando JWT:', error);
+      console.error('[AUTH/USER] Error al verificar JWT:', error);
+      // Devolver 401 para que el cliente sepa que la cookie es inválida
       return NextResponse.json(
         { 
           success: false, 
           authenticated: false,
-          message: 'Token inválido' 
+          message: 'Sesión inválida o expirada' 
         },
-        { status: 401 }
+        { 
+          status: 401,
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          }
+        }
       );
     }
 
@@ -66,12 +109,30 @@ export async function GET(request: NextRequest) {
         { 
           success: false, 
           authenticated: false,
-          message: 'Sesión inválida' 
+          message: 'Usuario no encontrado' 
         },
-        { status: 401 }
+        { 
+          status: 401,
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          }
+        }
       );
     }
 
+    // Preparar datos del perfil
+    let perfilCompleto = false;
+    let perfilData = null;
+
+    if (userRole === 'Paciente' && user.perfilPaciente) {
+      perfilCompleto = true;
+      perfilData = user.perfilPaciente;
+    } else if (userRole === 'Psicólogo' && user.perfilPsicologo) {
+      perfilCompleto = true;
+      perfilData = user.perfilPsicologo;
+    }
+
+    // Devolver la estructura de usuario unificada
     return NextResponse.json(
       { 
         success: true, 
@@ -81,14 +142,19 @@ export async function GET(request: NextRequest) {
           email: user.email,
           nombreCompleto: user.nombreCompleto,
           rol: user.rol,
-          perfilPaciente: user.perfilPaciente,
-          perfilPsicologo: user.perfilPsicologo,
-          perfilCompleto: user.rol === 'Paciente' 
-            ? !!user.perfilPaciente 
-            : !!user.perfilPsicologo
+          perfil: perfilData, // Enviar el objeto de perfil completo
+          perfilCompleto: perfilCompleto
         }
       },
-      { status: 200 }
+      { 
+        status: 200,
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          'Surrogate-Control': 'no-store',
+        }
+      }
     );
 
   } catch (error) {

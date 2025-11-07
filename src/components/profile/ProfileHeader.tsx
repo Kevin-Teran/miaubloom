@@ -21,14 +21,14 @@ export function ProfileHeader({ nombre, avatar, nicknameAvatar }: ProfileHeaderP
     <div className="relative">
       {/* Contenedor del perfil */}
       <div className="flex flex-col items-center pt-8 pb-8">
-        {/* Avatar */}
+        {/* Avatar - Usa variables CSS dinámicas */}
         <div className="relative w-24 h-24 mb-4">
           <Image
             src={avatar}
             alt={nombre}
             fill
             className="rounded-full object-cover border-4"
-            style={{ borderColor: '#F2C2C1' }}
+            style={{ borderColor: 'var(--color-theme-primary-light)' }}
             unoptimized
           />
         </div>

@@ -298,7 +298,8 @@ function RegisterForm() {
                     placeholder="••••••••" 
                     error={errors.password} 
                     disabled={isLoading} 
-                    showPasswordToggle={true} 
+                    showPasswordToggle={true}
+                    autoComplete="new-password"
                     className={`bg-white border-gray-300 rounded-full text-gray-900 placeholder-gray-400 focus:border-[${themeColor}] focus:ring-1 focus:ring-[${themeColor}] px-5 py-3 lg:py-3.5`} 
                     labelClassName="text-gray-900 font-semibold mb-1 ml-3 text-sm lg:text-base"
                   />
@@ -312,7 +313,8 @@ function RegisterForm() {
                     placeholder="••••••••" 
                     error={errors.confirmPassword} 
                     disabled={isLoading} 
-                    showPasswordToggle={true} 
+                    showPasswordToggle={true}
+                    autoComplete="new-password"
                     className={`bg-white border-gray-300 rounded-full text-gray-900 placeholder-gray-400 focus:border-[${themeColor}] focus:ring-1 focus:ring-[${themeColor}] px-5 py-3 lg:py-3.5`} 
                     labelClassName="text-gray-900 font-semibold mb-1 ml-3 text-sm lg:text-base"
                   />

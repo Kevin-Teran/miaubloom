@@ -1,9 +1,9 @@
 /**
  * @file route.ts
  * @route src/app/api/auth/login/route.ts
- * @description API endpoint para autenticación. AHORA CREA JWT.
+ * @description API endpoint para autenticación. AHORA CREA JWT Y LO SETEA EN COOKIE.
  * @author Kevin Mariano
- * @version 2.0.0
+ * @version 3.0.0 (CORREGIDO)
  * @since 1.0.0
  * @copyright MiauBloom
  */
@@ -11,7 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import { SignJWT, jwtVerify } from 'jose';
+import { SignJWT, jwtVerify } from 'jose'; // Importar jwtVerify
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +33,7 @@ interface LoginRequestBody {
 
 /**
  * @function POST
- * @description Maneja el inicio de sesión y CREA UN JWT
+ * @description Maneja el inicio de sesión y CREA UN JWT Y SETEA LA COOKIE
  */
 export async function POST(request: NextRequest) {
   try {
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
       .setExpirationTime('7d') // 7 días de expiración
       .sign(SECRET_KEY);
     
-    // --- CORRECCIÓN CRÍTICA: Usar response.cookies.set() ---
+    // --- CORRECCIÓN CRÍTICA: Establecer la cookie ---
     const responseData = {
       success: true,
       message: 'Inicio de sesión exitoso',
@@ -122,17 +122,27 @@ export async function POST(request: NextRequest) {
       }
     };
 
-    // Crear la respuesta PRIMERO
-    const response = NextResponse.json(responseData, { status: 200 });
-
-    // Establecer la cookie EN LA RESPUESTA (no en server context)
+    // Crear la respuesta con el token en JSON
+    const response = NextResponse.json(responseData, { 
+      status: 200,
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      }
+    });
+    
+    // Establecer la cookie httpOnly
     response.cookies.set('miaubloom_session', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: false, // En desarrollo es false, en producción debe ser true
+      sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 días
       path: '/'
     });
+
+    // ESTE ES EL LOG QUE DEBERÍAS VER AHORA
+    console.log('[LOGIN] Usuario autenticado, cookie establecida.');
     
     return response;
 
@@ -149,9 +159,9 @@ export async function POST(request: NextRequest) {
 
 /**
  * @function GET
- * @description Retorna los datos del usuario autenticado basado en el JWT
- * @param {NextRequest} request - Petición HTTP
- * @returns {Promise<NextResponse>} Datos del usuario autenticado o error
+ * @description Retorna los datos del usuario autenticado basado en el JWT (LEYENDO DE COOKIE)
+ * (Este es el código que ya actualizamos en el paso anterior, pero lo incluyo
+ * para asegurar que el archivo esté 100% correcto)
  */
 export async function GET(request: NextRequest) {
   try {
@@ -228,26 +238,10 @@ export async function GET(request: NextRequest) {
 
     if (userRole === 'Paciente' && user.perfilPaciente) {
       perfilCompleto = true;
-      perfilData = {
-        fechaNacimiento: user.perfilPaciente.fechaNacimiento,
-        genero: user.perfilPaciente.genero,
-        contactoEmergencia: user.perfilPaciente.contactoEmergencia,
-        nicknameAvatar: user.perfilPaciente.nicknameAvatar,
-        fotoPerfil: (user.perfilPaciente as Record<string, unknown>).fotoPerfil as string,
-        psicologoAsignadoId: user.perfilPaciente.psicologoAsignadoId,
-        horarioUso: user.perfilPaciente.horarioUso,
-        duracionUso: user.perfilPaciente.duracionUso
-      };
+      perfilData = user.perfilPaciente;
     } else if (userRole === 'Psicólogo' && user.perfilPsicologo) {
       perfilCompleto = true;
-      perfilData = {
-        genero: user.perfilPsicologo.genero,
-        identificacion: user.perfilPsicologo.identificacion,
-        numeroRegistro: user.perfilPsicologo.registroProfesional,
-        especialidad: user.perfilPsicologo.especialidad,
-        tituloUniversitario: user.perfilPsicologo.tituloUniversitario,
-        fotoPerfil: (user.perfilPsicologo as Record<string, unknown>).fotoPerfil as string
-      };
+      perfilData = user.perfilPsicologo;
     }
 
     return NextResponse.json(

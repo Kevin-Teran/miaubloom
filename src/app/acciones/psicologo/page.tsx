@@ -51,15 +51,15 @@ export default function AccionesPsicologoPage() {
           <Link 
             href="/inicio/psicologo/tareas"
             className="block bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 p-6 border-l-4"
-            style={{ borderColor: '#FF9800' }}
+            style={{ borderColor: 'var(--color-theme-primary-light)' }}
           >
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-gray-800 mb-1">Asignar Tareas</h2>
                 <p className="text-sm text-gray-600">Crear y asignar nuevas tareas a tus pacientes</p>
               </div>
-              <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--color-theme-primary-light)' }}>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--color-theme-primary)' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                 </svg>
               </div>
@@ -70,15 +70,15 @@ export default function AccionesPsicologoPage() {
           <Link 
             href="/inicio/psicologo/pacientes"
             className="block bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 p-6 border-l-4"
-            style={{ borderColor: '#9C27B0' }}
+            style={{ borderColor: 'var(--color-theme-primary-dark)' }}
           >
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-gray-800 mb-1">Mis Pacientes</h2>
                 <p className="text-sm text-gray-600">Ver lista completa de tus pacientes</p>
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <svg className="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--color-theme-primary-light)' }}>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--color-theme-primary)' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-2a6 6 0 0112 0v2zm6-6h-2m0 0h-2m2 0v2m0-2v-2" />
                 </svg>
               </div>

@@ -30,9 +30,9 @@ const CitaCard = ({ cita }: { cita: Cita }) => {
   const esFutura = fecha > new Date();
 
   return (
-    <div className={`bg-white p-5 rounded-3xl shadow-sm hover:shadow-md transition-shadow border ${esFutura ? 'border-[#F2C2C1]' : 'border-gray-200'}`}>
+    <div className={`bg-white p-5 rounded-3xl shadow-sm hover:shadow-md transition-shadow border ${esFutura ? 'border-[var(--color-theme-primary)]' : 'border-gray-200'}`}>
       <div className="flex items-center gap-4 mb-4">
-        <div className={`relative w-14 h-14 rounded-full overflow-hidden ring-2 ${esFutura ? 'ring-[#F2C2C1]' : 'ring-gray-200'}`}>
+        <div className={`relative w-14 h-14 rounded-full overflow-hidden ring-2 ${esFutura ? 'ring-[var(--color-theme-primary)]' : 'ring-gray-200'}`}>
           <Image
             src={cita.paciente.avatar}
             alt={cita.paciente.nombreCompleto}
@@ -44,18 +44,18 @@ const CitaCard = ({ cita }: { cita: Cita }) => {
         </div>
         <div className="flex-1">
           <h3 className="font-semibold text-[#070806] text-base">{cita.paciente.nombreCompleto}</h3>
-          <p className={`text-sm font-medium ${esFutura ? 'text-[#F2C2C1]' : 'text-[#B6BABE]'}`}>
+          <p className={`text-sm font-medium ${esFutura ? 'text-[var(--color-theme-primary)]' : 'text-[#B6BABE]'}`}>
             {cita.estado}
           </p>
         </div>
       </div>
-      <div className="bg-[#FFF5F5] rounded-2xl p-3 flex flex-col gap-2.5">
+      <div className="rounded-2xl p-3 flex flex-col gap-2.5" style={{ backgroundColor: 'var(--color-theme-primary-light)' }}>
         <div className="flex items-center gap-2.5 text-sm text-[#070806]">
-          <Calendar size={18} className="text-[#F2C2C1]" />
+          <Calendar size={18} style={{ color: 'var(--color-theme-primary)' }} />
           <span className="font-medium">{fecha.toLocaleDateString('es-ES', { dateStyle: 'long' })}</span>
         </div>
         <div className="flex items-center gap-2.5 text-sm text-[#070806]">
-          <Clock size={18} className="text-[#F2C2C1]" />
+          <Clock size={18} style={{ color: 'var(--color-theme-primary)' }} />
           <span className="font-medium">{fecha.toLocaleTimeString('es-ES', { timeStyle: 'short' })}</span>
         </div>
       </div>
@@ -118,14 +118,14 @@ const CitasContent = () => {
 
   return (
     <div className="min-h-screen bg-white pb-12">
-      {/* Encabezado */}
-      <header className="bg-white/80 backdrop-blur-sm p-4 shadow-sm sticky top-0 z-10 border-b border-[#F2C2C1]/20">
+      {/* Encabezado (CORREGIDO) */}
+      <header className="bg-white/80 backdrop-blur-sm p-4 shadow-sm sticky top-0 z-10" style={{ borderBottom: `1px solid var(--color-theme-primary-light)` }}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <IconButton
               icon="back"
               onClick={() => router.back()}
-              bgColor="#F2C2C1"
+              bgColor="var(--color-theme-primary)"
               ariaLabel="Volver"
             />
             <div>
@@ -135,7 +135,8 @@ const CitasContent = () => {
           </div>
           <Button 
             onClick={() => router.push('/inicio/psicologo/citas/nueva')}
-            className="bg-[#F2C2C1] hover:bg-[#F2C2C1]/90 text-white font-semibold rounded-2xl shadow-sm"
+            className="text-white font-semibold rounded-2xl shadow-sm"
+            style={{ backgroundColor: 'var(--color-theme-primary)' }}
           >
             + Nueva Cita
           </Button>
@@ -145,17 +146,14 @@ const CitasContent = () => {
       {/* Contenido */}
       <main className="max-w-6xl mx-auto p-6">
         {showSuccess && (
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-800 px-5 py-4 rounded-2xl mb-6 shadow-sm flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-              <span className="text-lg">✓</span>
-            </div>
-            <span className="font-medium">¡Cita agendada con éxito!</span>
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-xl">
+            ✓ Cita creada exitosamente
           </div>
         )}
 
         {error && (
-          <div className="bg-gradient-to-r from-red-50 to-rose-50 border border-red-200 text-red-700 px-5 py-4 rounded-2xl mb-6 shadow-sm">
-            {error}
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl">
+            ✗ {error}
           </div>
         )}
 
@@ -168,7 +166,7 @@ const CitasContent = () => {
         ) : (
           <div className="text-center py-20">
             <div className="inline-block p-6 bg-white rounded-3xl shadow-sm mb-6">
-              <Calendar size={64} className="text-[#F2C2C1] mx-auto" />
+              <Calendar size={64} style={{ color: 'var(--color-theme-primary)' }} className="mx-auto" />
             </div>
             <h3 className="text-lg font-semibold text-[#070806] mb-2">No hay citas programadas</h3>
             <p className="text-sm text-[#B6BABE] mb-6">Usa el botón &quot;+ Nueva Cita&quot; para empezar.</p>

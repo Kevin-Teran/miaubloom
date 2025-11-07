@@ -33,10 +33,24 @@ interface JWTPayload {
  */
 export async function GET(request: NextRequest) {
   try {
-    // Obtener el JWT de la cookie
+    // Obtener el JWT de la cookie O del Authorization header
+    let sessionToken: string | null = null;
+    
+    // Intentar desde cookie
     const sessionCookie = request.cookies.get('miaubloom_session');
+    if (sessionCookie?.value) {
+      sessionToken = sessionCookie.value;
+    }
+    
+    // Si no hay cookie, intentar desde Authorization header
+    if (!sessionToken) {
+      const authHeader = request.headers.get('Authorization');
+      if (authHeader?.startsWith('Bearer ')) {
+        sessionToken = authHeader.substring(7);
+      }
+    }
 
-    if (!sessionCookie?.value) {
+    if (!sessionToken) {
       return NextResponse.json(
         { success: false, message: 'No autenticado' },
         { status: 401 }
@@ -47,7 +61,7 @@ export async function GET(request: NextRequest) {
     let payload: JWTPayload;
     try {
       const { payload: decodedPayload } = await jwtVerify(
-        sessionCookie.value,
+        sessionToken,
         SECRET_KEY
       );
       payload = decodedPayload as JWTPayload;

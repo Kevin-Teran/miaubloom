@@ -171,6 +171,7 @@ function ResetPasswordForm() {
                                     placeholder="••••••••"
                                     disabled={isLoading}
                                     showPasswordToggle={true}
+                                    autoComplete="new-password"
                                     className={`bg-white border-gray-300 rounded-full text-gray-900 placeholder-gray-400 focus:border-[${themeColor}] focus:ring-1 focus:ring-[${themeColor}] px-5 py-3`}
                                     labelClassName="text-gray-900 font-semibold mb-1 ml-3"
                                 />
@@ -186,6 +187,7 @@ function ResetPasswordForm() {
                                     placeholder="••••••••"
                                     disabled={isLoading}
                                     showPasswordToggle={true}
+                                    autoComplete="new-password"
                                     className={`bg-white border-gray-300 rounded-full text-gray-900 placeholder-gray-400 focus:border-[${themeColor}] focus:ring-1 focus:ring-[${themeColor}] px-5 py-3`}
                                     labelClassName="text-gray-900 font-semibold mb-1 ml-3"
                                 />

@@ -230,7 +230,7 @@ export function ProfilePhotoSection({
                 onClick={() => handleAvatarSelect(avatar)}
                 className="relative w-16 h-16 rounded-full overflow-hidden border-4 hover:scale-110 transition-all"
                 style={{
-                  borderColor: currentPhoto === avatar ? 'var(--color-theme-primary)' : 'rgba(242, 194, 193, 0.3)',
+                  borderColor: currentPhoto === avatar ? 'var(--color-theme-primary)' : 'var(--color-theme-primary-light)',
                 }}
               >
                 <Image

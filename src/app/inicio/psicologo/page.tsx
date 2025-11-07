@@ -16,6 +16,7 @@ import Image from 'next/image';
 import LoadingIndicator from '@/components/ui/LoadingIndicator';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { CalendarWithCitas } from '@/components/psicologo/CalendarWithCitas';
 
 // Interfaz para Paciente
 interface Paciente {
@@ -170,9 +171,14 @@ export default function InicioPsicologoPage() {
       setIsDataLoading(true);
       setDataError(null);
       try {
+          // Obtener el token del localStorage para el Authorization header
+          const token = typeof window !== 'undefined' ? localStorage.getItem('miaubloom_token') : null;
+          const headers: Record<string, string> = token ? { 'Authorization': `Bearer ${token}` } : {};
+
           // Fetch Pacientes
           const responsePacientes = await fetch('/api/psicologo/pacientes', {
-              credentials: 'include'
+              credentials: 'include',
+              headers
           });
           if (responsePacientes.ok) {
               const data = await responsePacientes.json();
@@ -183,7 +189,8 @@ export default function InicioPsicologoPage() {
 
           // Fetch Citas Próximas
           const responseCitas = await fetch('/api/psicologo/citas', {
-              credentials: 'include'
+              credentials: 'include',
+              headers
           });
           if (responseCitas.ok) {
               const citasData = await responseCitas.json();
@@ -198,7 +205,8 @@ export default function InicioPsicologoPage() {
 
           // Fetch Estadísticas
           const responseStats = await fetch('/api/psicologo/stats', {
-              credentials: 'include'
+              credentials: 'include',
+              headers
           });
           if (responseStats.ok) {
               const statsData = await responseStats.json();
@@ -519,18 +527,12 @@ export default function InicioPsicologoPage() {
 
                         {/* Usuario y acciones */}
                         <div className="flex items-center gap-4">
-                            {/* Fecha */}
-                            <div 
-                                className="flex items-center gap-2 rounded-full px-4 py-2"
-                                style={{ backgroundColor: themeColors.primaryLight }}
-                            >
-                                <svg className="w-4 h-4" style={{ color: themeColors.primaryDark }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                <span className="text-sm font-semibold text-gray-700">
-                                    {formattedDate} {formattedMonth}
-                                </span>
-                            </div>
+                            {/* Calendario con Citas */}
+                            <CalendarWithCitas
+                                themeColor={themeColors.primary}
+                                themeColorLight={themeColors.primaryLight}
+                                themeColorDark={themeColors.primaryDark}
+                            />
 
                             {/* Notificaciones */}
                             <Link href="/notificaciones/psicologo" className="relative p-2 hover:bg-gray-100 rounded-full transition-colors">

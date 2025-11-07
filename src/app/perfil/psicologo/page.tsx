@@ -13,7 +13,7 @@ import { useAuth } from '@/context/AuthContext';
 import Input from '@/components/ui/Input';
 import { Save, Edit2, X } from 'lucide-react';
 import IconButton from '@/components/ui/IconButton';
-import { SuccessToast } from '@/components/ui/SuccessToast'; // <-- AÑADIDO
+import { SuccessToast } from '@/components/ui/SuccessToast';
 
 interface ProfileFieldProps {
   label: string;
@@ -78,6 +78,7 @@ function ProfileEditModal({ isOpen, onClose, onConfirm, initialData }: EditModal
             value={data.especialidad}
             onChange={handleChange}
             placeholder="Ej: Psicología clínica..."
+            className="focus:border-[var(--color-theme-primary)] focus:ring-[var(--color-theme-primary)]"
           />
           <Input
             label="Título Universitario"
@@ -85,6 +86,7 @@ function ProfileEditModal({ isOpen, onClose, onConfirm, initialData }: EditModal
             value={data.tituloUniversitario}
             onChange={handleChange}
             placeholder="Ej: Psicólogo Clínico, Universidad Nacional..."
+            className="focus:border-[var(--color-theme-primary)] focus:ring-[var(--color-theme-primary)]"
           />
           <Input
             label="Número de Registro Profesional"
@@ -92,6 +94,7 @@ function ProfileEditModal({ isOpen, onClose, onConfirm, initialData }: EditModal
             value={data.numeroRegistro}
             onChange={handleChange}
             placeholder="Ej: CP-12345"
+            className="focus:border-[var(--color-theme-primary)] focus:ring-[var(--color-theme-primary)]"
           />
         </div>
 
@@ -138,8 +141,8 @@ export default function PerfilPsicologoPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const [showSuccessToast, setShowSuccessToast] = useState(false); // <-- AÑADIDO
-  const { refetchUser } = useAuth(); // <-- AÑADIDO
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const { refetchUser } = useAuth();
   
   const [fotoPerfil, setFotoPerfil] = useState('/assets/avatar-psicologo.png');
   const [especialidad, setEspecialidad] = useState('');
@@ -149,7 +152,6 @@ export default function PerfilPsicologoPage() {
   useEffect(() => {
     if (!authUser || isAuthLoading) return;
 
-    // Usar datos directamente del contexto en lugar de hacer fetch
     try {
       setUserData({
         id: authUser.id,
@@ -195,17 +197,12 @@ export default function PerfilPsicologoPage() {
       });
 
       if (response.ok) {
-        // 1. Refrescar los datos del usuario en el AuthContext
         await refetchUser(); 
-        
-        // 2. Cerrar el modal de confirmación
         setShowConfirmModal(false);
-
-        // 3. Mostrar el toast de éxito
         setShowSuccessToast(true);
         setTimeout(() => {
           setShowSuccessToast(false);
-        }, 3000); // Ocultar después de 3 segundos
+        }, 3000);
       } else {
         const errorData = await response.json();
         console.error('Error al guardar:', errorData.message);
@@ -229,19 +226,14 @@ export default function PerfilPsicologoPage() {
 
   if (!authUser || !userData) return null;
 
-  const themeBorderColor = authUser?.perfil?.genero === 'Masculino' ? '#4A90E2' : 'var(--color-theme-primary)';
-  const themeBgColor = authUser?.perfil?.genero === 'Masculino' ? '#4A90E2' : 'var(--color-theme-primary)';
-  const themeTextColor = authUser?.perfil?.genero === 'Masculino' ? 'text-blue-600' : 'text-[var(--color-theme-primary)]';
-  const themeFromBg = authUser?.perfil?.genero === 'Masculino' ? 'from-blue-100' : 'from-[var(--color-theme-primary-light)]';
-
   return (
     <div className="min-h-screen bg-white pb-12 md:pb-16 relative">
-      {/* --- BOTÓN VOLVER --- */}
+      {/* --- BOTÓN VOLVER (CORREGIDO) --- */}
       <IconButton
         icon="back"
         onClick={() => router.back()}
         ariaLabel="Volver"
-        bgColor={themeBgColor}
+        bgColor="var(--color-theme-primary)"
         className="fixed top-6 left-6 z-50 shadow-md"
       />
       {/* --- FIN BOTÓN VOLVER --- */}
@@ -251,19 +243,21 @@ export default function PerfilPsicologoPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 relative z-10">
-        {/* LAYOUT DESKTOP */}
+        {/* LAYOUT DESKTOP (CORREGIDO) */}
         <div className="hidden lg:grid lg:grid-cols-12 lg:gap-8 lg:pt-8">
           {/* COLUMNA IZQUIERDA */}
           <div className="lg:col-span-4 space-y-6">
-            <div className="bg-white rounded-3xl shadow-lg p-8 border-t-4" style={{ borderColor: themeBorderColor }}>
+            <div className="bg-white rounded-3xl shadow-lg p-8 border-t-4" style={{ borderColor: 'var(--color-theme-primary)' }}>
               <ProfileHeader
                 nombre={userData.nombreCompleto}
                 avatar={fotoPerfil}
                 nicknameAvatar={userData.perfil?.nicknameAvatar || 'psicólogo'}
               />
-
               <div className="mt-8 space-y-4">
-                <div className={`bg-gradient-to-r ${themeFromBg} to-transparent rounded-xl p-4 border-l-4`} style={{ borderColor: themeBorderColor }}>
+                <div className="bg-gradient-to-r rounded-xl p-4 border-l-4" style={{ 
+                  backgroundColor: 'var(--color-theme-primary-light)',
+                  borderColor: 'var(--color-theme-primary)'
+                }}>
                   <h3 className="font-roboto font-semibold text-[#070806] mb-2" style={{ fontSize: '17px' }}>
                     Completa tu perfil
                   </h3>
@@ -277,9 +271,9 @@ export default function PerfilPsicologoPage() {
 
           {/* COLUMNA DERECHA */}
           <div className="lg:col-span-8">
-            <div className="bg-white rounded-3xl shadow-xl p-8 md:p-10 border-t-4" style={{ borderColor: themeBorderColor }}>
+            <div className="bg-white rounded-3xl shadow-xl p-8 md:p-10 border-t-4" style={{ borderColor: 'var(--color-theme-primary)' }}>
               <div className="text-center mb-10">
-                <h2 className={`mb-3 font-roboto font-bold ${themeTextColor}`} style={{ fontSize: '32px' }}>
+                <h2 className="mb-3 font-roboto font-bold text-[var(--color-theme-primary)]" style={{ fontSize: '32px' }}>
                   Tu Perfil Profesional
                 </h2>
                 <p className="font-roboto font-medium text-[#070806]" style={{ fontSize: '20px' }}>
@@ -288,7 +282,7 @@ export default function PerfilPsicologoPage() {
               </div>
 
               <div className="space-y-8">
-                {/* Sección de Foto */}
+                {/* Sección Foto */}
                 <div>
                   <h3 className="font-roboto font-semibold mb-4" style={{ fontSize: '17px', color: '#070806' }}>
                     Foto de Perfil
@@ -300,8 +294,7 @@ export default function PerfilPsicologoPage() {
                     userId={userData.id}
                   />
                 </div>
-
-                {/* Campos bloqueados con botón de editar */}
+                
                 <div className="relative space-y-8">
                   <button
                     onClick={handleOpenModal}
@@ -310,7 +303,6 @@ export default function PerfilPsicologoPage() {
                   >
                     <Edit2 size={18} className="text-gray-600" />
                   </button>
-
                   <ProfileField
                     label="Especialidad"
                     value={especialidad}
@@ -329,7 +321,7 @@ export default function PerfilPsicologoPage() {
                 </div>
               </div>
 
-              {/* Botones */}
+              {/* Botones (CORREGIDO) */}
               <div className="flex gap-4 mt-10">
                 <button
                   onClick={() => router.back()}
@@ -341,7 +333,7 @@ export default function PerfilPsicologoPage() {
                 <button
                   onClick={() => setShowConfirmModal(true)}
                   className="flex-1 flex items-center justify-center gap-2 px-8 py-4 rounded-full font-roboto font-semibold text-white hover:opacity-90 transition-opacity"
-                  style={{ fontSize: '17px', backgroundColor: themeBgColor }}
+                  style={{ fontSize: '17px', backgroundColor: 'var(--color-theme-primary)' }}
                 >
                   <Save size={20} />
                   Guardar
@@ -351,7 +343,7 @@ export default function PerfilPsicologoPage() {
           </div>
         </div>
 
-        {/* LAYOUT MÓVIL */}
+        {/* LAYOUT MÓVIL (CORREGIDO) */}
         <div className="lg:hidden pt-6">
           <ProfileHeader
             nombre={userData.nombreCompleto}
@@ -359,8 +351,8 @@ export default function PerfilPsicologoPage() {
             nicknameAvatar={userData.perfil?.nicknameAvatar || 'psicólogo'}
           />
 
-          <div className="mt-6 rounded-3xl shadow-lg p-6 bg-white border-t-4" style={{ borderColor: themeBorderColor }}>
-            <h2 className={`mb-2 font-roboto font-bold text-center ${themeTextColor}`} style={{ fontSize: '28px' }}>
+          <div className="mt-6 rounded-3xl shadow-lg p-6 bg-white border-t-4" style={{ borderColor: 'var(--color-theme-primary)' }}>
+            <h2 className="mb-2 font-roboto font-bold text-center text-[var(--color-theme-primary)]" style={{ fontSize: '28px' }}>
               Tu Perfil
             </h2>
             <p className="font-roboto font-medium text-center text-[#070806] mb-8" style={{ fontSize: '18px' }}>
@@ -368,6 +360,7 @@ export default function PerfilPsicologoPage() {
             </p>
 
             <div className="space-y-6">
+              {/* Sección Foto */}
               <div>
                 <h3 className="font-roboto font-semibold mb-4" style={{ fontSize: '16px', color: '#070806' }}>
                   Foto de Perfil
@@ -380,7 +373,6 @@ export default function PerfilPsicologoPage() {
                 />
               </div>
 
-              {/* Campos bloqueados en móvil */}
               <div className="relative space-y-6">
                 <button
                   onClick={handleOpenModal}
@@ -418,6 +410,7 @@ export default function PerfilPsicologoPage() {
                 </div>
               </div>
 
+              {/* Botones (CORREGIDO) */}
               <div className="flex gap-3 mt-8">
                 <button
                   onClick={() => router.back()}
@@ -429,7 +422,7 @@ export default function PerfilPsicologoPage() {
                 <button
                   onClick={() => setShowConfirmModal(true)}
                   className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-full font-roboto font-semibold text-white"
-                  style={{ fontSize: '16px', backgroundColor: themeBgColor }}
+                  style={{ fontSize: '16px', backgroundColor: 'var(--color-theme-primary)' }}
                 >
                   <Save size={18} />
                   Guardar
@@ -440,7 +433,7 @@ export default function PerfilPsicologoPage() {
         </div>
       </div>
 
-      {/* Modal de Confirmación de Guardado Final */}
+      {/* Modales */}
       <ConfirmationModal
         isOpen={showConfirmModal}
         title="¿Guardar cambios?"
@@ -451,8 +444,6 @@ export default function PerfilPsicologoPage() {
         onCancel={() => setShowConfirmModal(false)}
         isLoading={isSaving}
       />
-
-      {/* Modal de Edición de Perfil */}
       <ProfileEditModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
@@ -463,8 +454,6 @@ export default function PerfilPsicologoPage() {
           numeroRegistro,
         }}
       />
-
-      {/* --- AÑADIR ESTO --- */}
       <SuccessToast 
         message="Perfil guardado exitosamente" 
         isOpen={showSuccessToast} 

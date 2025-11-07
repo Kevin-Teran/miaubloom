@@ -47,7 +47,6 @@ export default function CrearPacientePage() {
         throw new Error(data.message || 'Error al crear');
       }
 
-      // Éxito: redirigir con parámetro de éxito
       router.push('/inicio/psicologo/pacientes?success=true');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Un error ocurrió');
@@ -68,15 +67,9 @@ export default function CrearPacientePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Encabezado */}
-      <header className="bg-white/80 backdrop-blur-sm p-4 shadow-sm sticky top-0 z-10 border-b border-[#F2C2C1]/20">
+      <header className="bg-white/80 backdrop-blur-sm p-4 shadow-sm sticky top-0 z-10" style={{ borderBottom: '1px solid var(--color-theme-primary-light)' }}>
         <div className="max-w-3xl mx-auto flex items-center gap-4">
-          <IconButton
-            icon="back"
-            onClick={() => router.back()}
-            bgColor="#F2C2C1"
-            ariaLabel="Volver"
-          />
+          <IconButton icon="back" onClick={() => router.back()} bgColor="var(--color-theme-primary)" ariaLabel="Volver" />
           <div>
             <h1 className="text-xl font-bold text-[#070806]">Crear Nueva Cuenta</h1>
             <p className="text-sm text-[#B6BABE]">Registra un nuevo paciente</p>
@@ -84,186 +77,74 @@ export default function CrearPacientePage() {
         </div>
       </header>
 
-      {/* Formulario */}
       <main className="max-w-3xl mx-auto p-6">
-        <form onSubmit={handleSubmit} className="bg-white p-8 rounded-3xl shadow-sm border border-[#F2C2C1]/20 space-y-6">
+        <form onSubmit={handleSubmit} className="bg-white p-8 rounded-3xl shadow-sm space-y-6" style={{ border: '1px solid var(--color-theme-primary-light)' }}>
           {error && (
-            <div className="bg-gradient-to-r from-red-50 to-rose-50 border border-red-200 text-red-700 px-5 py-4 rounded-2xl flex items-start gap-3">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-2xl flex items-start gap-3">
               <span className="text-lg">⚠️</span>
               <span className="flex-1">{error}</span>
             </div>
           )}
 
-          {/* Nombre Completo */}
           <div className="space-y-2">
-            <label className="block text-base font-semibold text-[#070806]">
-              Nombre Completo
-            </label>
-            <input
-              type="text"
-              name="nombreCompleto"
-              value={formData.nombreCompleto}
-              onChange={handleChange}
-              required
-              placeholder="Ej: María García"
-              className="w-full px-5 py-4 bg-[#FFF5F5] border-2 border-[#F2C2C1]/30 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:border-[#F2C2C1] focus:ring-[#F2C2C1]/20 text-[#070806] font-medium transition-all"
-            />
+            <label className="block text-base font-semibold text-[#070806]">Nombre Completo</label>
+            <input type="text" name="nombreCompleto" value={formData.nombreCompleto} onChange={handleChange} required placeholder="Ej: María García" className="w-full px-5 py-4 border-2 rounded-2xl shadow-sm focus:outline-none focus:ring-2 text-[#070806] font-medium transition-all" style={{ backgroundColor: 'var(--color-theme-primary-light)', borderColor: 'var(--color-theme-primary-light)' }} />
           </div>
 
-          {/* Email */}
           <div className="space-y-2">
-            <label className="block text-base font-semibold text-[#070806]">
-              Correo Electrónico
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              placeholder="correo@ejemplo.com"
-              className="w-full px-5 py-4 bg-[#FFF5F5] border-2 border-[#F2C2C1]/30 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:border-[#F2C2C1] focus:ring-[#F2C2C1]/20 text-[#070806] font-medium transition-all"
-            />
+            <label className="block text-base font-semibold text-[#070806]">Correo Electrónico</label>
+            <input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="correo@ejemplo.com" className="w-full px-5 py-4 border-2 rounded-2xl shadow-sm focus:outline-none focus:ring-2 text-[#070806] font-medium transition-all" style={{ backgroundColor: 'var(--color-theme-primary-light)', borderColor: 'var(--color-theme-primary-light)' }} />
           </div>
 
-          {/* Contraseña */}
           <div className="space-y-2">
-            <label className="block text-base font-semibold text-[#070806]">
-              Contraseña Temporal
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              placeholder="Mínimo 6 caracteres"
-              className="w-full px-5 py-4 bg-[#FFF5F5] border-2 border-[#F2C2C1]/30 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:border-[#F2C2C1] focus:ring-[#F2C2C1]/20 text-[#070806] font-medium transition-all"
-            />
+            <label className="block text-base font-semibold text-[#070806]">Contraseña Temporal</label>
+            <input type="password" name="password" value={formData.password} onChange={handleChange} required placeholder="Mínimo 6 caracteres" className="w-full px-5 py-4 border-2 rounded-2xl shadow-sm focus:outline-none focus:ring-2 text-[#070806] font-medium transition-all" style={{ backgroundColor: 'var(--color-theme-primary-light)', borderColor: 'var(--color-theme-primary-light)' }} />
             <p className="text-xs text-[#B6BABE] mt-1.5">El paciente podrá cambiarla después</p>
           </div>
 
-          {/* Fecha de Nacimiento */}
           <div className="space-y-2">
-            <label className="block text-base font-semibold text-[#070806]">
-              Fecha de Nacimiento
-            </label>
+            <label className="block text-base font-semibold text-[#070806]">Fecha de Nacimiento</label>
             <div className="grid grid-cols-3 gap-3">
-              <select
-                name="day"
-                value={formData.day}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-4 bg-[#FFF5F5] border-2 border-[#F2C2C1]/30 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:border-[#F2C2C1] focus:ring-[#F2C2C1]/20 text-[#070806] font-medium transition-all appearance-none text-center cursor-pointer"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 6L8 10L12 6' stroke='%23F2C2C1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 0.75rem center',
-                  paddingRight: '2.5rem'
-                }}
-              >
+              <select name="day" value={formData.day} onChange={handleChange} required className="w-full px-4 py-4 border-2 rounded-2xl shadow-sm focus:outline-none focus:ring-2 text-[#070806] font-medium transition-all appearance-none text-center cursor-pointer" style={{ backgroundColor: 'var(--color-theme-primary-light)', borderColor: 'var(--color-theme-primary-light)', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 6L8 10L12 6' stroke='var(--color-theme-primary)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', paddingRight: '2.5rem' }}>
                 <option value="">Día</option>
-                {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
+                {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (<option key={d} value={d}>{d}</option>))}
               </select>
               
-              <select
-                name="month"
-                value={formData.month}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-4 bg-[#FFF5F5] border-2 border-[#F2C2C1]/30 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:border-[#F2C2C1] focus:ring-[#F2C2C1]/20 text-[#070806] font-medium transition-all appearance-none text-center cursor-pointer"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 6L8 10L12 6' stroke='%23F2C2C1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 0.75rem center',
-                  paddingRight: '2.5rem'
-                }}
-              >
+              <select name="month" value={formData.month} onChange={handleChange} required className="w-full px-4 py-4 border-2 rounded-2xl shadow-sm focus:outline-none focus:ring-2 text-[#070806] font-medium transition-all appearance-none text-center cursor-pointer" style={{ backgroundColor: 'var(--color-theme-primary-light)', borderColor: 'var(--color-theme-primary-light)', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 6L8 10L12 6' stroke='var(--color-theme-primary)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', paddingRight: '2.5rem' }}>
                 <option value="">Mes</option>
-                {['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'].map((m, i) => (
-                  <option key={m} value={String(i + 1)}>{m}</option>
-                ))}
+                {['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'].map((m, i) => (<option key={m} value={String(i + 1)}>{m}</option>))}
               </select>
               
-              <select
-                name="year"
-                value={formData.year}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-4 bg-[#FFF5F5] border-2 border-[#F2C2C1]/30 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:border-[#F2C2C1] focus:ring-[#F2C2C1]/20 text-[#070806] font-medium transition-all appearance-none text-center cursor-pointer"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 6L8 10L12 6' stroke='%23F2C2C1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 0.75rem center',
-                  paddingRight: '2.5rem'
-                }}
-              >
+              <select name="year" value={formData.year} onChange={handleChange} required className="w-full px-4 py-4 border-2 rounded-2xl shadow-sm focus:outline-none focus:ring-2 text-[#070806] font-medium transition-all appearance-none text-center cursor-pointer" style={{ backgroundColor: 'var(--color-theme-primary-light)', borderColor: 'var(--color-theme-primary-light)', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 6L8 10L12 6' stroke='var(--color-theme-primary)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', paddingRight: '2.5rem' }}>
                 <option value="">Año</option>
-                {Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i).map((y) => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
+                {Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i).map((y) => (<option key={y} value={y}>{y}</option>))}
               </select>
             </div>
           </div>
 
-          {/* Género */}
           <div className="space-y-3">
-            <label className="block text-base font-semibold text-[#070806]">
-              Género
-            </label>
+            <label className="block text-base font-semibold text-[#070806]">Género</label>
             <div className="flex flex-wrap gap-3">
               {['Masculino', 'Femenino', 'Otro'].map((gen) => (
-                <label 
-                  key={gen} 
-                  className={`flex-1 min-w-[120px] flex items-center justify-center gap-2.5 px-5 py-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                    formData.genero === gen
-                      ? 'bg-[#F2C2C1] border-[#F2C2C1] text-white'
-                      : 'bg-[#FFF5F5] border-[#F2C2C1]/30 text-[#070806] hover:border-[#F2C2C1]/60'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="genero"
-                    value={gen}
-                    checked={formData.genero === gen}
-                    onChange={handleChange}
-                    required
-                    className="sr-only"
-                  />
+                <label key={gen} className={`flex-1 min-w-[120px] flex items-center justify-center gap-2.5 px-5 py-4 rounded-2xl border-2 cursor-pointer transition-all ${formData.genero === gen ? 'text-white' : 'text-[#070806]'}`} style={formData.genero === gen ? { backgroundColor: 'var(--color-theme-primary)', borderColor: 'var(--color-theme-primary)' } : { backgroundColor: 'var(--color-theme-primary-light)', borderColor: 'var(--color-theme-primary-light)' }}>
+                  <input type="radio" name="genero" value={gen} checked={formData.genero === gen} onChange={handleChange} required className="sr-only" />
                   <span className="font-medium">{gen}</span>
                 </label>
               ))}
             </div>
           </div>
 
-          {/* Botones */}
           <div className="flex gap-4 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.back()}
-              fullWidth
-              disabled={isLoading}
-              className="border-2 border-[#F2C2C1] text-[#F2C2C1] hover:bg-[#FFF5F5] font-semibold rounded-2xl py-4"
-            >
+            <Button type="button" variant="outline" onClick={() => router.back()} fullWidth disabled={isLoading} className="font-semibold rounded-2xl py-4" style={{ borderColor: 'var(--color-theme-primary)', color: 'var(--color-theme-primary)' }}>
               Cancelar
             </Button>
-            <Button 
-              type="submit" 
-              isLoading={isLoading} 
-              loadingText="Creando..." 
-              fullWidth
-              className="bg-[#F2C2C1] hover:bg-[#F2C2C1]/90 text-white font-semibold rounded-2xl py-4 shadow-sm"
-            >
+            <Button type="submit" isLoading={isLoading} loadingText="Creando..." fullWidth className="text-white font-semibold rounded-2xl py-4 shadow-sm" style={{ backgroundColor: 'var(--color-theme-primary)' }}>
               Crear y Asignar
             </Button>
           </div>
         </form>
 
-        {/* Info adicional */}
-        <div className="mt-6 p-5 bg-white/60 rounded-2xl border border-[#F2C2C1]/20">
+        <div className="mt-6 p-5 bg-white/60 rounded-2xl" style={{ border: '1px solid var(--color-theme-primary-light)' }}>
           <h3 className="font-semibold text-[#070806] mb-2 flex items-center gap-2">
             <span className="text-lg">ℹ️</span>
             Información importante

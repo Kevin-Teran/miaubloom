@@ -1,9 +1,9 @@
 /**
  * @file AuthContext.tsx
  * @route src/context/AuthContext.tsx
- * @description Contexto global de autenticación y gestión de temas dinámicos por género
+ * @description Contexto global de autenticación. AHORA USA COOKIES (SIN LOCALSTORAGE).
  * @author Kevin Mariano
- * @version 1.0.0
+ * @version 2.0.0 (CORREGIDO)
  * @since 1.0.0
  * @copyright MiauBloom
  */
@@ -40,7 +40,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   theme: 'pink' | 'blue';
-  refetchUser: () => Promise<void>; // <-- AÑADIDO
+  refetchUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -58,7 +58,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       document.body.classList.remove('theme-blue');
       return;
     }
-    const dynamicThemeRoutes = ['/perfil', '/inicio/paciente', '/inicio/psicologo'];
+    
+    // Rutas donde el tema dinámico se aplica
+    const dynamicThemeRoutes = ['/perfil', '/inicio/paciente', '/inicio/psicologo', '/ajustes', '/acciones'];
+    
     if (dynamicThemeRoutes.some(route => pathname?.startsWith(route))) {
       if (userToTheme.perfil?.genero === 'Masculino') {
         setTheme('blue');
@@ -68,23 +71,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         document.body.classList.remove('theme-blue');
       }
     } else {
+      // Rutas públicas o de autenticación siempre usan el tema rosa por defecto
       setTheme('pink');
       document.body.classList.remove('theme-blue');
     }
   }, [pathname]);
 
-  // Verificar sesión
+  // --- CORRECCIÓN CRÍTICA: checkUserSession ---
+  // Esta función ahora depende de la cookie httpOnly, no de localStorage.
   const checkUserSession = useCallback(async () => {
+    // No necesitamos leer localStorage. El navegador enviará la cookie.
+    
+    console.log('[AuthContext] Verificando sesión con API (cookie)...');
+
     try {
+      // El fetch AHORA NO LLEVA HEADERS. La cookie se envía automáticamente.
       const response = await fetch('/api/auth/user', { 
-        credentials: 'include',
+        method: 'GET',
+        credentials: 'include', // Asegura que las cookies se envíen
         headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate'
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
         }
       });
       
       if (response.ok) {
         const data = await response.json();
+        
         if (data.success && data.authenticated) {
           const fetchedUser: User = {
             ...data.user,
@@ -96,13 +110,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           };
           setUser(fetchedUser);
           applyTheme(fetchedUser);
+          console.log('[AuthContext] Sesión verificada, usuario seteado.');
         } else {
+          // La API devolvió success: false (ej. token inválido)
           setUser(null);
           applyTheme(null);
+          console.log('[AuthContext] Sesión no válida (API).');
         }
       } else {
+        // El fetch falló (ej. 401, 500)
         setUser(null);
         applyTheme(null);
+        console.log('[AuthContext] Sesión no válida (Fetch).');
       }
     } catch (error) {
       console.error("[Auth] Error al verificar sesión:", error);
@@ -112,26 +131,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(false);
     }
   }, [applyTheme]);
+  // --- FIN DE CORRECCIÓN ---
 
-  // Ejecutar verificación al montar
+  // Ejecutar verificación al montar (SOLO UNA VEZ)
   useEffect(() => {
-    checkUserSession();
-  }, [checkUserSession]);
+    const timer = setTimeout(() => {
+      checkUserSession();
+    }, 100);
+    
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Re-aplicar tema cuando cambia pathname o user
   useEffect(() => {
     applyTheme(user);
   }, [pathname, user, applyTheme]);
-
-  // Cuando el usuario es null, intentar re-verificar (para el caso de logout)
-  useEffect(() => {
-    // Si user es null y no es la primera carga, vuelve a intentar verificar
-    if (user === null && isLoading === false) {
-      // Reset para permitir re-verificación
-      checkUserSession();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, isLoading]);
 
   // Proveer contexto
   const value = { user, isLoading, theme, refetchUser: checkUserSession };

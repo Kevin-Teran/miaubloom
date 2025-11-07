@@ -92,14 +92,16 @@ function LoginForm() {
             // DETERMINAR LA RUTA DE DESTINO
             const destinationRoute = data.user.perfilCompleto ? dashboardRoute : completeProfileRoute;
             
-            // Usar router.push() y esperar a que se complete antes de cambiar isLoading
-            // Esto permite que el AuthContext se sincronice correctamente
+            // Guardar el token en localStorage INMEDIATAMENTE
+            if (data.token) {
+              localStorage.setItem('miaubloom_token', data.token);
+              console.log('[LOGIN] Token guardado en localStorage');
+            }
+            
             setIsLoading(false);
             
-            // Dar un pequeño delay para asegurar que la cookie está establecida
-            setTimeout(() => {
-                router.push(destinationRoute);
-            }, 500);
+            // Redirect sin delay
+            router.push(destinationRoute);
             
         } else {
             setApiError(data.message || 'Error al iniciar sesión'); 
@@ -251,7 +253,8 @@ function LoginForm() {
                 placeholder="••••••••"
                 error={errors.password} 
                 disabled={isLoading || isGoogleLoading} 
-                showPasswordToggle={true} 
+                showPasswordToggle={true}
+                autoComplete="current-password"
                 className={`bg-white border-gray-300 rounded-full text-gray-900 placeholder-gray-400 focus:border-[${themeColor}] focus:ring-1 focus:ring-[${themeColor}] px-5 py-3 lg:py-3.5`}
                 labelClassName="text-gray-900 font-semibold mb-1 ml-3 text-sm lg:text-base"
               />
