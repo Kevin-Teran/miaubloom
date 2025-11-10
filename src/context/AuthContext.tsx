@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     
     // Rutas donde el tema dinámico se aplica
-    const dynamicThemeRoutes = ['/perfil', '/inicio/paciente', '/inicio/psicologo', '/ajustes', '/acciones'];
+    const dynamicThemeRoutes = ['/perfil', '/inicio/paciente', '/inicio/psicologo', '/ajustes', '/acciones', '/chat'];
     
     if (dynamicThemeRoutes.some(route => pathname?.startsWith(route))) {
       if (userToTheme.perfil?.genero === 'Masculino') {
@@ -80,11 +80,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // --- CORRECCIÓN CRÍTICA: checkUserSession ---
   // Esta función ahora depende de la cookie httpOnly, no de localStorage.
   const checkUserSession = useCallback(async () => {
-    // No necesitamos leer localStorage. El navegador enviará la cookie.
-    
-    console.log('[AuthContext] Verificando sesión con API (cookie)...');
-
     try {
+      console.log('[AuthContext] Iniciando verificación de sesión...');
+      
       // El fetch AHORA NO LLEVA HEADERS. La cookie se envía automáticamente.
       const response = await fetch('/api/auth/user', { 
         method: 'GET',
@@ -96,8 +94,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       });
       
+      console.log('[AuthContext] Respuesta recibida:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('[AuthContext] Datos recibidos:', { success: data.success, authenticated: data.authenticated, hasUser: !!data.user });
         
         if (data.success && data.authenticated) {
           const fetchedUser: User = {
@@ -108,38 +109,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 : "/assets/avatar-psicologo.png"),
             nickname: data.user.perfil?.nicknameAvatar || data.user.nombreCompleto.split(' ')[0],
           };
+          console.log('[AuthContext] Usuario autenticado:', fetchedUser.nombreCompleto);
           setUser(fetchedUser);
           applyTheme(fetchedUser);
-          console.log('[AuthContext] Sesión verificada, usuario seteado.');
         } else {
           // La API devolvió success: false (ej. token inválido)
+          console.log('[AuthContext] Sin autenticación válida');
           setUser(null);
           applyTheme(null);
-          console.log('[AuthContext] Sesión no válida (API).');
         }
       } else {
         // El fetch falló (ej. 401, 500)
+        console.log('[AuthContext] Error en respuesta:', response.status);
         setUser(null);
         applyTheme(null);
-        console.log('[AuthContext] Sesión no válida (Fetch).');
       }
     } catch (error) {
-      console.error("[Auth] Error al verificar sesión:", error);
+      console.error('[AuthContext] Error al verificar sesión:', error);
       setUser(null);
       applyTheme(null);
     } finally {
+      console.log('[AuthContext] Finalizando loading...');
       setIsLoading(false);
     }
   }, [applyTheme]);
   // --- FIN DE CORRECCIÓN ---
 
-  // Ejecutar verificación al montar (SOLO UNA VEZ)
+  // Ejecutar verificación al montar (INMEDIATAMENTE)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      checkUserSession();
-    }, 100);
-    
-    return () => clearTimeout(timer);
+    checkUserSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

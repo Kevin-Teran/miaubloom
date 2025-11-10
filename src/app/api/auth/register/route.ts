@@ -9,18 +9,12 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { SignJWT } from 'jose';
+import { SECRET_KEY } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
-
-const prisma = new PrismaClient();
-
-// Clave secreta para FIRMAR el token.
-const SECRET_KEY = new TextEncoder().encode(
-  process.env.JWT_SECRET_KEY || 'tu-clave-secreta-muy-segura-aqui'
-);
 
 export async function POST(request: NextRequest) {
   try {
@@ -180,25 +174,18 @@ export async function POST(request: NextRequest) {
     return response;
 
   } catch (error) {
-    console.error('Error en API de registro:', error);
     let errorMessage = 'Error interno del servidor';
     
     if (error instanceof Error) {
       errorMessage = error.message;
-      console.error('Stack:', error.stack);
     } else {
-      console.error('Error desconocido:', JSON.stringify(error));
     }
     
     // Comprobar si es un error de Prisma
     if (error instanceof Error && 'code' in error) {
-      console.error('Código de error Prisma:', (error as Record<string, unknown>).code);
-      console.error('Meta:', (error as Record<string, unknown>).meta);
     }
     
     return NextResponse.json({ success: false, message: errorMessage }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -242,7 +229,6 @@ export async function GET(request: NextRequest) {
     );
 
   } catch (error) {
-    console.error('Error verificando email:', error);
 
     return NextResponse.json(
       {
@@ -251,7 +237,5 @@ export async function GET(request: NextRequest) {
       },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

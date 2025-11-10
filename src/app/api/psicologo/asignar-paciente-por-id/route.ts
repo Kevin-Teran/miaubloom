@@ -1,23 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
+import { getAuthPayload } from '@/lib/auth';
 import { jwtVerify } from 'jose';
-
-const prisma = new PrismaClient();
-
-const SECRET_KEY = new TextEncoder().encode(
-  process.env.JWT_SECRET_KEY || 'tu-clave-secreta-muy-segura-aqui'
-);
-
-async function getAuthPayload(request: NextRequest): Promise<{ userId: string; rol: string } | null> {
-  const token = request.cookies.get('miaubloom_session')?.value;
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, SECRET_KEY);
-    return { userId: payload.userId as string, rol: payload.rol as string };
-  } catch {
-    return null;
-  }
-}
 
 /**
  * @function POST

@@ -1,24 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { jwtVerify } from 'jose';
-
-const prisma = new PrismaClient();
-
-const SECRET_KEY = new TextEncoder().encode(
-  process.env.JWT_SECRET_KEY || 'tu-clave-secreta-muy-segura-aqui'
-);
-
-async function getAuthPayload(request: NextRequest): Promise<{ userId: string; rol: string } | null> {
-  const token = request.cookies.get('miaubloom_session')?.value;
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, SECRET_KEY);
-    return { userId: payload.userId as string, rol: payload.rol as string };
-  } catch (e) {
-    console.warn('Error al verificar JWT en API calendario:', e instanceof Error ? e.message : String(e));
-    return null;
-  }
-}
+import { prisma } from '@/lib/prisma';
+import { getAuthPayload } from '@/lib/auth';
 
 interface EmotionRecord {
   emocionPrincipal: string;
@@ -87,38 +69,47 @@ export async function GET(request: NextRequest) {
     });
 
     // Obtener citas del paciente (si existe el modelo)
-    interface CitaType {
+    interface CitaRawType {
       id: number;
       psicologoId: string;
       fechaHora: Date;
       detalles: string | null;
       estado: string;
+      psicologo?: {
+        user: {
+          nombreCompleto: string;
+        };
+      };
     }
-    let citas: CitaType[] = [];
+    let citas: CitaRawType[] = [];
     try {
       citas = await prisma.cita.findMany({
         where: {
           pacienteId: pacienteId,
         },
-        select: {
-          id: true,
-          psicologoId: true,
-          fechaHora: true,
-          detalles: true,
-          estado: true,
+        include: {
+          psicologo: {
+            include: {
+              user: {
+                select: {
+                  nombreCompleto: true,
+                },
+              },
+            },
+          },
         },
         orderBy: {
           fechaHora: 'asc',
         },
-      }) as CitaType[];
+      });
     } catch (e) {
       // Si el modelo Cita no existe, continuamos sin citas
       console.warn('Modelo Cita no disponible:', e instanceof Error ? e.message : String(e));
     }
 
     // Procesar citas por fecha
-    const citasPorDia: { [date: string]: CitaType[] } = {};
-    citas.forEach((cita: CitaType) => {
+    const citasPorDia: { [date: string]: CitaRawType[] } = {};
+    citas.forEach((cita) => {
       const fechaStr = new Date(cita.fechaHora).toISOString().split('T')[0];
       if (!citasPorDia[fechaStr]) {
         citasPorDia[fechaStr] = [];
@@ -126,6 +117,37 @@ export async function GET(request: NextRequest) {
       citasPorDia[fechaStr].push(cita);
     });
 
+    // Formatear citas para el calendario
+    const citasFormateadas = citas.map((cita) => {
+      const fechaHora = new Date(cita.fechaHora);
+      const psicologoNombre = cita.psicologo?.user?.nombreCompleto || 'Psicólogo';
+      return {
+        id: cita.id.toString(),
+        psicologoId: cita.psicologoId,
+        psicologoNombre: psicologoNombre,
+        psicologo: {
+          nombreCompleto: psicologoNombre,
+        },
+        fechaHoraInicio: cita.fechaHora.toISOString(),
+        fecha: fechaHora.toISOString().split('T')[0],
+        hora: fechaHora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+        estado: cita.estado,
+        detalles: cita.detalles,
+      };
+    });
+
+    // Si se solicita formato de calendario (citas), devolver ese formato
+    const url = new URL(request.url);
+    const formato = url.searchParams.get('formato');
+    
+    if (formato === 'citas' || !formato) {
+      return NextResponse.json({
+        success: true,
+        citas: citasFormateadas,
+      });
+    }
+
+    // Formato completo con emociones
     return NextResponse.json({
       success: true,
       datosCalendario: {
@@ -134,6 +156,7 @@ export async function GET(request: NextRequest) {
         totalEmociones: registrosEmocionales.length,
         totalCitas: citas.length,
       },
+      citas: citasFormateadas,
     });
   } catch (error) {
     console.error('Error en API calendario:', error);
@@ -141,7 +164,5 @@ export async function GET(request: NextRequest) {
       { success: false, message: 'Error interno del servidor' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
-  }
+}
 }

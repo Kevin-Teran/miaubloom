@@ -12,7 +12,7 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error(error);
+    // Error logging sería aquí en producción
   }, [error]);
 
   return (
@@ -32,7 +32,7 @@ export default function Error({
 
         {/* Texto del error */}
         <div className="space-y-4 mb-8">
-          <h1 className="text-6xl font-black" style={{ color: '#FFFF' }}>
+          <h1 className="text-6xl font-black text-white">
             500
           </h1>
           <h2 className="text-3xl font-bold text-gray-800">

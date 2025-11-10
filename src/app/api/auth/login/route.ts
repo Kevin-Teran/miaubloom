@@ -9,18 +9,12 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { SignJWT, jwtVerify } from 'jose'; // Importar jwtVerify
+import { SignJWT, jwtVerify } from 'jose';
+import { SECRET_KEY } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
-
-const prisma = new PrismaClient();
-
-// Clave secreta para FIRMAR el token. Guárdala en .env en producción
-const SECRET_KEY = new TextEncoder().encode(
-  process.env.JWT_SECRET_KEY || 'tu-clave-secreta-muy-segura-aqui'
-);
 
 /**
  * @interface LoginRequestBody
@@ -147,13 +141,10 @@ export async function POST(request: NextRequest) {
     return response;
 
   } catch (error) {
-    console.error('Error en el login:', error);
     return NextResponse.json(
       { success: false, message: 'Error interno del servidor' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -187,7 +178,6 @@ export async function GET(request: NextRequest) {
       );
       payload = decodedPayload as Record<string, unknown>;
     } catch (err) {
-      console.error('[Login GET] Error al verificar JWT:', err);
       return NextResponse.json(
         { 
           success: false, 
@@ -261,7 +251,6 @@ export async function GET(request: NextRequest) {
     );
 
   } catch (error) {
-    console.error('Error verificando sesión:', error);
     
     return NextResponse.json(
       { 
@@ -271,7 +260,5 @@ export async function GET(request: NextRequest) {
       },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

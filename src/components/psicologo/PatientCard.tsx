@@ -2,7 +2,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
+import React, { useRef } from 'react';
+import { cardHoverIn, cardHoverOut } from '@/lib/animations';
 
 // Interfaz para Paciente
 interface Paciente {
@@ -22,11 +23,27 @@ interface PatientCardProps {
  */
 export const PatientCard = ({ paciente, href }: PatientCardProps) => {
   const { nombre, avatar, status } = paciente;
+  const cardRef = useRef<HTMLAnchorElement>(null);
+
+  const handleMouseEnter = () => {
+    if (cardRef.current) {
+      cardHoverIn(cardRef.current);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (cardRef.current) {
+      cardHoverOut(cardRef.current);
+    }
+  };
 
   return (
     <Link
+      ref={cardRef}
       href={href}
-      className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-300 w-full text-left flex items-center gap-3"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md hover:shadow-lg transition-shadow duration-300 w-full text-left flex items-center gap-3"
     >
       <div
         className="relative w-14 h-14 rounded-full overflow-hidden border-2 flex-shrink-0"

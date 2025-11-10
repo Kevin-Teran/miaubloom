@@ -29,6 +29,7 @@
   --color-theme-primary: #F2C2C1;
   --color-theme-primary-dark: #E8B0AF;
   --color-theme-primary-light: #FDE6E6;
+  --color-theme-primary-rgb: 242, 194, 193; /* RGB para transparencias */
   
   /* Colores neutros (CORREGIDOS SEGÚN PDF) */
   --color-background: #FFFFFF;
@@ -92,6 +93,7 @@ body.theme-blue {
   --color-theme-primary: #4A90E2;
   --color-theme-primary-dark: #3B7AC9;
   --color-theme-primary-light: #E3EEF9;
+  --color-theme-primary-rgb: 74, 144, 226; /* RGB para transparencias */
 }
 
 /* ================================================
@@ -243,6 +245,12 @@ p, span, h1, h2, h3, h4, h5, h6, a, button, li {
   50% { transform: translateY(-10px) translateX(5px); } /* Ligeros movimientos */
   100% { transform: translateY(0px) translateX(0px); }
 }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+  20%, 40%, 60%, 80% { transform: translateX(8px); }
+}
 /* ===== FIN DE CÓDIGO AÑADIDO ===== */
 
 
@@ -265,6 +273,10 @@ p, span, h1, h2, h3, h4, h5, h6, a, button, li {
 
 .animate-slide-in-down {
   animation: slide-in-down 0.5s ease-out;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
 }
 
 /* Scrollbar personalizado */
@@ -428,6 +440,7 @@ select:focus {
   --color-theme-primary: #A7C7E7; /* Azul pastel principal */
   --color-theme-primary-dark: #89A9C9;
   --color-theme-primary-light: #E0EAF3;
+  --color-theme-primary-rgb: 167, 199, 231; /* RGB para transparencias */
   --color-theme-accent: #6A96C2;
 }
 

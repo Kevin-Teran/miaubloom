@@ -1,11 +1,16 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { Camera, Image as ImageIcon, FileText } from 'lucide-react';
+import IconButton from '@/components/ui/IconButton';
 
 export default function RegistrarEmocionPage() {
   const router = useRouter();
   const [isAnimated, setIsAnimated] = useState(false);
+  const [cameraActive, setCameraActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     setTimeout(() => setIsAnimated(true), 100);
@@ -16,200 +21,154 @@ export default function RegistrarEmocionPage() {
   };
 
   const handleCameraClick = () => {
-    console.log('Funcionalidad de cámara - Próximamente');
+    // Próximamente - Cámara deshabilitada
   };
 
   const handleGalleryClick = () => {
-    console.log('Funcionalidad de galería - Próximamente');
+    // Abrir selector de archivos
+    fileInputRef.current?.click();
   };
 
-  const options = [
-    {
-      id: 'camera',
-      title: 'Tomar Foto',
-      description: 'Captura tu expresión actual',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      ),
-      onClick: handleCameraClick,
-      available: false,
-    },
-    {
-      id: 'gallery',
-      title: 'Subir Foto',
-      description: 'Selecciona de tu galería',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-      ),
-      onClick: handleGalleryClick,
-      available: false,
-    },
-    {
-      id: 'manual',
-      title: 'Formulario',
-      description: 'Describe cómo te sientes',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
-      ),
-      onClick: handleManualForm,
-      available: true,
-    },
-  ];
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar que sea imagen
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor selecciona una imagen válida');
+      return;
+    }
+
+    // Validar tamaño (máx 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('La imagen no debe superar 5MB');
+      return;
+    }
+
+    // Guardar en sessionStorage para el siguiente paso
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      sessionStorage.setItem('emocion_image', event.target?.result as string);
+      router.push('/registrar-emocion/formulario?tipo=galeria');
+    };
+    reader.readAsDataURL(file);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto">
-        <header className="bg-white rounded-b-[2rem] shadow-sm px-4 py-4 lg:px-8 lg:py-6">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => router.back()}
-              className="p-2.5 hover:bg-gray-100 rounded-full transition-all duration-200"
-            >
-              <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <h1 className="text-xl lg:text-2xl font-bold text-gray-900">
-              Registrar Emoción
-            </h1>
-            <div className="w-10 h-10" />
-          </div>
-        </header>
-
-        <main className="px-4 py-8 lg:px-8 lg:py-12">
-          <div className={`text-center mb-8 lg:mb-12 transition-all duration-700 transform ${
-            isAnimated ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-          }`}>
-            <div className="relative inline-block mb-6">
-              <div 
-                className="absolute inset-0 rounded-full blur-2xl opacity-40 animate-pulse" 
-                style={{
-                  background: 'linear-gradient(135deg, var(--color-theme-primary) 0%, var(--color-theme-primary-light) 100%)'
-                }}
-              />
-              <div className="relative bg-white p-6 rounded-full shadow-lg">
-                <svg className="w-16 h-16 lg:w-20 lg:h-20" fill="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--color-theme-primary)' }}>
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                </svg>
-              </div>
-            </div>
-            
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">
-              ¿Cómo te sientes hoy?
-            </h2>
-            <p className="text-base lg:text-lg text-gray-600 max-w-md mx-auto">
-              Elige la forma que prefieras para registrar tu estado emocional
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 max-w-4xl mx-auto">
-            {options.map((option, index) => (
-              <button
-                key={option.id}
-                onClick={option.onClick}
-                disabled={!option.available}
-                className={`
-                  group relative bg-white rounded-3xl p-6 lg:p-8
-                  transition-all duration-500 transform
-                  ${isAnimated ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
-                  ${option.available 
-                    ? 'hover:scale-105 hover:shadow-xl cursor-pointer' 
-                    : 'opacity-60 cursor-not-allowed'
-                  }
-                  shadow-md
-                `}
-                style={{ 
-                  transitionDelay: `${index * 100}ms`,
-                  background: option.available 
-                    ? 'linear-gradient(135deg, #FFFFFF 0%, var(--color-theme-primary-light) 100%)' 
-                    : '#FFFFFF'
-                }}
-              >
-                {!option.available && (
-                  <div className="absolute -top-2 -right-2 bg-gray-200 text-gray-600 text-xs font-semibold px-3 py-1 rounded-full">
-                    Próximamente
-                  </div>
-                )}
-
-                <div className={`
-                  mb-4 mx-auto w-20 h-20 lg:w-24 lg:h-24 rounded-full flex items-center justify-center
-                  transition-all duration-300
-                  ${option.available 
-                    ? 'bg-gradient-to-br from-[var(--color-theme-primary)] to-[var(--color-theme-primary-light)] text-white group-hover:from-[var(--color-theme-primary-dark)] group-hover:to-[var(--color-theme-primary-light)]' 
-                    : 'bg-gray-100 text-gray-400'
-                  }
-                `}>
-                  {option.icon}
-                </div>
-
-                <div className="text-center">
-                  <h3 className="text-lg lg:text-xl font-bold text-gray-900 mb-2">
-                    {option.title}
-                  </h3>
-                  <p className="text-sm lg:text-base text-gray-600">
-                    {option.description}
-                  </p>
-                </div>
-
-                {option.available && (
-                  <>
-                    <div className="absolute top-4 right-4 w-8 h-8 rounded-full opacity-10 animate-ping" style={{ backgroundColor: 'var(--color-theme-primary)' }} />
-                    <div className="absolute bottom-4 left-4 w-6 h-6 rounded-full opacity-20 animate-pulse" style={{ backgroundColor: 'var(--color-theme-primary-light)' }} />
-                  </>
-                )}
-              </button>
-            ))}
-          </div>
-
-          <div className={`
-            mt-12 text-center transition-all duration-700 transform
-            ${isAnimated ? 'opacity-100' : 'opacity-0'}
-          `}
-          style={{ transitionDelay: '400ms' }}>
-            <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full" style={{ backgroundColor: 'var(--color-theme-primary-light)' }}>
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" style={{ color: 'var(--color-theme-primary)' }}>
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-              <p className="text-sm text-gray-700">
-                Nuevas formas de registro llegarán pronto
-              </p>
+    <div className="relative h-screen w-full overflow-hidden bg-black">
+      {/* Video de fondo (cámara) */}
+      <div className="absolute inset-0">
+        {cameraActive ? (
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-gray-800 via-gray-900 to-black flex items-center justify-center">
+            <div className="text-center text-white/50">
+              <Camera size={80} className="mx-auto mb-4 opacity-20" />
+              <p className="text-sm">Vista previa de cámara</p>
             </div>
           </div>
-        </main>
-
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-lg px-6 py-4">
-          <div className="flex justify-around">
-            {['home', 'calendar', 'plus', 'chart', 'user'].map((item) => (
-              <button
-                key={item}
-                className={`p-3 rounded-full transition-all duration-200 ${
-                  item === 'plus' 
-                    ? 'text-white' 
-                    : 'text-gray-400 hover:text-[var(--color-theme-primary)]'
-                }`}
-                style={item === 'plus' ? { backgroundColor: 'var(--color-theme-primary)' } : {}}
-              >
-                {item === 'home' && <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>}
-                {item === 'calendar' && <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>}
-                {item === 'plus' && <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>}
-                {item === 'chart' && <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>}
-                {item === 'user' && <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>}
-              </button>
-            ))}
-          </div>
-        </nav>
+        )}
       </div>
+
+      {/* Overlay oscuro suave */}
+      <div className="absolute inset-0 bg-black/20" />
+
+      {/* Header superior */}
+      <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/60 to-transparent">
+        <div className="px-4 py-6 flex items-center justify-between">
+          <IconButton
+            icon="back"
+            onClick={() => router.back()}
+            bgColor="rgba(255, 255, 255, 0.2)"
+            iconColor="white"
+            variant="filled"
+            className="backdrop-blur-md hover:bg-white/30 transition-all"
+            ariaLabel="Volver"
+          />
+          <h1 className="text-lg font-semibold text-white drop-shadow-lg">
+            Registrar Emoción
+          </h1>
+          <div className="w-10" />
+        </div>
+      </div>
+
+      {/* Texto central */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className={`text-center transition-all duration-700 ${isAnimated ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+          <h2 className="text-3xl md:text-4xl font-bold text-white drop-shadow-2xl mb-3">
+            ¿Cómo te sientes?
+          </h2>
+          <p className="text-white/90 drop-shadow-lg text-base">
+            Elige una opción para continuar
+          </p>
+        </div>
+      </div>
+
+      {/* Botones inferiores - SOLO 3 BOTONES */}
+      <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/70 via-black/50 to-transparent pb-8">
+        <div className="px-6 py-8">
+          <div className="flex items-center justify-center gap-8 max-w-md mx-auto">
+            {/* Galería - IZQUIERDA */}
+            <button
+              onClick={handleGalleryClick}
+              className="flex flex-col items-center gap-2 group active:scale-95 transition-transform"
+            >
+              <div 
+                className="w-16 h-16 rounded-full flex items-center justify-center backdrop-blur-md border-2 border-white/30 transition-all group-hover:scale-110 group-hover:border-white/50"
+                style={{ backgroundColor: 'rgba(var(--color-theme-primary-rgb, 242, 194, 193), 0.3)' }}
+              >
+                <ImageIcon size={28} className="text-white" />
+              </div>
+              <span className="text-xs text-white font-medium drop-shadow-lg">Galería</span>
+            </button>
+
+            {/* Cámara - CENTRO (GRANDE) - DESHABILITADO */}
+            <button
+              onClick={handleCameraClick}
+              disabled
+              className="flex flex-col items-center gap-2 relative opacity-50 cursor-not-allowed"
+            >
+              <div 
+                className="w-20 h-20 rounded-full flex items-center justify-center backdrop-blur-md border-4 border-white/40 shadow-2xl"
+                style={{ backgroundColor: 'rgba(var(--color-theme-primary-rgb, 242, 194, 193), 0.4)' }}
+              >
+                <Camera size={36} className="text-white" />
+              </div>
+              <span className="text-xs text-white/70 font-medium drop-shadow-lg">Próximamente</span>
+            </button>
+
+            {/* Formulario - DERECHA */}
+            <button
+              onClick={handleManualForm}
+              className="flex flex-col items-center gap-2 group active:scale-95 transition-transform"
+            >
+              <div 
+                className="w-16 h-16 rounded-full flex items-center justify-center backdrop-blur-md border-2 border-white/30 transition-all group-hover:scale-110 group-hover:border-white/50"
+                style={{ backgroundColor: 'rgba(var(--color-theme-primary-rgb, 242, 194, 193), 0.3)' }}
+              >
+                <FileText size={28} className="text-white" />
+              </div>
+              <span className="text-xs text-white font-medium drop-shadow-lg">Manual</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Input file oculto para galería */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileSelect}
+        className="hidden"
+        aria-label="Seleccionar imagen"
+      />
     </div>
   );
 }

@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
+import { getAuthPayload, SECRET_KEY } from '@/lib/auth';
 import { jwtVerify } from 'jose';
-
-const prisma = new PrismaClient();
-
-// Clave secreta para verificar JWT
-const SECRET_KEY = new TextEncoder().encode(
-  process.env.JWT_SECRET_KEY || 'tu-clave-secreta-muy-segura-aqui'
-);
 
 interface JWTPayload {
   userId: string;
@@ -111,7 +105,5 @@ export async function PUT(req: NextRequest) {
       { error: 'Error al actualizar el perfil' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
-  }
+}
 }

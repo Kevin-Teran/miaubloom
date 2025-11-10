@@ -118,22 +118,6 @@ export default function IdentificacionPage() {
     }
   };
 
-  const handleDevLogin = async () => {
-    try {
-      const response = await fetch('/api/auth/dev-login');
-      const data = await response.json();
-      if (data.success && data.token) {
-        // Guardar token en localStorage
-        localStorage.setItem('miaubloom_token', data.token);
-        console.log('[DEV-LOGIN] Token guardado. Redirigiendo...');
-        // Ir al dashboard del psicólogo
-        router.push('/inicio/psicologo');
-      }
-    } catch (error) {
-      console.error('[DEV-LOGIN] Error:', error);
-    }
-  };
-
   if (isLoadingAuth) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-white">
@@ -180,16 +164,6 @@ export default function IdentificacionPage() {
           <button onClick={handleContinue} disabled={!selectedRole} className={`w-full max-w-[280px] py-4 rounded-full font-bold text-lg transition-all duration-300 shadow-md select-none ${selectedRole ? 'text-white hover:opacity-95 cursor-pointer' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`} style={{ backgroundColor: selectedRole ? 'var(--color-theme-primary)' : 'inherit' }}>
             Comenzar
           </button>
-          
-          {/* Botón dev-login solo en desarrollo */}
-          {process.env.NEXT_PUBLIC_BYPASS_AUTH === 'true' && (
-            <button 
-              onClick={handleDevLogin} 
-              className="w-full max-w-[280px] py-2 rounded-full font-semibold text-sm bg-gray-800 text-white hover:bg-gray-700 transition-all cursor-pointer select-none"
-            >
-              ⚡ Dev Login (Dr. Martínez)
-            </button>
-          )}
         </footer>
       </div>
     </div>

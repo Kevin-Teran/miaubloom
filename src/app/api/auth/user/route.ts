@@ -9,17 +9,11 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
+import { getAuthPayload, SECRET_KEY } from '@/lib/auth';
 import { jwtVerify } from 'jose';
 
 export const dynamic = 'force-dynamic';
-
-const prisma = new PrismaClient();
-
-// Clave secreta para verificar el JWT
-const SECRET_KEY = new TextEncoder().encode(
-  process.env.JWT_SECRET_KEY || 'tu-clave-secreta-muy-segura-aqui'
-);
 
 /**
  * @function GET
@@ -168,7 +162,5 @@ export async function GET(request: NextRequest) {
       },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
-  }
+}
 }

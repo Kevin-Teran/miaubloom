@@ -10,7 +10,8 @@
 
 "use client";
 
-import React, { ButtonHTMLAttributes, forwardRef } from 'react';
+import React, { ButtonHTMLAttributes, forwardRef, useRef } from 'react';
+import { buttonPress, buttonRelease } from '@/lib/animations';
 
 /**
  * @type ButtonVariant
@@ -61,6 +62,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
+    const internalRef = useRef<HTMLButtonElement>(null);
+    const buttonRef = (ref as React.RefObject<HTMLButtonElement>) || internalRef;
     /**
      * @function getVariantStyles
      * @description Retorna los estilos según la variante del botón
@@ -115,18 +118,43 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       return sizes[size] || sizes.md;
     };
 
+    // Manejadores de animación
+    const handleMouseDown = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (!disabled && !isLoading && buttonRef.current) {
+        buttonPress(buttonRef.current);
+      }
+      props.onMouseDown?.(e);
+    };
+
+    const handleMouseUp = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (!disabled && !isLoading && buttonRef.current) {
+        buttonRelease(buttonRef.current);
+      }
+      props.onMouseUp?.(e);
+    };
+
+    const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (!disabled && !isLoading && buttonRef.current) {
+        buttonRelease(buttonRef.current);
+      }
+      props.onMouseLeave?.(e);
+    };
+
     return (
       <button
-        ref={ref}
+        ref={buttonRef}
         type={type}
         disabled={disabled || isLoading}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
         className={`
           inline-flex items-center justify-center gap-2
           font-bold rounded-full
           transition-all duration-200
           focus:outline-none focus:ring-2 focus:ring-[var(--color-theme-primary)] focus:ring-offset-2
           disabled:cursor-not-allowed disabled:opacity-50
-          transform hover:-translate-y-0.5 active:translate-y-0
+          transform hover:-translate-y-0.5
           disabled:transform-none
           ${getVariantStyles()}
           ${getSizeStyles()}

@@ -10,8 +10,9 @@
 
 "use client";
 
-import React from 'react';
+import React, { useRef } from 'react';
 import Image from 'next/image';
+import { pulseHighlight } from '@/lib/animations';
 
 interface RoleCardProps {
   role: string;
@@ -20,15 +21,25 @@ interface RoleCardProps {
 }
 
 const RoleCard: React.FC<RoleCardProps> = ({ role, isSelected, onSelect }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  
   const avatarImage =
     role === 'Paciente'
       ? '/assets/avatar-paciente.png' /* <-- RUTA ACTUALIZADA */
       : '/assets/avatar-psicologo.png'; /* <-- RUTA ACTUALIZADA */
 
+  const handleClick = () => {
+    if (cardRef.current) {
+      pulseHighlight(cardRef.current);
+    }
+    onSelect(role);
+  };
+
   return (
     <div
-      onClick={() => onSelect(role)}
-      className={`flex flex-col items-center p-4 border-2 rounded-2xl cursor-pointer transition-all w-1/2 ${
+      ref={cardRef}
+      onClick={handleClick}
+      className={`flex flex-col items-center p-4 border-2 rounded-2xl cursor-pointer transition-all duration-300 w-1/2 active:scale-95 ${
         isSelected ? 'border-miaubloom-pink bg-pink-50' : 'border-gray-200 bg-white'
       }`}
     >

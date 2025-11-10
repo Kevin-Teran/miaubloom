@@ -61,6 +61,7 @@ model PerfilPaciente {
   registrosEmocionales RegistroEmocional[]
   tareasRecibidas      Tarea[]   @relation("PacienteTareas")
   citasInvolucradas    Cita[]    @relation("PacienteCitas")
+  conversaciones       Conversacion[] @relation("ConversacionesPaciente")
 
   perfilCompletadoAt   DateTime  @default(now()) @map("perfil_completado_at")
 
@@ -84,6 +85,7 @@ model PerfilPsicologo {
   pacientesAsignados   PerfilPaciente[] @relation("AssignedPatients")
   tareasAsignadas      Tarea[]          @relation("PsicologoTareas")
   citasAgendadas       Cita[]           @relation("PsicologoCitas")
+  conversaciones       Conversacion[]   @relation("ConversacionesPsicologo")
   
   perfilCompletadoAt   DateTime  @default(now()) @map("perfil_completado_at")
 
@@ -165,4 +167,41 @@ model Cita {
   createdAt    DateTime @default(now()) @map("created_at")
   
   @@map("Citas")
+}
+
+// =========================================================================
+// 4. CHAT
+// =========================================================================
+
+model Conversacion {
+  id               String    @id @default(uuid()) @db.VarChar(36)
+  psicologoId      String    @map("psicologo_id") @db.VarChar(36)
+  pacienteId       String    @map("paciente_id") @db.VarChar(36)
+  
+  psicologo        PerfilPsicologo @relation(fields: [psicologoId], references: [userId], onDelete: Cascade, name: "ConversacionesPsicologo")
+  paciente         PerfilPaciente  @relation(fields: [pacienteId], references: [userId], onDelete: Cascade, name: "ConversacionesPaciente")
+  
+  mensajes         Mensaje[]
+  
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  
+  @@unique([psicologoId, pacienteId])
+  @@map("Conversaciones")
+}
+
+model Mensaje {
+  id               String    @id @default(uuid()) @db.VarChar(36)
+  conversacionId   String    @map("conversacion_id") @db.VarChar(36)
+  remitente        String    // "paciente" o "psicologo"
+  remitenteId      String    @map("remitente_id") @db.VarChar(36)
+  
+  contenido        String    @db.Text
+  leido            Boolean   @default(false)
+  
+  conversacion     Conversacion @relation(fields: [conversacionId], references: [id], onDelete: Cascade)
+  
+  createdAt        DateTime  @default(now()) @map("created_at")
+  
+  @@map("Mensajes")
 }

@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import { modalFadeIn, modalFadeOut } from '@/lib/animations';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -26,22 +27,40 @@ export function ConfirmationModal({
   isLoading = false,
   isDangerous = false
 }: ConfirmationModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const backdropRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isOpen && modalRef.current && backdropRef.current) {
+      modalFadeIn(modalRef.current, backdropRef.current);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
+
+  const handleClose = () => {
+    if (modalRef.current && backdropRef.current) {
+      modalFadeOut(modalRef.current, backdropRef.current, onCancel);
+    } else {
+      onCancel();
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Overlay */}
       <div 
+        ref={backdropRef}
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onCancel}
+        onClick={handleClose}
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-md w-full mx-4 z-51">
+      <div ref={modalRef} className="relative bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-md w-full mx-4 z-51">
         {/* Close button */}
         <button
-          onClick={onCancel}
-          className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          onClick={handleClose}
+          className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-lg transition-colors active:scale-95"
         >
           <X size={20} className="text-gray-500" />
         </button>
@@ -59,9 +78,9 @@ export function ConfirmationModal({
         {/* Buttons */}
         <div className="flex gap-3 mt-8">
           <button
-            onClick={onCancel}
+            onClick={handleClose}
             disabled={isLoading}
-            className="flex-1 px-4 py-3 rounded-full font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50"
+            className="flex-1 px-4 py-3 rounded-full font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50 active:scale-95"
           >
             {cancelText}
           </button>
@@ -71,7 +90,7 @@ export function ConfirmationModal({
             style={{ 
               backgroundColor: isDangerous ? '#EF4444' : 'var(--color-theme-primary)'
             }}
-            className="flex-1 px-4 py-3 rounded-full font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-3 rounded-full font-semibold text-white hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95"
           >
             {isLoading ? (
               <>

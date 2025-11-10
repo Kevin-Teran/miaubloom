@@ -8,7 +8,8 @@
  * @copyright MiauBloom
  */
 
-import React from 'react';
+import React, { useRef } from 'react';
+import { buttonPress, buttonRelease } from '@/lib/animations';
 
 interface IconButtonProps {
   /**
@@ -144,9 +145,31 @@ const IconButton = React.forwardRef<HTMLButtonElement | HTMLAnchorElement, IconB
     },
     ref
   ) => {
-    const baseClasses = `flex items-center justify-center rounded-full transition-all duration-200 active:scale-95 hover:opacity-90 flex-shrink-0`;
+    const internalRef = useRef<HTMLButtonElement>(null);
+    const buttonRef = (ref as React.RefObject<HTMLButtonElement>) || internalRef;
+
+    const baseClasses = `flex items-center justify-center rounded-full transition-all duration-200 hover:opacity-90 flex-shrink-0`;
 
     const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer';
+
+    // Manejadores de animación
+    const handleMouseDown = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (!disabled && buttonRef.current) {
+        buttonPress(buttonRef.current);
+      }
+    };
+
+    const handleMouseUp = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (!disabled && buttonRef.current) {
+        buttonRelease(buttonRef.current);
+      }
+    };
+
+    const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (!disabled && buttonRef.current) {
+        buttonRelease(buttonRef.current);
+      }
+    };
 
     // Para outline, el fondo es transparente y el borde tiene el color
     const dynamicStyle = variant === 'outline' 
@@ -184,8 +207,13 @@ const IconButton = React.forwardRef<HTMLButtonElement | HTMLAnchorElement, IconB
     // Si es un botón
     return (
       <button
-        ref={ref as React.Ref<HTMLButtonElement>}
-        onClick={onClick}
+        ref={buttonRef}
+        onClick={(e) => {
+          onClick?.(e);
+        }}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
         disabled={disabled}
         type={type}
         className={`${baseClasses} ${disabledClasses} ${className}`}

@@ -1,24 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { jwtVerify } from 'jose';
-
-const prisma = new PrismaClient();
-
-const SECRET_KEY = new TextEncoder().encode(
-  process.env.JWT_SECRET_KEY || 'tu-clave-secreta-muy-segura-aqui'
-);
-
-async function getAuthPayload(request: NextRequest): Promise<{ userId: string; rol: string } | null> {
-  const token = request.cookies.get('miaubloom_session')?.value;
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, SECRET_KEY);
-    return { userId: payload.userId as string, rol: payload.rol as string };
-  } catch (e) {
-    console.warn('Error al verificar JWT:', e instanceof Error ? e.message : String(e));
-    return null;
-  }
-}
+import { prisma } from '@/lib/prisma';
+import { getAuthPayload } from '@/lib/auth';
 
 interface RegistroEmocionalBody {
   emocionPrincipal: string;
@@ -87,12 +69,9 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Error registrando emoción:', error);
     return NextResponse.json(
       { success: false, message: 'Error interno del servidor' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

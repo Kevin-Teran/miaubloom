@@ -12,12 +12,15 @@ export const dynamic = 'force-dynamic';
  * @copyright MiauBloom
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import LoadingIndicator from '@/components/ui/LoadingIndicator';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { ChatNotificationBadge } from '@/components/chat/ChatNotificationBadge';
+import { CalendarWithCitas } from '@/components/paciente/CalendarWithCitas';
+import { pageTransition, staggerFadeIn } from '@/lib/animations';
 
 // Tipos para tareas
 interface Tarea {
@@ -202,6 +205,27 @@ export default function InicioPacientePage() {
     const [dataError, setDataError] = useState<string | null>(null);
     const [isRetrying, setIsRetrying] = useState(false);
 
+    // Referencias para animaciones
+    const pageRef = useRef<HTMLDivElement>(null);
+    const cardsRef = useRef<HTMLDivElement>(null);
+
+    // Animación de entrada de la página
+    useEffect(() => {
+      if (!isLoading && !loadingStats && pageRef.current) {
+        pageTransition(pageRef.current, 0.1);
+        
+        // Animar cards con stagger
+        setTimeout(() => {
+          if (cardsRef.current) {
+            const cards = cardsRef.current.querySelectorAll('.animate-card');
+            if (cards.length > 0) {
+              staggerFadeIn(Array.from(cards) as HTMLElement[], 0.08);
+            }
+          }
+        }, 200);
+      }
+    }, [isLoading, loadingStats]);
+
     // Cargar tareas al montar el componente
     const fetchTasks = async () => {
         try {
@@ -356,7 +380,7 @@ export default function InicioPacientePage() {
             {/* ============================================
                 VERSIÓN MÓVIL
             ============================================ */}
-            <div className="lg:hidden min-h-screen bg-white pb-20 relative">
+            <div ref={pageRef} className="lg:hidden min-h-screen bg-white pb-20 relative">
                 {/* FONDO ROSADO CON CONTENIDO */}
                 <div className="bg-gradient-to-b from-[var(--color-theme-primary)] to-[var(--color-theme-primary-dark)] min-h-[60vh] relative z-0">
                     {/* Header con fondo rosado */}
@@ -412,21 +436,12 @@ export default function InicioPacientePage() {
                             ¿Cómo te sientes hoy?
                         </p>
 
-                        {/* Fecha */}
+                        {/* Calendario con Citas */}
                         <div className="flex justify-center">
-                            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg px-4 py-3 flex items-center gap-3">
-                                <svg className="w-5 h-5 text-[var(--color-theme-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                <div className="text-center">
-                                    <span className="block text-2xl font-bold text-[var(--color-theme-primary)] leading-none">
-                                        {formattedDate}
-                                    </span>
-                                    <span className="block text-xs text-gray-500 font-semibold uppercase tracking-wider mt-0.5">
-                                        {formattedMonth}
-                                    </span>
-                                </div>
-                            </div>
+                            <CalendarWithCitas
+                                themeColorLight="var(--color-theme-primary-light)"
+                                themeColorDark="var(--color-theme-primary)"
+                            />
                         </div>
                     </div>
                 </div>
@@ -525,6 +540,16 @@ export default function InicioPacientePage() {
                         </Link>
 
                         <NavButton
+                            href="/chat"
+                            label="Chat"
+                            icon={
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                </svg>
+                            }
+                        />
+
+                        <NavButton
                             href="/inicio/paciente/tareas"
                             label="Tareas"
                             icon={
@@ -550,7 +575,7 @@ export default function InicioPacientePage() {
             {/* ============================================
                 VERSIÓN DESKTOP
             ============================================ */}
-            <div className="hidden lg:block min-h-screen bg-white">
+            <div ref={pageRef} className="hidden lg:block min-h-screen bg-white">
                 {/* Header Desktop */}
                 <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
                     <div className="max-w-7xl mx-auto px-8 py-4 flex justify-between items-center">
@@ -573,23 +598,14 @@ export default function InicioPacientePage() {
 
                         {/* Usuario y acciones */}
                         <div className="flex items-center gap-4">
-                            {/* Fecha */}
-                            <div className="flex items-center gap-2 bg-[var(--color-theme-primary-light)] rounded-full px-4 py-2">
-                                <svg className="w-4 h-4 text-[var(--color-theme-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                <span className="text-sm font-semibold text-gray-700">
-                                    {formattedDate} {formattedMonth}
-                                </span>
-                            </div>
+                            {/* Calendario con Citas */}
+                            <CalendarWithCitas
+                                themeColorLight="var(--color-theme-primary-light)"
+                                themeColorDark="var(--color-theme-primary)"
+                            />
 
                             {/* Chat */}
-                            <Link href="/chat/paciente" className="relative p-2 hover:bg-gray-100 rounded-full transition-colors">
-                                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                                </svg>
-                                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-                            </Link>
+                            <ChatNotificationBadge />
 
                             {/* Perfil */}
                             <Link href="/perfil/paciente" className="flex items-center gap-3 hover:bg-gray-50 rounded-full pl-3 pr-4 py-2 transition-colors">

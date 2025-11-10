@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import LoadingIndicator from '@/components/ui/LoadingIndicator';
+import { pageTransition, shakeError } from '@/lib/animations';
 
 interface FormData {
   emocionPrincipal: string;
@@ -36,6 +37,24 @@ export default function FormularioEmocionPage() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
+  const [stepErrors, setStepErrors] = useState<Record<number, string>>({});
+
+  const pageRef = useRef<HTMLDivElement>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  // Animación de entrada
+  useEffect(() => {
+    if (pageRef.current) {
+      pageTransition(pageRef.current, 0.1);
+    }
+  }, []);
+
+  // Animación de error
+  useEffect(() => {
+    if (stepErrors[currentStep] && errorRef.current) {
+      shakeError(errorRef.current);
+    }
+  }, [stepErrors, currentStep]);
 
   const steps = [
     {
@@ -80,7 +99,44 @@ export default function FormularioEmocionPage() {
     }));
   };
 
+  const validateCurrentStep = (): boolean => {
+    const currentField = steps[currentStep].field as keyof FormData;
+    const value = formData[currentField];
+    
+    // Validar según el campo
+    if (currentField === 'emocionPrincipal' && !value) {
+      setStepErrors({ ...stepErrors, [currentStep]: 'Por favor selecciona una emoción' });
+      return false;
+    }
+    
+    if (currentField === 'nivelAfectacion' && value === 0) {
+      setStepErrors({ ...stepErrors, [currentStep]: 'Por favor selecciona el nivel de afectación' });
+      return false;
+    }
+    
+    if (typeof value === 'string' && value.trim() === '') {
+      const fieldNames: Record<string, string> = {
+        queOcurrio: 'Por favor describe qué ocurrió',
+        lugar: 'Por favor indica dónde estabas',
+        quePense: 'Por favor comparte qué pensaste',
+        queHice: 'Por favor describe qué hiciste',
+      };
+      setStepErrors({ ...stepErrors, [currentStep]: fieldNames[currentField] || 'Este campo es obligatorio' });
+      return false;
+    }
+    
+    // Limpiar error si está válido
+    const newErrors = { ...stepErrors };
+    delete newErrors[currentStep];
+    setStepErrors(newErrors);
+    return true;
+  };
+
   const handleNext = () => {
+    if (!validateCurrentStep()) {
+      return;
+    }
+    
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
@@ -97,14 +153,38 @@ export default function FormularioEmocionPage() {
     setError(null);
     setSuccessMessage(null);
 
-    // Validaciones
+    // Validar el paso actual antes de enviar
+    if (!validateCurrentStep()) {
+      return;
+    }
+
+    // Validaciones generales
     if (!formData.emocionPrincipal) {
       setError('Por favor selecciona una emoción');
+      setStepErrors({ ...stepErrors, 0: 'Por favor selecciona una emoción' });
+      setCurrentStep(0);
       return;
     }
 
     if (formData.nivelAfectacion < 1 || formData.nivelAfectacion > 5) {
       setError('El nivel de afectación debe estar entre 1 y 5');
+      setStepErrors({ ...stepErrors, 1: 'El nivel de afectación debe estar entre 1 y 5' });
+      setCurrentStep(1);
+      return;
+    }
+    
+    // Validar campos de texto obligatorios
+    if (!formData.queOcurrio.trim()) {
+      setError('Por favor describe qué ocurrió');
+      setStepErrors({ ...stepErrors, 2: 'Por favor describe qué ocurrió' });
+      setCurrentStep(2);
+      return;
+    }
+    
+    if (!formData.lugar.trim()) {
+      setError('Por favor indica en dónde estabas');
+      setStepErrors({ ...stepErrors, 3: 'Por favor indica en dónde estabas' });
+      setCurrentStep(3);
       return;
     }
 
@@ -160,7 +240,7 @@ export default function FormularioEmocionPage() {
   const step = steps[currentStep];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div ref={pageRef} className="min-h-screen bg-gray-50">
       {/* Header - Desktop y Mobile */}
       <div className="sticky top-0 z-20 bg-white shadow-sm">
         <div className="max-w-5xl mx-auto px-4 md:px-8 py-4 md:py-5">
@@ -383,6 +463,18 @@ export default function FormularioEmocionPage() {
             </div>
           )}
         </div>
+
+        {/* Mensaje de error del paso actual */}
+        {stepErrors[currentStep] && (
+          <div ref={errorRef} className="max-w-2xl mx-auto mb-4">
+            <div className="bg-red-100 border-2 border-red-400 text-red-700 px-4 py-3 rounded-2xl flex items-center gap-2">
+              <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <span className="font-medium">{stepErrors[currentStep]}</span>
+            </div>
+          </div>
+        )}
 
         {/* Botones de navegación - Mejorados */}
         <div className="flex gap-4 max-w-2xl mx-auto">

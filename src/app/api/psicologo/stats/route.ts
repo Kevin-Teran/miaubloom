@@ -140,7 +140,5 @@ export async function GET(request: NextRequest) {
       { success: false, message: 'Error al obtener estadísticas' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
-  }
+}
 }

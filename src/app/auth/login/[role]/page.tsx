@@ -92,12 +92,6 @@ function LoginForm() {
             // DETERMINAR LA RUTA DE DESTINO
             const destinationRoute = data.user.perfilCompleto ? dashboardRoute : completeProfileRoute;
             
-            // Guardar el token en localStorage INMEDIATAMENTE
-            if (data.token) {
-              localStorage.setItem('miaubloom_token', data.token);
-              console.log('[LOGIN] Token guardado en localStorage');
-            }
-            
             setIsLoading(false);
             
             // Redirect sin delay
@@ -107,7 +101,6 @@ function LoginForm() {
             setApiError(data.message || 'Error al iniciar sesión'); 
         }
     } catch (error) {
-        console.error('Error en login:', error);
         setApiError('Error de conexión. Intenta nuevamente.');
     } finally {
         setIsLoading(false); 
@@ -117,9 +110,7 @@ function LoginForm() {
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     setApiError('');
-    console.log('Iniciando proceso de login con Google...');
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    console.log('Simulación de Google Sign-In completada (esto es solo un ejemplo).');
+    // Google Sign-In - Próximamente
     setIsGoogleLoading(false);
   };
 

@@ -9,28 +9,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { jwtVerify } from 'jose'; // <-- IMPORTAR JOSE
-
-const prisma = new PrismaClient();
-
-// --- LÓGICA DE AUTENTICACIÓN JWT REUTILIZABLE ---
-const SECRET_KEY = new TextEncoder().encode(
-  process.env.JWT_SECRET_KEY || 'tu-clave-secreta-muy-segura-aqui'
-);
-
-async function getAuthPayload(request: NextRequest): Promise<{ userId: string; rol: string } | null> {
-  const token = request.cookies.get('miaubloom_session')?.value;
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, SECRET_KEY);
-    return { userId: payload.userId as string, rol: payload.rol as string };
-  } catch (e) {
-    console.warn('Error al verificar JWT en API:', e instanceof Error ? e.message : String(e));
-    return null;
-  }
-}
-// --- FIN DE LÓGICA DE AUTENTICACIÓN ---
+import { prisma } from '@/lib/prisma';
+import { getAuthPayload } from '@/lib/auth';
 
 interface PacienteConUsuario {
   userId: string;
@@ -39,6 +19,8 @@ interface PacienteConUsuario {
   fotoPerfil?: string | null;
   user: {
     nombreCompleto: string;
+    updatedAt: Date;
+    createdAt: Date;
   };
 }
 
@@ -79,6 +61,8 @@ export async function GET(request: NextRequest) {
         user: {
           select: {
             nombreCompleto: true,
+            updatedAt: true,
+            createdAt: true,
           },
         },
       },
@@ -89,15 +73,34 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // 4. Mapear pacientes (lógica existente)
-    const pacientesFormateados = pacientes.map((paciente: PacienteConUsuario) => ({
-      id: paciente.userId,
-      nombre: paciente.user.nombreCompleto,
-      nickname: paciente.nicknameAvatar,
-      genero: paciente.genero,
-      avatar: paciente.fotoPerfil || '/assets/avatar-paciente.png',
-      estado: 'Activo', // TODO: Implementar lógica de estado
-    }));
+    // 4. Mapear pacientes con lógica de estado
+    const pacientesFormateados = pacientes.map((paciente: PacienteConUsuario) => {
+      // Calcular estado basado en última actividad (updatedAt)
+      const ahora = new Date();
+      const ultimaActividad = new Date(paciente.user.updatedAt || paciente.user.createdAt);
+      const minutosInactivo = Math.floor((ahora.getTime() - ultimaActividad.getTime()) / (1000 * 60));
+      
+      let estado = 'Activo';
+      if (minutosInactivo > 1440) { // > 24 horas
+        estado = 'Inactivo';
+      } else if (minutosInactivo > 60) { // > 1 hora
+        estado = 'Ausente';
+      }
+      
+      return {
+        id: paciente.userId,
+        nombre: paciente.user.nombreCompleto,
+        nickname: paciente.nicknameAvatar,
+        genero: paciente.genero,
+        avatar: paciente.fotoPerfil || '/assets/avatar-paciente.png',
+        estado,
+        ultimaActividad: minutosInactivo,
+        ultimaActividadTexto: minutosInactivo < 1 ? 'Ahora' : 
+                              minutosInactivo < 60 ? `Hace ${minutosInactivo}m` :
+                              Math.floor(minutosInactivo / 60) < 24 ? `Hace ${Math.floor(minutosInactivo / 60)}h` :
+                              `Hace ${Math.floor(minutosInactivo / 1440)}d`,
+      };
+    });
 
     return NextResponse.json(
       {
@@ -108,12 +111,9 @@ export async function GET(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error('Error obteniendo pacientes:', error);
     return NextResponse.json(
       { success: false, message: 'Error al obtener pacientes' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

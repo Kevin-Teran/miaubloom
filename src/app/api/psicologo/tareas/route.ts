@@ -1,25 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { jwtVerify } from 'jose';
-
-const prisma = new PrismaClient();
-
-// --- LÓGICA DE AUTENTICACIÓN JWT REUTILIZABLE ---
-const SECRET_KEY = new TextEncoder().encode(
-  process.env.JWT_SECRET_KEY || 'tu-clave-secreta-muy-segura-aqui'
-);
-
-async function getAuthPayload(request: NextRequest): Promise<{ userId: string; rol: string } | null> {
-  const token = request.cookies.get('miaubloom_session')?.value;
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, SECRET_KEY);
-    return { userId: payload.userId as string, rol: payload.rol as string };
-  } catch {
-    return null;
-  }
-}
-// --- FIN DE LÓGICA DE AUTENTICACIÓN ---
+import { prisma } from '@/lib/prisma';
+import { getAuthPayload } from '@/lib/auth';
 
 /**
  * @function POST
@@ -77,7 +58,6 @@ export async function POST(request: NextRequest) {
     );
 
   } catch (error) {
-    console.error('Error creando tarea:', error);
     return NextResponse.json(
       { success: false, message: 'Error al asignar la tarea' },
       { status: 500 }

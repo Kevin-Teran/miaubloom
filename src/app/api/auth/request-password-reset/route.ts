@@ -10,13 +10,11 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
 
 export const dynamic = 'force-dynamic';
-
-const prisma = new PrismaClient();
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -103,7 +101,6 @@ export async function POST(request: NextRequest) {
       });
       console.log(`Password reset email sent successfully to ${email}`);
     } catch (emailError) {
-      console.error(`ERROR sending password reset email to ${email}:`, emailError);
       // Importante: No devolver este error al frontend directamente
       // Solo loguearlo en el servidor. Aún así devolvemos éxito para seguridad.
       // Podrías devolver un status 500 si el envío es CRÍTICO, pero expone info.
@@ -123,12 +120,9 @@ export async function POST(request: NextRequest) {
     );
 
   } catch (error) {
-    console.error('Error in /api/auth/request-password-reset:', error);
     return NextResponse.json(
       { success: false, message: 'Ocurrió un error en el servidor. Intenta de nuevo más tarde.' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
-  }
+}
 }

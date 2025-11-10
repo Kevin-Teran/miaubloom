@@ -10,13 +10,15 @@
  * @copyright MiauBloom
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import LoadingIndicator from '@/components/ui/LoadingIndicator';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { CalendarWithCitas } from '@/components/psicologo/CalendarWithCitas';
+import { ChatNotificationBadge } from '@/components/chat/ChatNotificationBadge';
+import { pageTransition, staggerFadeIn } from '@/lib/animations';
 
 // Interfaz para Paciente
 interface Paciente {
@@ -163,8 +165,29 @@ export default function InicioPsicologoPage() {
     const [dataError, setDataError] = useState<string | null>(null);
     const [isRetrying, setIsRetrying] = useState(false);
 
+    // Referencias para animaciones
+    const pageRef = useRef<HTMLDivElement>(null);
+    const cardsRef = useRef<HTMLDivElement>(null);
+
     // Obtener colores del tema según género del usuario
     const themeColors = getThemeColors(user?.perfil?.genero);
+
+    // Animación de entrada de la página
+    useEffect(() => {
+      if (!isLoading && !isDataLoading && pageRef.current) {
+        pageTransition(pageRef.current, 0.1);
+        
+        // Animar cards con stagger
+        setTimeout(() => {
+          if (cardsRef.current) {
+            const cards = cardsRef.current.querySelectorAll('.animate-card');
+            if (cards.length > 0) {
+              staggerFadeIn(Array.from(cards) as HTMLElement[], 0.08);
+            }
+          }
+        }, 200);
+      }
+    }, [isLoading, isDataLoading]);
 
     // Cargar pacientes y estadísticas del psicólogo
     const fetchData = async () => {
@@ -305,7 +328,7 @@ export default function InicioPsicologoPage() {
             {/* ============================================
                 VERSIÓN MÓVIL - DISEÑO SEGÚN IMAGEN
             ============================================ */}
-            <div className="lg:hidden flex flex-col min-h-screen bg-white select-none">
+            <div ref={pageRef} className="lg:hidden flex flex-col min-h-screen bg-white select-none">
                 {/* Header con fondo de color tema y gato */}
                 <header 
                     className="rounded-b-3xl shadow-lg pt-6 pb-8 px-6 relative overflow-hidden" 
@@ -479,6 +502,16 @@ export default function InicioPsicologoPage() {
                         />
                         
                         <NavButton
+                            href="/chat"
+                            label="Chat"
+                            icon={
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                </svg>
+                            }
+                        />
+                        
+                        <NavButton
                             href="/inicio/psicologo/citas"
                             label="Agenda"
                             icon={
@@ -504,7 +537,7 @@ export default function InicioPsicologoPage() {
             {/* ============================================
                 VERSIÓN DESKTOP - SIN CAMBIOS
             ============================================ */}
-            <div className="hidden lg:block min-h-screen bg-white">
+            <div ref={pageRef} className="hidden lg:block min-h-screen bg-white">
                 {/* Header Desktop */}
                 <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
                     <div className="max-w-7xl mx-auto px-8 py-4 flex justify-between items-center">
@@ -533,6 +566,9 @@ export default function InicioPsicologoPage() {
                                 themeColorLight={themeColors.primaryLight}
                                 themeColorDark={themeColors.primaryDark}
                             />
+
+                            {/* Chat */}
+                            <ChatNotificationBadge />
 
                             {/* Notificaciones */}
                             <Link href="/notificaciones/psicologo" className="relative p-2 hover:bg-gray-100 rounded-full transition-colors">
