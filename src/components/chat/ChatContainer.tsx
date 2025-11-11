@@ -42,11 +42,7 @@ export const ChatContainer: React.FC = () => {
   }
 
   const handleBack = () => {
-    if (user.rol === 'Psicólogo') {
-      router.push('/inicio/psicologo');
-    } else {
-      router.push('/inicio/paciente');
-    }
+    router.back();
   };
 
   return (

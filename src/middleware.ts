@@ -48,13 +48,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Rutas públicas que NO requieren autenticación
+  // Rutas públicas que NO requieren auimage.pngtenticación
   const publicRoutes = ['/', '/identificacion', '/bienvenido', '/auth'];
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route) || pathname === route);
 
   // Si es ruta pública
   if (isPublicRoute) {
-    // Si está logueado y va a auth/login/register, redirigir a su dashboard
+    // Si está logueado y va a auth/login/register, redirigir a su dashboardla id
     if (isAuthenticated && pathname.startsWith('/auth')) {
       const dashboardUrl = userRole === 'Paciente' ? '/inicio/paciente' : '/inicio/psicologo';
       return NextResponse.redirect(new URL(dashboardUrl, request.url));

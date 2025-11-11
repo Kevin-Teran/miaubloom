@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
           psicologo: {
             include: {
               user: {
-                select: {
+        select: {
                   nombreCompleto: true,
                 },
               },

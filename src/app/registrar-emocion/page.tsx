@@ -20,9 +20,56 @@ export default function RegistrarEmocionPage() {
     router.push('/registrar-emocion/formulario');
   };
 
-  const handleCameraClick = () => {
-    // Próximamente - Cámara deshabilitada
+  const handleCameraClick = async () => {
+    // Si la cámara está activa, apagarla
+    if (cameraActive) {
+      console.log('[Cámara] Desactivando...');
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach(track => track.stop());
+        videoRef.current.srcObject = null;
+      }
+      setCameraActive(false);
+      console.log('[Cámara] Desactivada');
+      return;
+    }
+
+    try {
+      console.log('[Cámara] Solicitando acceso...');
+      // Solicitar acceso a la cámara
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        }
+      });
+      
+      console.log('[Cámara] Acceso concedido, activando video...');
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current?.play().then(() => {
+            setCameraActive(true);
+            console.log('[Cámara] Video activo y renderizando');
+          });
+        };
+      }
+    } catch (error) {
+      console.error('[Cámara] Error:', error);
+      alert('No se pudo acceder a la cámara. Por favor verifica los permisos.');
+    }
   };
+
+  // Detener cámara al desmontar componente
+  useEffect(() => {
+    return () => {
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
 
   const handleGalleryClick = () => {
     // Abrir selector de archivos
@@ -57,58 +104,60 @@ export default function RegistrarEmocionPage() {
   return (
     <div className="relative h-screen w-full overflow-hidden bg-black">
       {/* Video de fondo (cámara) */}
-      <div className="absolute inset-0">
-        {cameraActive ? (
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-gray-800 via-gray-900 to-black flex items-center justify-center">
-            <div className="text-center text-white/50">
-              <Camera size={80} className="mx-auto mb-4 opacity-20" />
-              <p className="text-sm">Vista previa de cámara</p>
-            </div>
-          </div>
+      <div className="absolute inset-0 w-full h-full z-0">
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-500 ${cameraActive ? 'opacity-100' : 'opacity-0'}`}
+          style={{ transform: 'scaleX(-1)' }}
+        />
+        {!cameraActive && (
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-gray-800 via-gray-900 to-black" />
         )}
       </div>
 
-      {/* Overlay oscuro suave */}
-      <div className="absolute inset-0 bg-black/20" />
+      {/* Overlay oscuro suave - Solo cuando la cámara NO está activa */}
+      {!cameraActive && <div className="absolute inset-0 bg-black/20" />}
 
-      {/* Header superior */}
-      <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/60 to-transparent">
-        <div className="px-4 py-6 flex items-center justify-between">
-          <IconButton
-            icon="back"
-            onClick={() => router.back()}
-            bgColor="rgba(255, 255, 255, 0.2)"
-            iconColor="white"
-            variant="filled"
-            className="backdrop-blur-md hover:bg-white/30 transition-all"
-            ariaLabel="Volver"
-          />
-          <h1 className="text-lg font-semibold text-white drop-shadow-lg">
-            Registrar Emoción
-          </h1>
-          <div className="w-10" />
+      {/* Header superior - Ocultar cuando cámara activa */}
+      {!cameraActive && (
+        <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/60 to-transparent">
+          <div className="px-4 py-6 flex items-center justify-between">
+            <IconButton
+              icon="back"
+              onClick={() => router.back()}
+              bgColor="rgba(255, 255, 255, 0.2)"
+              iconColor="white"
+              variant="filled"
+              className="backdrop-blur-md hover:bg-white/30 transition-all"
+              ariaLabel="Volver"
+            />
+            <h1 className="text-lg font-semibold text-white drop-shadow-lg">
+              Registrar Emoción
+            </h1>
+            <div className="w-10" />
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Texto central */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className={`text-center transition-all duration-700 ${isAnimated ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
-          <h2 className="text-3xl md:text-4xl font-bold text-white drop-shadow-2xl mb-3">
-            ¿Cómo te sientes?
-          </h2>
-          <p className="text-white/90 drop-shadow-lg text-base">
-            Elige una opción para continuar
-          </p>
+      {/* Texto central - Ocultar cuando cámara activa */}
+      {!cameraActive && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className={`text-center px-6 transition-all duration-700 ${isAnimated ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+            <h2 className="text-3xl md:text-4xl font-bold text-white drop-shadow-2xl mb-3">
+              Escanea tu Tarjeta
+            </h2>
+            <p className="text-white/90 drop-shadow-lg text-base mb-2">
+              Coloca tu tarjeta de emociones frente a la cámara
+            </p>
+            <p className="text-white/70 drop-shadow-lg text-sm">
+              o elige otra opción para continuar
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Botones inferiores - SOLO 3 BOTONES */}
       <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/70 via-black/50 to-transparent pb-8">
@@ -128,19 +177,24 @@ export default function RegistrarEmocionPage() {
               <span className="text-xs text-white font-medium drop-shadow-lg">Galería</span>
             </button>
 
-            {/* Cámara - CENTRO (GRANDE) - DESHABILITADO */}
+            {/* Cámara - CENTRO (GRANDE) */}
             <button
               onClick={handleCameraClick}
-              disabled
-              className="flex flex-col items-center gap-2 relative opacity-50 cursor-not-allowed"
+              className="flex flex-col items-center gap-2 group active:scale-95 transition-transform relative"
             >
               <div 
-                className="w-20 h-20 rounded-full flex items-center justify-center backdrop-blur-md border-4 border-white/40 shadow-2xl"
-                style={{ backgroundColor: 'rgba(var(--color-theme-primary-rgb, 242, 194, 193), 0.4)' }}
+                className={`w-20 h-20 rounded-full flex items-center justify-center backdrop-blur-md shadow-2xl transition-all group-hover:scale-110 ${
+                  cameraActive 
+                    ? 'border-4 border-red-500/60 bg-red-500/40 group-hover:border-red-500/80' 
+                    : 'border-4 border-white/40 group-hover:border-white/60'
+                }`}
+                style={!cameraActive ? { backgroundColor: 'rgba(var(--color-theme-primary-rgb, 242, 194, 193), 0.4)' } : {}}
               >
                 <Camera size={36} className="text-white" />
               </div>
-              <span className="text-xs text-white/70 font-medium drop-shadow-lg">Próximamente</span>
+              <span className="text-xs text-white font-medium drop-shadow-lg">
+                {cameraActive ? 'Apagar' : 'Cámara'}
+              </span>
             </button>
 
             {/* Formulario - DERECHA */}

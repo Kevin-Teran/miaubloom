@@ -52,7 +52,7 @@ const TaskCard = ({
     onToggle?: () => void;
 }) => {
     return (
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-300">
+        <div className="bg-white/80 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl p-4 shadow-md dark:shadow-lg dark:shadow-black/30 hover:shadow-lg dark:hover:shadow-xl transition-all duration-300">
             <div className="flex items-start gap-3">
                 {/* Checkbox */}
                 <button
@@ -60,7 +60,7 @@ const TaskCard = ({
                     className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
                         isCompleted 
                             ? 'bg-[var(--color-theme-primary)] border-[var(--color-theme-primary)]' 
-                            : 'border-gray-300 hover:border-[var(--color-theme-primary)]'
+                            : 'border-gray-300 dark:border-slate-500 hover:border-[var(--color-theme-primary)] dark:hover:border-[var(--color-theme-primary)]'
                     }`}
                 >
                     {isCompleted && (
@@ -72,14 +72,14 @@ const TaskCard = ({
 
                 {/* Contenido */}
                 <div className="flex-1 min-w-0">
-                    <h4 className={`font-semibold text-gray-800 mb-1 ${isCompleted ? 'line-through opacity-60' : ''}`}>
+                    <h4 className={`font-semibold text-gray-800 dark:text-slate-100 mb-1 ${isCompleted ? 'line-through opacity-60' : ''}`}>
                         {title}
                     </h4>
-                    <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                    <p className="text-sm text-gray-600 dark:text-slate-400 mb-2 line-clamp-2">
                         {description}
                     </p>
                     {/* Tag */}
-                    <span className="inline-block px-3 py-1 bg-[var(--color-theme-primary-light)] text-[var(--color-theme-primary)] text-xs font-medium rounded-full">
+                    <span className="inline-block px-3 py-1 bg-[var(--color-theme-primary-light)] dark:bg-slate-600 text-[var(--color-theme-primary)] dark:text-slate-200 text-xs font-medium rounded-full">
                         {tag}
                     </span>
                 </div>
@@ -114,7 +114,8 @@ const EmotionChart = ({
                         cx="48"
                         cy="48"
                         r="45"
-                        stroke="#E5E7EB"
+                        stroke="currentColor"
+                        className="stroke-gray-300 dark:stroke-slate-600"
                         strokeWidth="8"
                         fill="none"
                     />
@@ -134,7 +135,7 @@ const EmotionChart = ({
                 </svg>
                 {/* Porcentaje en el centro */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-lg font-bold text-gray-800">
+                    <span className="text-lg font-bold text-gray-800 dark:text-white" style={{ color: '#1f2937' }}>
                         {percentage}%
                     </span>
                 </div>
@@ -147,7 +148,7 @@ const EmotionChart = ({
                         key={i}
                         className={`w-2 h-2 rounded-full transition-all duration-300`}
                         style={{ 
-                            backgroundColor: i < filledDots ? color : '#E5E7EB',
+                            backgroundColor: i < filledDots ? color : 'var(--color-gray-light)',
                             transform: i < filledDots ? 'scale(1)' : 'scale(0.8)'
                         }}
                     />
@@ -155,7 +156,7 @@ const EmotionChart = ({
             </div>
 
             {/* Nombre de la emoción */}
-            <span className="text-sm font-medium text-gray-600">{name}</span>
+            <span className="text-sm font-medium text-gray-600 dark:text-slate-100" style={{ color: '#4b5563' }}>{name}</span>
         </div>
     );
 };
@@ -172,7 +173,7 @@ const NavButton = ({
     label: string; 
     isActive?: boolean; 
 }) => {
-    const colorClass = isActive ? 'text-[var(--color-theme-primary)]' : 'text-gray-400';
+    const colorClass = isActive ? 'text-[var(--color-theme-primary)]' : 'text-gray-400 dark:text-slate-500 dark:hover:text-slate-300';
     
     return (
         <Link href={href} className={`flex flex-col items-center ${colorClass} transition-colors duration-200 hover:text-[var(--color-theme-primary)]`}>
@@ -337,10 +338,10 @@ export default function InicioPacientePage() {
     // Estado de carga o sin acceso
     if (isLoading || !user) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-pink-100 via-pink-50 to-white">
+            <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-pink-100 via-pink-50 to-white dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
                 <LoadingIndicator
                     text="Cargando tu jardín emocional..."
-                    className="[&>p]:text-gray-600"
+                    className="[&>p]:text-gray-600 dark:[&>p]:text-slate-300"
                 />
             </div>
         );
@@ -349,15 +350,15 @@ export default function InicioPacientePage() {
     // Mostrar error si existe
     if (dataError) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-pink-100 via-pink-50 to-white px-4">
-                <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-md">
+            <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-pink-100 via-pink-50 to-white dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 px-4">
+                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg dark:shadow-2xl dark:shadow-black/50 p-8 text-center max-w-md">
                     <div className="mb-4">
                         <svg className="mx-auto h-12 w-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
-                    <h2 className="text-xl font-semibold text-gray-800 mb-2">Error al cargar</h2>
-                    <p className="text-gray-600 mb-6">{dataError}</p>
+                    <h2 className="text-xl font-semibold text-gray-800 dark:text-slate-100 mb-2">Error al cargar</h2>
+                    <p className="text-gray-600 dark:text-slate-400 mb-6">{dataError}</p>
                     <button
                         onClick={handleRetry}
                         disabled={isRetrying}
@@ -380,7 +381,7 @@ export default function InicioPacientePage() {
             {/* ============================================
                 VERSIÓN MÓVIL
             ============================================ */}
-            <div ref={pageRef} className="lg:hidden min-h-screen bg-white pb-20 relative">
+            <div ref={pageRef} className="lg:hidden min-h-screen bg-white dark:bg-slate-900 pb-20 relative">
                 {/* FONDO ROSADO CON CONTENIDO */}
                 <div className="bg-gradient-to-b from-[var(--color-theme-primary)] to-[var(--color-theme-primary-dark)] min-h-[60vh] relative z-0">
                     {/* Header con fondo rosado */}
@@ -429,10 +430,10 @@ export default function InicioPacientePage() {
                         </div>
 
                         {/* Saludo */}
-                        <h2 className="text-xl font-bold text-white drop-shadow-md mb-1">
+                        <h2 className="text-xl font-bold text-white drop-shadow-md mb-1 dark:drop-shadow-lg">
                             Hola, {user!.nickname}!
                         </h2>
-                        <p className="text-white/90 text-sm font-medium drop-shadow mb-4">
+                        <p className="text-white/90 text-sm font-medium drop-shadow mb-4 dark:drop-shadow-lg">
                             ¿Cómo te sientes hoy?
                         </p>
 
@@ -452,11 +453,11 @@ export default function InicioPacientePage() {
                 </div>
 
                 {/* TARJETA BLANCA INFERIOR CON CONTENIDO */}
-                <div className="relative z-20 bg-white rounded-t-[48px] shadow-2xl px-4 py-6 -mt-8">
+                <div className="relative z-20 bg-white dark:bg-slate-800 rounded-t-[48px] shadow-2xl dark:shadow-2xl dark:shadow-black/50 px-4 py-6 -mt-8">
                     <div className="max-w-lg mx-auto">
                         {/* Sección Mis Tareas */}
                         <section className="mb-8">
-                            <h3 className="text-lg font-bold text-[var(--color-theme-primary)] mb-4 px-2">
+                            <h3 className="text-lg font-bold text-[var(--color-theme-primary)] dark:text-slate-200 mb-4 px-2">
                                 Mis tareas
                             </h3>
                             <div className="space-y-3">
@@ -475,14 +476,14 @@ export default function InicioPacientePage() {
 
                         {/* Sección Mi Actividad */}
                         <section className="pb-8">
-                            <h3 className="text-lg font-bold text-[var(--color-theme-primary)] mb-4 px-2">
+                            <h3 className="text-lg font-bold text-[var(--color-theme-primary)] dark:text-slate-200 mb-4 px-2">
                                 Mi actividad
                             </h3>
-                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-md">
+                            <div className="bg-gray-100 dark:bg-slate-700 rounded-2xl p-6 shadow-md dark:shadow-lg dark:shadow-black/30">
                                 <div className="flex justify-around items-start">
                                     {loadingStats ? (
                                         <div className="flex justify-around w-full">
-                                            <div className="text-gray-400">Cargando...</div>
+                                            <div className="text-gray-500 dark:text-slate-400">Cargando...</div>
                                         </div>
                                     ) : emotionStats.length > 0 ? (
                                         emotionStats.map((stat) => (
@@ -495,7 +496,7 @@ export default function InicioPacientePage() {
                                             />
                                         ))
                                     ) : (
-                                        <div className="text-gray-400 w-full text-center">
+                                        <div className="text-gray-500 dark:text-slate-400 w-full text-center">
                                             Sin datos de actividad aún
                                         </div>
                                     )}
@@ -506,7 +507,7 @@ export default function InicioPacientePage() {
                 </div>
 
                 {/* Barra de navegación inferior */}
-                <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-3 shadow-[0_-4px_6px_rgba(0,0,0,0.05)] z-50">
+                <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 px-6 py-3 shadow-[0_-4px_6px_rgba(0,0,0,0.05)] dark:shadow-[0_-4px_6px_rgba(0,0,0,0.3)] z-50">
                     <div className="max-w-lg mx-auto flex justify-between items-center">
                         <NavButton
                             href="/inicio/paciente/jardin"
@@ -575,25 +576,31 @@ export default function InicioPacientePage() {
             {/* ============================================
                 VERSIÓN DESKTOP
             ============================================ */}
-            <div ref={pageRef} className="hidden lg:block min-h-screen bg-white">
+            <div ref={pageRef} className="hidden lg:block min-h-screen bg-white dark:bg-slate-900">
                 {/* Header Desktop */}
-                <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+                <header className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-50 shadow-sm dark:shadow-md dark:shadow-black/20">
                     <div className="max-w-7xl mx-auto px-8 py-4 flex justify-between items-center">
                         {/* Logo */}
-                        <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 relative">
+                        <div className="flex items-center gap-5">
+                            <div className="w-20 h-20 relative">
                                 <Image
-                                    src="/assets/gato-inicio-1.png"
-                                    alt="Miau"
+                                    src="/assets/logo.svg"
+                                    alt="MiauBloom"
                                     fill
                                     className="object-contain"
+                                    style={{ filter: 'var(--logo-filter, brightness(1))' }}
                                     unoptimized
                                 />
                             </div>
-                            <div>
-                                <h1 className="text-xl font-bold text-gray-800">MiauBloom</h1>
-                                <p className="text-xs text-gray-500">Tu jardín emocional</p>
-                            </div>
+                            <Image
+                                src="/assets/MiauBloom-b.svg"
+                                alt="MiauBloom"
+                                width={200}
+                                height={55}
+                                className="object-contain"
+                                style={{ filter: 'var(--logo-text-filter, brightness(0))' }}
+                                unoptimized
+                            />
                         </div>
 
                         {/* Usuario y acciones */}
@@ -608,7 +615,7 @@ export default function InicioPacientePage() {
                             <ChatNotificationBadge />
 
                             {/* Perfil */}
-                            <Link href="/perfil/paciente" className="flex items-center gap-3 hover:bg-gray-50 rounded-full pl-3 pr-4 py-2 transition-colors">
+                            <Link href="/perfil/paciente" className="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-full pl-3 pr-4 py-2 transition-colors">
                                 <div className="w-10 h-10 relative">
                                     <Image
                                         src={user!.avatarUrl || "/assets/avatar-paciente.png"}
@@ -619,8 +626,8 @@ export default function InicioPacientePage() {
                                     />
                                 </div>
                                 <div className="text-left">
-                                    <p className="text-sm font-semibold text-gray-800">{user!.nickname}</p>
-                                    <p className="text-xs text-gray-500">Paciente</p>
+                                    <p className="text-sm font-semibold text-gray-800 dark:text-slate-200">{user!.nickname}</p>
+                                    <p className="text-xs text-gray-500 dark:text-slate-500">Paciente</p>
                                 </div>
                             </Link>
                         </div>
@@ -633,7 +640,7 @@ export default function InicioPacientePage() {
                         {/* Columna Izquierda - Avatar y Navegación */}
                         <aside className="col-span-3 space-y-6">
                             {/* Card de Saludo */}
-                            <div className="bg-gradient-to-br from-[var(--color-theme-primary-light)] to-[var(--color-theme-primary-light)]/60 rounded-3xl p-6 text-center shadow-lg">
+                            <div className="bg-gradient-to-br from-[var(--color-theme-primary-light)] to-[var(--color-theme-primary-light)]/60 dark:from-slate-700 dark:to-slate-700/80 rounded-3xl p-6 text-center shadow-lg dark:shadow-xl dark:shadow-black/30">
                                 <div className="w-40 h-40 relative mx-auto mb-4 drop-shadow-2xl">
                                     <Image
                                         src="/assets/gato-inicio-1.png"
@@ -644,35 +651,35 @@ export default function InicioPacientePage() {
                                         unoptimized
                                     />
                                 </div>
-                                <h2 className="text-xl font-bold text-gray-800 mb-2">
+                                <h2 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-2">
                                     ¡Hola, {user!.nickname}!
                                 </h2>
-                                <p className="text-gray-600">
+                                <p className="text-gray-600 dark:text-slate-400">
                                     ¿Cómo te sientes hoy?
                                 </p>
                             </div>
 
                             {/* Navegación */}
-                            <nav className="bg-white rounded-3xl p-4 shadow-lg space-y-2">
-                                <Link href="/inicio/paciente" className="flex items-center gap-3 px-4 py-3 bg-[var(--color-theme-primary-light)] text-[var(--color-theme-primary)] rounded-xl font-semibold transition-colors">
+                            <nav className="bg-white dark:bg-slate-800 rounded-3xl p-4 shadow-lg dark:shadow-xl dark:shadow-black/30 space-y-2">
+                                <Link href="/inicio/paciente" className="flex items-center gap-3 px-4 py-3 bg-[var(--color-theme-primary-light)] dark:bg-slate-700 text-[var(--color-theme-primary)] dark:text-slate-100 rounded-xl font-semibold transition-colors">
                                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
                                     </svg>
                                     Inicio
                                 </Link>
-                                <Link href="/inicio/paciente/jardin" className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+                                <Link href="/inicio/paciente/jardin" className="flex items-center gap-3 px-4 py-3 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl font-medium transition-colors">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     Mi Jardín
                                 </Link>
-                                <Link href="/inicio/paciente/tareas" className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+                                <Link href="/inicio/paciente/tareas" className="flex items-center gap-3 px-4 py-3 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl font-medium transition-colors">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                                     </svg>
                                     Tareas
                                 </Link>
-                                <Link href="/ajustes/paciente" className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+                                <Link href="/ajustes/paciente" className="flex items-center gap-3 px-4 py-3 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl font-medium transition-colors">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -680,11 +687,11 @@ export default function InicioPacientePage() {
                                     Ajustes
                                 </Link>
                                 {/* Divisor */}
-                                <div className="h-px bg-gray-200 my-2"></div>
+                                <div className="h-px bg-gray-200 dark:bg-slate-700 my-2"></div>
                                 {/* Botón Cerrar Sesión */}
                                 <button
                                     onClick={handleSignOut}
-                                    className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl font-medium transition-colors"
+                                    className="w-full flex items-center gap-3 px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl font-medium transition-colors"
                                 >
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -730,10 +737,10 @@ export default function InicioPacientePage() {
                         {/* Columna Derecha - Actividad */}
                         <aside className="col-span-3">
                             <section>
-                                <h3 className="text-xl font-bold text-gray-800 mb-4">Mi actividad</h3>
-                                <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg space-y-6">
+                                <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-4">Mi actividad</h3>
+                                <div className="bg-gray-50 dark:bg-slate-700 rounded-3xl p-6 shadow-lg dark:shadow-xl dark:shadow-black/30 space-y-6">
                                     {loadingStats ? (
-                                        <div className="text-gray-400 text-center py-6">Cargando...</div>
+                                        <div className="text-gray-500 dark:text-slate-400 text-center py-6">Cargando...</div>
                                     ) : emotionStats.length > 0 ? (
                                         emotionStats.map((stat) => (
                                             <EmotionChart
@@ -745,7 +752,7 @@ export default function InicioPacientePage() {
                                             />
                                         ))
                                     ) : (
-                                        <div className="text-gray-400 text-center py-6">
+                                        <div className="text-gray-500 dark:text-slate-400 text-center py-6">
                                             Sin datos de actividad aún
                                         </div>
                                     )}

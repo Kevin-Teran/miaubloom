@@ -70,7 +70,7 @@ const PatientCard = ({
     return (
         <button
             onClick={onClick}
-            className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-300 w-full text-left"
+            className="bg-white/80 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl p-4 shadow-md dark:shadow-lg dark:shadow-black/30 hover:shadow-lg dark:hover:shadow-xl transition-all duration-300 w-full text-left"
         >
             <div className="flex items-center gap-3">
                 <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 flex-shrink-0" style={{ borderColor: '#F2C2C1' }}>
@@ -83,7 +83,7 @@ const PatientCard = ({
                     />
                 </div>
                 <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-gray-800 mb-1 truncate">
+                    <h4 className="font-semibold text-gray-800 dark:text-slate-100 dark:text-slate-100 mb-1 truncate">
                         {nombre}
                     </h4>
                     <span className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
@@ -132,10 +132,10 @@ const StatChart = ({
                     />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-xl font-bold text-gray-800">{value}</span>
+                    <span className="text-xl font-bold text-gray-800 dark:text-slate-100">{value}</span>
                 </div>
             </div>
-            <span className="text-sm font-medium text-gray-600 text-center">{label}</span>
+            <span className="text-sm font-medium text-gray-600 dark:text-slate-400 text-center">{label}</span>
         </div>
     );
 };
@@ -283,8 +283,8 @@ export default function InicioPsicologoPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
-                    <h2 className="text-xl font-semibold text-gray-800 mb-2">Error al cargar</h2>
-                    <p className="text-gray-600 mb-6">{dataError}</p>
+                    <h2 className="text-xl font-semibold text-gray-800 dark:text-slate-100 mb-2">Error al cargar</h2>
+                    <p className="text-gray-600 dark:text-slate-400 mb-6">{dataError}</p>
                     <button
                         onClick={handleRetry}
                         disabled={isRetrying}
@@ -328,7 +328,7 @@ export default function InicioPsicologoPage() {
             {/* ============================================
                 VERSIÓN MÓVIL - DISEÑO SEGÚN IMAGEN
             ============================================ */}
-            <div ref={pageRef} className="lg:hidden flex flex-col min-h-screen bg-white select-none">
+            <div ref={pageRef} className="lg:hidden flex flex-col min-h-screen bg-white dark:bg-slate-900 select-none">
                 {/* Header con fondo de color tema y gato */}
                 <header 
                     className="rounded-b-3xl shadow-lg pt-6 pb-8 px-6 relative overflow-hidden" 
@@ -339,12 +339,12 @@ export default function InicioPsicologoPage() {
                     {/* Botones superiores */}
                     <div className="flex justify-between items-center mb-4 relative z-10">
                         <Link href="/ajustes/psicologo" className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                             </svg>
                         </Link>
                         <Link href="/notificaciones/psicologo" className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm relative">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 h-5 text-gray-600 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                             </svg>
                             <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
@@ -354,7 +354,7 @@ export default function InicioPsicologoPage() {
                     {/* Texto de saludo */}
                     <div className="relative z-10 mb-2">
                         <p className="text-sm text-gray-700 opacity-90 mb-1">Hola, {user!.nombreCompleto.split(' ')[0]}!</p>
-                        <h2 className="text-2xl font-bold text-gray-800">Empecemos</h2>
+                        <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">Empecemos</h2>
                     </div>
                     
                     {/* Avatar del gato - posicionado a la derecha */}
@@ -374,7 +374,7 @@ export default function InicioPsicologoPage() {
                         <div 
                             className="w-14 h-14 bg-white rounded-full flex flex-col items-center justify-center shadow-md"
                         >
-                            <span className="text-lg font-bold text-gray-800">{formattedDate}</span>
+                            <span className="text-lg font-bold text-gray-800 dark:text-slate-100">{formattedDate}</span>
                             <span className="text-[9px] uppercase text-gray-500 -mt-0.5">{formattedMonth}</span>
                         </div>
                         <span className="text-sm text-gray-700 font-medium">Hoy</span>
@@ -385,7 +385,7 @@ export default function InicioPsicologoPage() {
                 <main className="flex-1 overflow-y-auto px-5 pb-24 pt-6">
                     {/* Sección Mis Pacientes */}
                     <section className="mb-8">
-                        <h3 className="text-lg font-bold text-gray-800 mb-4">Mis pacientes</h3>
+                        <h3 className="text-lg font-bold text-gray-800 dark:text-slate-100 mb-4">Mis pacientes</h3>
                         <div className="flex gap-3 overflow-x-auto pb-3 -mx-5 px-5 scrollbar-hide">
                             {pacientes.slice(0, 4).map((paciente, index) => (
                                 <Link 
@@ -426,7 +426,7 @@ export default function InicioPsicologoPage() {
                                     <div className="bg-gray-50 rounded-2xl p-3 shadow-sm mb-2 w-24 h-[96px] flex items-center justify-center border-2 border-dashed border-gray-200">
                                         <span className="text-2xl font-bold text-gray-400">+{pacientes.length - 4}</span>
                                     </div>
-                                    <span className="text-xs text-gray-600 font-medium">Ver más</span>
+                                    <span className="text-xs text-gray-600 dark:text-slate-400 font-medium">Ver más</span>
                                 </Link>
                             )}
                         </div>
@@ -445,7 +445,7 @@ export default function InicioPsicologoPage() {
                                     </svg>
                                 </div>
                                 <div className="flex-1">
-                                    <h4 className="font-bold text-gray-800 text-base mb-0.5">Citas pendientes</h4>
+                                    <h4 className="font-bold text-gray-800 dark:text-slate-100 text-base mb-0.5">Citas pendientes</h4>
                                     <p className="text-xs text-pink-600 font-semibold">
                                         {proximas.length > 0 ? proximas[0].pacienteNombre : 'Sin citas próximas'}
                                     </p>
@@ -467,8 +467,8 @@ export default function InicioPsicologoPage() {
                                     </svg>
                                 </div>
                                 <div className="flex-1">
-                                    <h4 className="font-bold text-gray-800 text-base mb-0.5">Mis Pacientes</h4>
-                                    <p className="text-xs text-gray-600">
+                                    <h4 className="font-bold text-gray-800 dark:text-slate-100 text-base mb-0.5">Mis Pacientes</h4>
+                                    <p className="text-xs text-gray-600 dark:text-slate-400">
                                         {pacientes.length} paciente{pacientes.length !== 1 ? 's' : ''} asignado{pacientes.length !== 1 ? 's' : ''}
                                     </p>
                                 </div>
@@ -537,25 +537,31 @@ export default function InicioPsicologoPage() {
             {/* ============================================
                 VERSIÓN DESKTOP - SIN CAMBIOS
             ============================================ */}
-            <div ref={pageRef} className="hidden lg:block min-h-screen bg-white">
+            <div ref={pageRef} className="hidden lg:block min-h-screen bg-white dark:bg-slate-900">
                 {/* Header Desktop */}
-                <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+                <header className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-50 shadow-sm dark:shadow-md dark:shadow-black/20">
                     <div className="max-w-7xl mx-auto px-8 py-4 flex justify-between items-center">
                         {/* Logo */}
-                        <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 relative">
-                                <Image
-                                    src="/assets/avatar-psicologo.png"
-                                    alt="MiauBloom"
-                                    fill
-                                    className="object-contain"
-                                    unoptimized
-                                />
-                            </div>
-                            <div>
-                                <h1 className="text-xl font-bold text-gray-800">MiauBloom</h1>
-                                <p className="text-xs text-gray-500">Panel de Psicólogo</p>
-                            </div>
+                        <div className="flex items-center gap-5">
+                            <div className="w-20 h-20 relative">
+                            <Image
+                                src="/assets/logo.svg"
+                                alt="MiauBloom"
+                                fill
+                                className="object-contain"
+                                style={{ filter: 'var(--logo-filter, brightness(1))' }}
+                                unoptimized
+                            />
+                        </div>
+                        <Image
+                            src="/assets/MiauBloom-b.svg"
+                            alt="MiauBloom"
+                            width={200}
+                            height={55}
+                            className="object-contain"
+                            style={{ filter: 'var(--logo-text-filter, brightness(0))' }}
+                            unoptimized
+                        />
                         </div>
 
                         {/* Usuario y acciones */}
@@ -572,13 +578,13 @@ export default function InicioPsicologoPage() {
 
                             {/* Notificaciones */}
                             <Link href="/notificaciones/psicologo" className="relative p-2 hover:bg-gray-100 rounded-full transition-colors">
-                                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-6 h-6 text-gray-600 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                                 </svg>
                             </Link>
 
                             {/* Perfil */}
-                            <Link href="/perfil/psicologo" className="flex items-center gap-3 hover:bg-gray-50 rounded-full pl-3 pr-4 py-2 transition-colors">
+                            <Link href="/perfil/psicologo" className="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-full pl-3 pr-4 py-2 transition-colors">
                                 <div className="w-10 h-10 relative">
                                     <Image
                                         src={user!.avatarUrl || "/assets/avatar-psicologo.png"}
@@ -589,7 +595,7 @@ export default function InicioPsicologoPage() {
                                     />
                                 </div>
                                 <div className="text-left">
-                                    <p className="text-sm font-semibold text-gray-800">{user!.nombreCompleto}</p>
+                                    <p className="text-sm font-semibold text-gray-800 dark:text-slate-100">{user!.nombreCompleto}</p>
                                     <p className="text-xs text-gray-500">Psicólogo</p>
                                 </div>
                             </Link>
@@ -619,10 +625,10 @@ export default function InicioPsicologoPage() {
                                         unoptimized
                                     />
                                 </div>
-                                <h2 className="text-xl font-bold text-gray-800 mb-2">
+                                <h2 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-2">
                                     ¡Hola, Dr. {user!.nombreCompleto.split(' ')[0]}!
                                 </h2>
-                                <p className="text-gray-600">
+                                <p className="text-gray-600 dark:text-slate-400">
                                     Empecemos el día
                                 </p>
                             </div>
@@ -642,19 +648,19 @@ export default function InicioPsicologoPage() {
                                     </svg>
                                     Inicio
                                 </Link>
-                                <Link href="/inicio/psicologo/pacientes" className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+                                <Link href="/inicio/psicologo/pacientes" className="flex items-center gap-3 px-4 py-3 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl font-medium transition-colors">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                                     </svg>
                                     Mis Pacientes
                                 </Link>
-                                <Link href="/inicio/psicologo/citas" className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+                                <Link href="/inicio/psicologo/citas" className="flex items-center gap-3 px-4 py-3 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl font-medium transition-colors">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                     Agenda
                                 </Link>
-                                <Link href="/ajustes/psicologo" className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+                                <Link href="/ajustes/psicologo" className="flex items-center gap-3 px-4 py-3 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl font-medium transition-colors">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -690,7 +696,7 @@ export default function InicioPsicologoPage() {
                             {/* Mis Pacientes */}
                             <section>
                                 <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-2xl font-bold text-gray-800">Mis pacientes</h3>
+                                    <h3 className="text-2xl font-bold text-gray-800 dark:text-slate-100">Mis pacientes</h3>
                                     <Link href="/inicio/psicologo/pacientes" className="text-sm hover:text-opacity-80 font-semibold transition-colors" style={{ color: themeColors.primaryDark }}>
                                         Ver todos ({pacientes.length}) →
                                     </Link>
@@ -711,7 +717,7 @@ export default function InicioPsicologoPage() {
                             {/* Citas Pendientes */}
                             <section>
                                 <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-2xl font-bold text-gray-800">Citas pendientes</h3>
+                                    <h3 className="text-2xl font-bold text-gray-800 dark:text-slate-100">Citas pendientes</h3>
                                     <Link href="/inicio/psicologo/citas" className="text-sm hover:text-opacity-80 font-semibold transition-colors" style={{ color: themeColors.primaryDark }}>
                                         Ver agenda →
                                     </Link>
@@ -742,8 +748,8 @@ export default function InicioPsicologoPage() {
                         {/* COLUMNA DERECHA - Estadísticas */}
                         <aside className="col-span-3">
                             <section>
-                                <h3 className="text-xl font-bold text-gray-800 mb-4">Estadísticas</h3>
-                                <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg space-y-6">
+                                <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-4">Estadísticas</h3>
+                                <div className="bg-white/90 dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl p-6 shadow-lg space-y-6">
                                     
                                     <StatChart
                                         label="Total Pacientes"

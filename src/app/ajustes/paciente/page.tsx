@@ -95,24 +95,21 @@ export default function AjustesPacientePage() {
                 {/* Lista de Opciones */}
                 <nav className="space-y-1 text-sm">
                     <SettingsItemLink href="/perfil/paciente">Mi perfil</SettingsItemLink>
-                    <SettingsItemLink href="/inicio/paciente/tareas">Mis tareas</SettingsItemLink>
                     <SettingsItemLink href="/inicio/paciente/jardin">Mi jardín</SettingsItemLink>
-                    <SettingsItemLink href="/inicio/paciente/citas">Citas pendientes</SettingsItemLink>
-                    <SettingsItemLink href="/notificaciones/paciente">Notificaciones</SettingsItemLink>
                     <hr className="border-white/20 my-3"/>
                     {/* Botón para cambiar a vista de Ajustes App */}
                     <button onClick={() => setShowAppSettings(true)} className="flex items-center justify-between py-5 px-4 rounded-lg hover:bg-white/10 transition-colors w-full text-left group md:mb-2 font-roboto md:font-bold">
-                        <span className="text-white text-sm md:text-base md:font-bold">Configuraciones</span>
+                        <span className="text-white text-sm md:text-base md:font-bold">Configuración</span>
                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white/50 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                          </svg>
                     </button>
-                    <SettingsItemLink href="/ayuda">Help Center</SettingsItemLink>
-                    <SettingsItemLink href="/privacidad">Privacy & Policy</SettingsItemLink>
+                    <SettingsItemLink href="/ayuda">Centro de ayuda</SettingsItemLink>
+                    <SettingsItemLink href="/privacidad">Privacidad</SettingsItemLink>
                      <hr className="border-white/20 my-3"/>
-                    {/* Botón Sign Out llama a handleSignOut */}
+                    {/* Botón Cerrar sesión */}
                     <button onClick={handleSignOut} className="w-full flex items-center justify-between py-5 px-4 rounded-lg bg-red-500 hover:bg-red-600 text-white transition-colors font-medium font-roboto md:font-bold md:text-base md:mb-2">
-                        <span>Sign Out</span>
+                        <span>Cerrar sesión</span>
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                         </svg>
@@ -131,15 +128,13 @@ export default function AjustesPacientePage() {
                           <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                         </svg>
                      </button>
-                    <h1 className="text-lg font-semibold text-gray-800 text-center flex-grow">Account & Settings</h1>
+                    <h1 className="text-lg font-semibold text-gray-800 text-center flex-grow">Configuración</h1>
                 </div>
                 {/* Sección Ajustes */}
                 <section className="mb-8">
-                     <h2 className="text-xs uppercase text-gray-500 font-semibold px-4 mb-2 tracking-wide">Ajustes</h2>
+                     <h2 className="text-xs uppercase text-gray-500 font-semibold px-4 mb-2 tracking-wide">Ajustes de cuenta</h2>
                     <div className="bg-gray-50/70 rounded-lg divide-y divide-gray-200 border border-gray-200">
                         <AccountSettingsItemLink href="/ajustes/paciente/notificaciones">Notificaciones</AccountSettingsItemLink>
-                        <AccountSettingsItemLink href="#">Configuración de horario</AccountSettingsItemLink>
-                        <AccountSettingsItemLink href="#">Informe clínico</AccountSettingsItemLink>
                         <button className="w-full text-left py-3 px-4 text-red-600 hover:bg-gray-100 transition-colors rounded-b-lg text-sm font-medium">
                             Eliminar cuenta
                         </button>
@@ -147,11 +142,9 @@ export default function AjustesPacientePage() {
                 </section>
                 {/* Sección Configuración de la aplicación */}
                  <section>
-                     <h2 className="text-xs uppercase text-gray-500 font-semibold px-4 mb-2 tracking-wide">Configuración de la aplicación</h2>
+                     <h2 className="text-xs uppercase text-gray-500 font-semibold px-4 mb-2 tracking-wide">Preferencias</h2>
                     <div className="bg-gray-50/70 rounded-lg divide-y divide-gray-200 border border-gray-200">
-                        <ToggleItem label="Activar notificaciones" initialValue={true}/>
-                        <ToggleItem label="Servicio de ubicación" />
-                        <ToggleItem label="Dark Mode" />
+                        <ToggleItem label="Modo oscuro" isDarkMode={true} />
                     </div>
                 </section>
             </div>

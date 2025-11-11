@@ -75,41 +75,34 @@ export default function AjustesPsicologoPage() {
                 </div>
                 <nav className="space-y-1 text-sm">
                     <SettingsItemLink href="/perfil/psicologo">Mi perfil</SettingsItemLink>
-                    <SettingsItemLink href="/inicio/psicologo/pacientes">Mis Pacientes</SettingsItemLink>
-                    <SettingsItemLink href="/inicio/psicologo/citas">Citas pendientes</SettingsItemLink>
-                    <SettingsItemLink href="/notificaciones/psicologo">Notificaciones</SettingsItemLink>
+                    <SettingsItemLink href="/inicio/psicologo/pacientes">Mis pacientes</SettingsItemLink>
                     <hr className="border-white/20 my-3"/>
-                    <SettingsItemLink href="#">Ajustes</SettingsItemLink>
-                    <SettingsItemLink href="/ayuda">Help Center</SettingsItemLink>
-                    <SettingsItemLink href="/privacidad">Privacy & Policy</SettingsItemLink>
+                    <SettingsItemLink href="/ayuda">Centro de ayuda</SettingsItemLink>
+                    <SettingsItemLink href="/privacidad">Privacidad</SettingsItemLink>
                      <hr className="border-white/20 my-3"/>
                     <button onClick={handleSignOut} className="w-full text-left py-3 px-4 rounded-lg text-red-100 hover:bg-white/10 transition-colors font-medium">
-                        Sign Out
+                        Cerrar sesión
                     </button>
                 </nav>
             </aside>
 
             <main className="w-full bg-white p-6 md:ml-72 lg:ml-80">
                 <div className="flex items-center mb-6 relative h-10">
-                    <h1 className="text-lg font-semibold text-gray-800 text-center flex-grow">Account & Settings</h1>
+                    <h1 className="text-lg font-semibold text-gray-800 text-center flex-grow">Configuración</h1>
                 </div>
                 <section className="mb-8 max-w-2xl mx-auto">
-                    <h2 className="text-xs uppercase text-gray-500 font-semibold px-4 mb-2 tracking-wide">Ajustes</h2>
+                    <h2 className="text-xs uppercase text-gray-500 font-semibold px-4 mb-2 tracking-wide">Ajustes de cuenta</h2>
                     <div className="bg-gray-50/70 rounded-lg divide-y divide-gray-200 border border-gray-200">
                         <AccountSettingsItemLink href="/ajustes/psicologo/notificaciones">Notificaciones</AccountSettingsItemLink>
-                        <AccountSettingsItemLink href="#">Configuración de horario</AccountSettingsItemLink>
-                        <AccountSettingsItemLink href="#">Informe clínico</AccountSettingsItemLink>
                         <button className="w-full text-left py-3 px-4 text-red-600 hover:bg-gray-100 transition-colors rounded-b-lg text-sm font-medium">
                             Eliminar cuenta
                         </button>
                     </div>
                 </section>
                  <section className="max-w-2xl mx-auto">
-                     <h2 className="text-xs uppercase text-gray-500 font-semibold px-4 mb-2 tracking-wide">Configuración de la aplicación</h2>
+                     <h2 className="text-xs uppercase text-gray-500 font-semibold px-4 mb-2 tracking-wide">Preferencias</h2>
                     <div className="bg-gray-50/70 rounded-lg divide-y divide-gray-200 border border-gray-200">
-                        <ToggleItem label="Activar notificaciones" initialValue={true}/>
-                        <ToggleItem label="Servicio de ubicación" />
-                        <ToggleItem label="Dark Mode" />
+                        <ToggleItem label="Modo oscuro" isDarkMode={true} />
                     </div>
                 </section>
             </main>

@@ -448,3 +448,78 @@ select:focus {
   en lugar de 'var(--color-primary)' o colores hardcodeados para los elementos
   que deben cambiar de color.
 */
+
+/* ================================================
+   MODO OSCURO
+   ================================================ */
+.dark {
+  --color-background: #0F172A;
+  --color-background-alt: #1E293B;
+  --color-foreground: #F1F5F9;
+  --color-gray: #94A3B8;
+  --color-gray-light: #334155;
+  --logo-filter: brightness(1);
+  --logo-text-filter: brightness(0) invert(1) saturate(1);
+  --chat-bg: #1F2937;
+}
+
+.dark body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
+
+/* Estilos específicos para modo oscuro */
+.dark .bg-white {
+  background-color: #1E293B !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: #334155 !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: #475569 !important;
+}
+
+.dark .text-gray-800,
+.dark .text-gray-900 {
+  color: #E2E8F0 !important;
+}
+
+.dark .text-gray-600,
+.dark .text-gray-700 {
+  color: #CBD5E1 !important;
+}
+
+.dark .text-gray-500 {
+  color: #94A3B8 !important;
+}
+
+.dark .border-gray-200 {
+  border-color: #334155 !important;
+}
+
+.dark .border-gray-300 {
+  border-color: #475569 !important;
+}
+
+.dark .shadow-sm,
+.dark .shadow-md,
+.dark .shadow-lg,
+.dark .shadow-xl,
+.dark .shadow-2xl {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 4px 6px -1px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark input:not([type="checkbox"]):not([type="radio"]),
+.dark textarea,
+.dark select {
+  background-color: #334155;
+  color: #F1F5F9;
+  border-color: #475569;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748B;
+}

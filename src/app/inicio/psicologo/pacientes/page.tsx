@@ -104,8 +104,8 @@ export default function PacientesPage() {
           <div className="flex items-center gap-3">
             <IconButton
               icon="back"
-              href="/inicio/psicologo"
-              ariaLabel="Volver al inicio"
+              onClick={() => router.back()}
+              ariaLabel="Volver"
             />
             <h1 className="text-3xl font-bold text-gray-800">Mis Pacientes</h1>
           </div>

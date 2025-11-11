@@ -10,8 +10,9 @@
  * @copyright MiauBloom
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 
 // Componente reutilizable para items de la lista de ajustes (rosa)
 export const SettingsItemLink = ({ href = "#", children }: { href?: string; children: React.ReactNode }) => (
@@ -34,23 +35,42 @@ export const AccountSettingsItemLink = ({ href = "#", children }: { href?: strin
 );
 
 // Componente reutilizable para Toggles
-export const ToggleItem = ({ label, initialValue = false }: { label: string; initialValue?: boolean; }) => {
-    // ESTADO LOCAL TEMPORAL - Necesitarás guardar esto en el backend o localStorage
+export const ToggleItem = ({ label, initialValue = false, isDarkMode = false }: { label: string; initialValue?: boolean; isDarkMode?: boolean }) => {
+    const { setDarkMode, darkMode } = useAuth();
     const [isEnabled, setIsEnabled] = useState(initialValue);
-    const onToggle = () => {
-        setIsEnabled(prev => !prev);
-        // AQUÍ AÑADIR LÓGICA PARA GUARDAR EL ESTADO
-        console.log(`Toggle ${label} changed to: ${!isEnabled}`);
+
+    // Si es el toggle de dark mode, usar el estado global
+    useEffect(() => {
+        if (isDarkMode && darkMode !== undefined) {
+            setIsEnabled(darkMode);
+        }
+    }, [isDarkMode, darkMode]);
+
+    const onToggle = async () => {
+        const newValue = !isEnabled;
+        setIsEnabled(newValue);
+        
+        if (isDarkMode) {
+            // Guardar en el contexto y localStorage
+            setDarkMode(newValue);
+            localStorage.setItem('darkMode', JSON.stringify(newValue));
+            
+            // Aplicar clase al documento
+            if (newValue) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
     };
 
      return (
         <div className="flex items-center justify-between py-3 px-4">
-            <span className="text-gray-800 text-sm">{label}</span> {/* Texto más pequeño */}
+            <span className="text-gray-800 text-sm">{label}</span>
             <button
                 onClick={onToggle}
-                // Switch visual básico
                 className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors duration-200 ease-in-out focus:outline-none ${isEnabled ? 'bg-[var(--color-theme-primary)]' : 'bg-gray-300'}`}
-                style={{ outline: `2px solid var(--color-theme-primary)`, outlineOffset: '2px' }}
+                style={{ outline: isEnabled ? `2px solid var(--color-theme-primary)` : 'none', outlineOffset: '2px' }}
             >
                 <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform duration-200 ease-in-out ${isEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
             </button>

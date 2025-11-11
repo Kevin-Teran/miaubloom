@@ -40,6 +40,8 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   theme: 'pink' | 'blue';
+  darkMode: boolean;
+  setDarkMode: (value: boolean) => void;
   refetchUser: () => Promise<void>;
 }
 
@@ -48,10 +50,30 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [darkMode, setDarkModeState] = useState(false);
   const [theme, setTheme] = useState<'pink' | 'blue'>('pink');
   const pathname = usePathname();
 
   // Aplicar tema basado en usuario
+  // Función para cambiar el modo oscuro
+  const setDarkMode = useCallback((value: boolean) => {
+    setDarkModeState(value);
+    if (value) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
+  // Cargar dark mode desde localStorage al inicio
+  useEffect(() => {
+    const savedDarkMode = localStorage.getItem('darkMode');
+    if (savedDarkMode !== null) {
+      const isDark = JSON.parse(savedDarkMode);
+      setDarkMode(isDark);
+    }
+  }, [setDarkMode]);
+
   const applyTheme = useCallback((userToTheme: User | null) => {
     if (!userToTheme) {
       setTheme('pink');
@@ -137,7 +159,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Ejecutar verificación al montar (INMEDIATAMENTE)
   useEffect(() => {
-    checkUserSession();
+      checkUserSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -147,7 +169,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [pathname, user, applyTheme]);
 
   // Proveer contexto
-  const value = { user, isLoading, theme, refetchUser: checkUserSession };
+  const value = { user, isLoading, theme, darkMode, setDarkMode, refetchUser: checkUserSession };
 
   return (
     <AuthContext.Provider value={value}>

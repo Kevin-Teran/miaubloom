@@ -105,5 +105,5 @@ export async function PUT(req: NextRequest) {
       { error: 'Error al actualizar el perfil' },
       { status: 500 }
     );
-}
+  }
 }

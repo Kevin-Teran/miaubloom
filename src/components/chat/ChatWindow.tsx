@@ -48,7 +48,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const [cargando, setCargando] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [escribiendo, setEscribiendo] = useState(false);
+  const [otroUsuarioEscribiendo, setOtroUsuarioEscribiendo] = useState(false);
   const [socketActual, setSocketActual] = useState<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -63,7 +63,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
     // Escuchar nuevos mensajes
     socket.on(chatEvents.MESSAGE_RECEIVED, (data) => {
-      setMensajes((prev) => [...prev, data.mensaje]);
+      setMensajes((prev) => {
+        // Evitar duplicados
+        const existe = prev.some(msg => msg.id === data.mensaje.id);
+        if (existe) return prev;
+        return [...prev, data.mensaje];
+      });
     });
 
     // Escuchar marca de lectura
@@ -75,8 +80,27 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       );
     });
 
+    // Escuchar cuando el otro usuario está escribiendo
+    socket.on(chatEvents.USER_TYPING, (data) => {
+      if (data.userId !== miId) {
+        setOtroUsuarioEscribiendo(true);
+      }
+    });
+
+    // Escuchar cuando el otro usuario deja de escribir
+    socket.on(chatEvents.USER_STOPPED_TYPING, (data) => {
+      if (data.userId !== miId) {
+        setOtroUsuarioEscribiendo(false);
+      }
+    });
+
     return () => {
       socket.emit(chatEvents.LEAVE_ROOM, { conversacionId });
+      // Limpiar todos los listeners
+      socket.off(chatEvents.MESSAGE_RECEIVED);
+      socket.off(chatEvents.MESSAGE_READ);
+      socket.off(chatEvents.USER_TYPING);
+      socket.off(chatEvents.USER_STOPPED_TYPING);
     };
   }, [conversacionId, miId]);
 
@@ -103,12 +127,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   }, [conversacionId]);
 
-  // Cargar mensajes iniciales
+  // Cargar mensajes iniciales solo una vez
   useEffect(() => {
     cargarMensajes();
-    // Configurar polling para nuevos mensajes
-    const interval = setInterval(cargarMensajes, 2000);
-    return () => clearInterval(interval);
   }, [cargarMensajes]);
 
   // Auto-scroll al último mensaje
@@ -117,9 +138,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   }, [mensajes]);
 
   const handleTyping = () => {
-    // Mostrar indicador de escritura
-    if (!escribiendo) {
-      setEscribiendo(true);
+    // Emitir evento al servidor
+    if (socketActual?.connected) {
+      socketActual.emit(chatEvents.TYPING, { conversacionId, userId: miId });
     }
 
     // Limpiar timeout anterior
@@ -127,9 +148,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       clearTimeout(typingTimeoutRef.current);
     }
 
-    // Ocultar indicador después de 2 segundos de inactividad
+    // Después de 2 segundos de inactividad, emitir stop-typing
     typingTimeoutRef.current = setTimeout(() => {
-      setEscribiendo(false);
+      if (socketActual?.connected) {
+        socketActual.emit(chatEvents.STOP_TYPING, { conversacionId, userId: miId });
+      }
     }, 2000);
   };
 
@@ -138,25 +161,30 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
     if (!nuevoMensaje.trim()) return;
 
-    setEscribiendo(false);
+    // Emitir stop-typing al enviar mensaje
+    if (socketActual?.connected) {
+      socketActual.emit(chatEvents.STOP_TYPING, { conversacionId, userId: miId });
+    }
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
 
+    const mensajeAEnviar = nuevoMensaje;
+    setNuevoMensaje('');
     setEnviando(true);
+    
     try {
-      // Intentar enviar por WebSocket primero
-      if (socketActual) {
+      // Enviar por WebSocket (el servidor guardará en DB)
+      if (socketActual?.connected) {
         socketActual.emit(chatEvents.SEND_MESSAGE, {
           conversacionId,
-          contenido: nuevoMensaje,
+          contenido: mensajeAEnviar,
           userId: miId,
           rol,
         });
-        setNuevoMensaje('');
         setError(null);
       } else {
-        // Fallback a HTTP si WebSocket no está disponible
+        // Fallback a HTTP si WebSocket no está conectado
         const response = await fetch('/api/chat/mensajes', {
           method: 'POST',
           credentials: 'include',
@@ -165,14 +193,21 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           },
           body: JSON.stringify({
             conversacionId,
-            contenido: nuevoMensaje,
+            contenido: mensajeAEnviar,
           }),
         });
 
         if (response.ok) {
-          setNuevoMensaje('');
+          const data = await response.json();
+          // Agregar el mensaje inmediatamente a la lista (evitando duplicados)
+          if (data.mensaje) {
+            setMensajes((prev) => {
+              const existe = prev.some(msg => msg.id === data.mensaje.id);
+              if (existe) return prev;
+              return [...prev, data.mensaje];
+            });
+          }
           setError(null);
-          await cargarMensajes();
         } else {
           const data = await response.json();
           setError(data.message || 'Error al enviar mensaje');
@@ -191,7 +226,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-white chat-window-container">
+    <div className="flex flex-col h-full bg-white dark:bg-slate-900 chat-window-container">
       {/* Header estilo WhatsApp con color del tema */}
       <div 
         className="flex items-center gap-3 px-4 py-3 shadow-sm"
@@ -224,9 +259,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
       {/* Mensajes - Fondo tipo WhatsApp con wallpaper */}
       <div 
-        className="flex-1 overflow-y-auto p-4 space-y-2.5 relative"
+        className="flex-1 overflow-y-auto p-4 space-y-2.5 relative bg-white dark:bg-slate-800"
         style={{ 
-          backgroundColor: '#e5ddd5',
+          backgroundColor: 'var(--chat-bg, #e5ddd5)',
           backgroundImage: `
             url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")
           `
@@ -234,14 +269,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       >
         {cargando ? (
           <div className="flex justify-center items-center h-full">
-            <div className="bg-white/90 backdrop-blur-sm px-6 py-3 rounded-2xl shadow-sm">
-              <p className="text-gray-600">Cargando mensajes...</p>
+            <div className="bg-white/90 dark:bg-slate-700/90 backdrop-blur-sm px-6 py-3 rounded-2xl shadow-sm">
+              <p className="text-gray-600 dark:text-slate-300">Cargando mensajes...</p>
             </div>
           </div>
         ) : mensajes.length === 0 ? (
           <div className="flex justify-center items-center h-full">
-            <div className="bg-white/90 backdrop-blur-sm px-6 py-4 rounded-2xl shadow-sm text-center">
-              <p className="text-gray-600">Inicia una conversación escribiendo tu primer mensaje</p>
+            <div className="bg-white/90 dark:bg-slate-700/90 backdrop-blur-sm px-6 py-4 rounded-2xl shadow-sm text-center">
+              <p className="text-gray-600 dark:text-slate-300">Inicia una conversación escribiendo tu primer mensaje</p>
             </div>
           </div>
         ) : (
@@ -254,15 +289,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 className={`max-w-[75%] sm:max-w-xs lg:max-w-md px-3.5 py-2.5 shadow-md transition-all ${
                   msg.remitenteId === miId
                     ? 'rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl'
-                    : 'bg-white rounded-tl-2xl rounded-tr-2xl rounded-br-2xl'
+                    : 'bg-white dark:bg-slate-600 rounded-tl-2xl rounded-tr-2xl rounded-br-2xl'
                 }`}
                 style={msg.remitenteId === miId ? {
                   backgroundColor: 'var(--color-theme-primary)',
                   color: 'white'
                 } : {}}
               >
-                <p className="break-words text-[15px] leading-relaxed">{msg.contenido}</p>
-                <div className={`flex items-center justify-end gap-1.5 mt-1 ${msg.remitenteId === miId ? 'text-white/80' : 'text-gray-500'}`}>
+                <p className="break-words text-[15px] leading-relaxed dark:text-white" style={msg.remitenteId === miId ? {} : { color: 'inherit' }}>{msg.contenido}</p>
+                <div className={`flex items-center justify-end gap-1.5 mt-1 ${msg.remitenteId === miId ? 'text-white/80' : 'text-gray-500 dark:text-slate-300'}`}>
                   <p className="text-[11px]">{formatearHora(msg.createdAt)}</p>
                   {msg.remitenteId === miId && (
                     <span className="text-[12px] font-semibold" style={{ color: msg.leido ? '#34D399' : 'rgba(255,255,255,0.7)' }}>
@@ -275,19 +310,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           ))
         )}
         <div ref={messagesEndRef} />
-        
-        {/* Indicador de escribiendo */}
-        {escribiendo && (
-          <div className="flex justify-start mb-2">
-            <div className="bg-gray-200 px-4 py-2 rounded-lg">
-              <div className="flex gap-1">
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Error */}
@@ -301,13 +323,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       )}
 
       {/* Input estilo WhatsApp mejorado */}
-      <form onSubmit={enviarMensaje} className="bg-white border-t border-gray-200 px-3 py-2">
+      <form onSubmit={enviarMensaje} className="bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 px-3 py-2">
         <div className="flex items-center gap-2">
           {/* Input con ícono emoji */}
-          <div className="flex-1 flex items-center bg-white border border-gray-300 rounded-full px-4 py-2 focus-within:border-gray-400 transition-colors">
+          <div className="flex-1 flex items-center bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-full px-4 py-2 focus-within:border-gray-400 dark:focus-within:border-slate-500 transition-colors">
             <button
               type="button"
-              className="text-gray-500 hover:text-gray-700 transition-colors mr-2 active:scale-95"
+              className="text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 transition-colors mr-2 active:scale-95"
               title="Emoji"
             >
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -322,7 +344,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 handleTyping();
               }}
               placeholder="Escribe un mensaje..."
-              className="flex-1 outline-none bg-transparent text-gray-900 placeholder-gray-500 text-[15px]"
+              className="flex-1 outline-none bg-transparent text-gray-900 dark:text-slate-100 placeholder-gray-500 dark:placeholder-slate-500 text-[15px]"
               disabled={enviando}
             />
           </div>

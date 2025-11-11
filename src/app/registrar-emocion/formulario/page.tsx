@@ -384,8 +384,8 @@ export default function FormularioEmocionPage() {
                 />
               </div>
               
-              <div className="text-center mb-8">
-                <div className="inline-block bg-[var(--color-theme-primary)] text-white text-4xl md:text-5xl font-bold rounded-full w-20 h-20 md:w-24 md:h-24 flex items-center justify-center shadow-lg">
+              <div className="flex justify-center mb-8">
+                <div className="bg-[var(--color-theme-primary)] text-white text-4xl md:text-5xl font-bold rounded-full w-20 h-20 md:w-24 md:h-24 flex items-center justify-center shadow-lg">
                   {formData.nivelAfectacion}
                 </div>
               </div>

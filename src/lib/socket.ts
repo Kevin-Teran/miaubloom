@@ -54,18 +54,20 @@ export const disconnectSocket = () => {
 // Eventos del chat
 export const chatEvents = {
   // Emitir eventos
-  SEND_MESSAGE: 'chat:send_message',
+  SEND_MESSAGE: 'chat:send-message',
   TYPING: 'chat:typing',
-  STOP_TYPING: 'chat:stop_typing',
-  JOIN_ROOM: 'chat:join_room',
-  LEAVE_ROOM: 'chat:leave_room',
+  STOP_TYPING: 'chat:stop-typing',
+  JOIN_ROOM: 'chat:join-room',
+  LEAVE_ROOM: 'chat:leave-room',
+  MARK_READ: 'chat:mark-read',
 
   // Recibir eventos
-  MESSAGE_RECEIVED: 'chat:message_received',
-  USER_TYPING: 'chat:user_typing',
-  USER_STOPPED_TYPING: 'chat:user_stopped_typing',
-  MESSAGE_READ: 'chat:message_read',
-  USER_ONLINE: 'chat:user_online',
-  USER_OFFLINE: 'chat:user_offline',
+  MESSAGE_RECEIVED: 'chat:message-received',
+  USER_TYPING: 'chat:user-typing',
+  USER_STOPPED_TYPING: 'chat:user-stop-typing',
+  MESSAGE_READ: 'chat:message-read',
+  USER_JOINED: 'chat:user-joined',
+  USER_LEFT: 'chat:user-left',
+  ERROR: 'chat:error',
 };
 

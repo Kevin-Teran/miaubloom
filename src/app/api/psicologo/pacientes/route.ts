@@ -88,11 +88,11 @@ export async function GET(request: NextRequest) {
       }
       
       return {
-        id: paciente.userId,
-        nombre: paciente.user.nombreCompleto,
-        nickname: paciente.nicknameAvatar,
-        genero: paciente.genero,
-        avatar: paciente.fotoPerfil || '/assets/avatar-paciente.png',
+      id: paciente.userId,
+      nombre: paciente.user.nombreCompleto,
+      nickname: paciente.nicknameAvatar,
+      genero: paciente.genero,
+      avatar: paciente.fotoPerfil || '/assets/avatar-paciente.png',
         estado,
         ultimaActividad: minutosInactivo,
         ultimaActividadTexto: minutosInactivo < 1 ? 'Ahora' : 
