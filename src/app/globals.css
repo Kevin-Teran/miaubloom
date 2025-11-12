@@ -67,15 +67,10 @@
   --color-coral-400: #F87171;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-background: #111827;
-    --color-background-alt: #1F2937;
-    --color-foreground: #F9FAFB;
-    --color-gray: #9CA3AF;
-    --color-gray-light: #374151;
-  }
-}
+/* REMOVIDO: @media (prefers-color-scheme: dark)
+   Ahora usamos darkMode: 'class' en tailwind.config.ts
+   El dark mode se controla manualmente con la clase .dark en el <html>
+*/
 
 /* Estilos base del body */
 body {
