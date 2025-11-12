@@ -53,20 +53,26 @@ export default function RootLayout({
       <body className={roboto.className} style={{ fontFamily: 'Roboto, sans-serif' }}>
         <script dangerouslySetInnerHTML={{__html: `
           (function() {
+            // FORZAR siempre modo claro inicialmente para debugging
+            console.log('[Layout Script] FORZANDO modo claro al inicio');
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.colorScheme = 'light';
+            
             // Interceptar setItem para rastrear quién escribe en darkMode
             const originalSetItem = localStorage.setItem;
             localStorage.setItem = function(key, value) {
               if (key === 'darkMode') {
-                console.log('[localStorage] setItem("darkMode", ' + value + ') - llamado desde:', new Error().stack);
+                console.log('[localStorage] setItem("darkMode", ' + value + ')');
+                console.log('[localStorage] Stack:', new Error().stack);
               }
               return originalSetItem.apply(this, arguments);
             };
             
             try {
               const darkModeRaw = localStorage.getItem('darkMode');
-              console.log('[Layout Script] darkMode from localStorage (raw):', darkModeRaw, 'type:', typeof darkModeRaw);
+              console.log('[Layout Script] darkMode from localStorage:', darkModeRaw);
               
-              // Parsear el valor correctamente - puede ser "true", "false", true, false, null
+              // Parsear el valor correctamente
               let isDark = false;
               if (darkModeRaw !== null) {
                 try {
@@ -77,16 +83,20 @@ export default function RootLayout({
               }
               
               console.log('[Layout Script] isDark parsed:', isDark);
+              console.log('[Layout Script] Aplicando dark mode:', isDark ? 'SI' : 'NO');
               
               if (isDark) {
                 document.documentElement.classList.add('dark');
                 document.documentElement.style.colorScheme = 'dark';
-                console.log('[Layout Script] Dark mode ACTIVADO');
+                console.log('[Layout Script] ✓ Dark mode ACTIVADO - clase agregada');
               } else {
                 document.documentElement.classList.remove('dark');
                 document.documentElement.style.colorScheme = 'light';
-                console.log('[Layout Script] Dark mode DESACTIVADO');
+                console.log('[Layout Script] ✓ Light mode ACTIVADO - clase removida');
               }
+              
+              // Verificar que se aplicó correctamente
+              console.log('[Layout Script] Verificación final - tiene clase dark?', document.documentElement.classList.contains('dark'));
             } catch (e) {
               console.error('[Layout Script] Error:', e);
             }
