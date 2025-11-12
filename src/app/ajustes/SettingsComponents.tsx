@@ -53,6 +53,14 @@ export const ToggleItem = ({ label, initialValue = false, isDarkMode = false }: 
         if (isDarkMode) {
             // Actualizar el estado global PRIMERO (que se encarga de guardar en localStorage y aplicar clases)
             setDarkMode(newValue);
+            
+            // Verificar que se guardó correctamente
+            setTimeout(() => {
+                const saved = localStorage.getItem('darkMode');
+                console.log('[ToggleItem] Verificación - darkMode en localStorage:', saved);
+                const hasClass = document.documentElement.classList.contains('dark');
+                console.log('[ToggleItem] Verificación - clase "dark" en HTML:', hasClass);
+            }, 100);
         }
         
         // Actualizar el estado local después

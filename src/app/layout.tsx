@@ -55,14 +55,19 @@ export default function RootLayout({
           (function() {
             try {
               const darkMode = localStorage.getItem('darkMode');
+              console.log('[Layout Script] darkMode from localStorage:', darkMode);
               if (darkMode === 'true') {
                 document.documentElement.classList.add('dark');
                 document.documentElement.style.colorScheme = 'dark';
+                console.log('[Layout Script] Dark mode ACTIVADO');
               } else {
                 document.documentElement.classList.remove('dark');
                 document.documentElement.style.colorScheme = 'light';
+                console.log('[Layout Script] Dark mode DESACTIVADO');
               }
-            } catch (e) {}
+            } catch (e) {
+              console.error('[Layout Script] Error:', e);
+            }
           })();
         `}} />
         <style>{`
