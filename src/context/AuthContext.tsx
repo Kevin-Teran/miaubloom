@@ -72,21 +72,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setDarkModeState(value);
   }, []);
 
-  // Cargar dark mode desde localStorage al inicio - SOLO el estado, las clases ya las aplicó el script inline
+  // Cargar dark mode desde localStorage al inicio - sincronizar SOLO el estado con lo que ya está en el DOM
   useEffect(() => {
-    const savedDarkMode = localStorage.getItem('darkMode');
-    console.log('[AuthContext] Sincronizando estado de darkMode desde localStorage:', savedDarkMode);
-    if (savedDarkMode !== null) {
-      try {
-        const isDark = JSON.parse(savedDarkMode);
-        console.log('[AuthContext] Seteando darkModeState a:', isDark);
-        setDarkModeState(isDark); // Solo actualizar el estado, NO las clases
-      } catch (e) {
-        console.error('[AuthContext] Error parsing darkMode:', e);
-        const isDark = savedDarkMode === 'true';
-        setDarkModeState(isDark);
-      }
-    }
+    // Leer el estado actual del DOM (que ya fue configurado por el script inline)
+    const hasDarkClass = document.documentElement.classList.contains('dark');
+    console.log('[AuthContext] Sincronizando estado con DOM, tiene clase dark?:', hasDarkClass);
+    setDarkModeState(hasDarkClass); // Solo sincronizar el estado, NO modificar las clases
   }, []);
 
   const applyTheme = useCallback((userToTheme: User | null) => {
