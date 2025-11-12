@@ -16,7 +16,7 @@ const prisma = new PrismaClient();
 
 // Clave secreta para verificar JWT
 const SECRET_KEY = new TextEncoder().encode(
-  process.env.JWT_SECRET_KEY || 'tu-clave-secreta-muy-segura-aqui'
+  process.env.JWT_SECRET || 'tu_secreto_super_seguro_cambialo'
 );
 
 interface JWTPayload {
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     let sessionToken: string | null = null;
     
     // Intentar desde cookie
-    const sessionCookie = request.cookies.get('miaubloom_session');
+    const sessionCookie = request.cookies.get('auth_token');
     if (sessionCookie?.value) {
       sessionToken = sessionCookie.value;
     }

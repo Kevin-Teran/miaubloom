@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
     });
     
     // Establecer la cookie httpOnly
-    response.cookies.set('miaubloom_session', token, {
+    response.cookies.set('auth_token', token, {
       httpOnly: true,
       secure: false, // En desarrollo es false, en producción debe ser true
       sameSite: 'lax',
@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
-    const sessionCookie = request.cookies.get('miaubloom_session');
+    const sessionCookie = request.cookies.get('auth_token');
 
     if (!sessionCookie?.value) {
       return NextResponse.json(

@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json(responseData, { status: 201 });
 
     // Establecer la cookie EN LA RESPUESTA (no en server context)
-    response.cookies.set('miaubloom_session', token, {
+    response.cookies.set('auth_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

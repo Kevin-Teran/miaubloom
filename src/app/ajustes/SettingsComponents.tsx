@@ -10,9 +10,8 @@
  * @copyright MiauBloom
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext';
 
 // Componente reutilizable para items de la lista de ajustes (rosa)
 export const SettingsItemLink = ({ href = "#", children }: { href?: string; children: React.ReactNode }) => (
@@ -35,45 +34,23 @@ export const AccountSettingsItemLink = ({ href = "#", children }: { href?: strin
 );
 
 // Componente reutilizable para Toggles
-export const ToggleItem = ({ label, initialValue = false, isDarkMode = false }: { label: string; initialValue?: boolean; isDarkMode?: boolean }) => {
-    const { setDarkMode, darkMode } = useAuth();
+export const ToggleItem = ({ label, initialValue = false }: { label: string; initialValue?: boolean; }) => {
+    // ESTADO LOCAL TEMPORAL - Necesitarás guardar esto en el backend o localStorage
     const [isEnabled, setIsEnabled] = useState(initialValue);
-
-    // Si es el toggle de dark mode, sincronizar con el estado global
-    useEffect(() => {
-        if (isDarkMode) {
-            setIsEnabled(darkMode);
-        }
-    }, [isDarkMode, darkMode]);
-
     const onToggle = () => {
-        const newValue = !isEnabled;
-        console.log('[ToggleItem] Toggle clicked, new value:', newValue);
-        
-        if (isDarkMode) {
-            // Actualizar el estado global PRIMERO (que se encarga de guardar en localStorage y aplicar clases)
-            setDarkMode(newValue);
-            
-            // Verificar que se guardó correctamente
-            setTimeout(() => {
-                const saved = localStorage.getItem('darkMode');
-                console.log('[ToggleItem] Verificación - darkMode en localStorage:', saved);
-                const hasClass = document.documentElement.classList.contains('dark');
-                console.log('[ToggleItem] Verificación - clase "dark" en HTML:', hasClass);
-            }, 100);
-        }
-        
-        // Actualizar el estado local después
-        setIsEnabled(newValue);
+        setIsEnabled(prev => !prev);
+        // AQUÍ AÑADIR LÓGICA PARA GUARDAR EL ESTADO
+        console.log(`Toggle ${label} changed to: ${!isEnabled}`);
     };
 
      return (
         <div className="flex items-center justify-between py-3 px-4">
-            <span className="text-gray-800 dark:text-gray-200 text-sm">{label}</span>
+            <span className="text-gray-800 text-sm">{label}</span> {/* Texto más pequeño */}
             <button
                 onClick={onToggle}
+                // Switch visual básico
                 className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors duration-200 ease-in-out focus:outline-none ${isEnabled ? 'bg-[var(--color-theme-primary)]' : 'bg-gray-300'}`}
-                style={{ outline: isEnabled ? `2px solid var(--color-theme-primary)` : 'none', outlineOffset: '2px' }}
+                style={{ outline: `2px solid var(--color-theme-primary)`, outlineOffset: '2px' }}
             >
                 <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform duration-200 ease-in-out ${isEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
             </button>

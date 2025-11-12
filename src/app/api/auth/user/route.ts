@@ -24,7 +24,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     // --- CORRECCIÓN CRÍTICA: LEER DE COOKIE ---
-    const sessionToken = request.cookies.get('miaubloom_session')?.value;
+    const sessionToken = request.cookies.get('auth_token')?.value;
     // --- FIN DE CORRECCIÓN ---
 
     console.log('[AUTH/USER] Verificando sesión desde cookie:', {

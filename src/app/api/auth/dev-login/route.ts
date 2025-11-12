@@ -12,7 +12,7 @@ import { SignJWT } from 'jose';
 export const dynamic = 'force-dynamic';
 
 const SECRET_KEY = new TextEncoder().encode(
-  process.env.JWT_SECRET_KEY || 'tu-clave-secreta-muy-segura-aqui'
+  process.env.JWT_SECRET || 'tu_secreto_super_seguro_cambialo'
 );
 
 export async function GET() {
@@ -66,7 +66,7 @@ export async function GET() {
       }
     });
 
-    response.cookies.set('miaubloom_session', token, {
+    response.cookies.set('auth_token', token, {
       httpOnly: true,
       secure: false, // En desarrollo siempre es false
       sameSite: 'lax',

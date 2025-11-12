@@ -140,7 +140,7 @@ export default function CalendarioPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-pink-100 via-pink-50 to-white dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-pink-100 via-pink-50 to-white">
         <LoadingIndicator text="Cargando calendario..." />
       </div>
     );
@@ -152,10 +152,10 @@ export default function CalendarioPage() {
   return (
     <div 
       ref={pageRef}
-      className="min-h-screen bg-gradient-to-b from-[var(--color-theme-primary-light)] to-white dark:from-slate-900 dark:to-slate-900 pb-8"
+      className="min-h-screen bg-gradient-to-b from-[var(--color-theme-primary-light)] to-white pb-8"
     >
       {/* Header */}
-      <header className="bg-[var(--color-theme-primary)] dark:bg-slate-800 pt-safe px-4 py-6 sticky top-0 z-10 shadow-md dark:shadow-lg dark:shadow-black/30">
+      <header className="bg-[var(--color-theme-primary)] pt-safe px-4 py-6 sticky top-0 z-10 shadow-md">
         <div className="max-w-lg mx-auto flex items-center gap-4">
           <button
             onClick={() => router.back()}
@@ -171,30 +171,30 @@ export default function CalendarioPage() {
       {/* Contenido */}
       <div className="max-w-lg mx-auto px-4 py-6">
         {/* Calendario */}
-        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl dark:shadow-2xl dark:shadow-black/30 p-6 mb-6">
+        <div className="bg-white rounded-3xl shadow-xl p-6 mb-6">
           {/* Header del mes */}
           <div className="flex items-center justify-between mb-6">
             <button
               onClick={handlePrevMonth}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors duration-200 active:scale-95"
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200 active:scale-95"
             >
-              <ChevronLeft size={20} className="text-gray-600 dark:text-slate-400" />
+              <ChevronLeft size={20} className="text-gray-600" />
             </button>
-            <h4 className="font-semibold text-gray-800 dark:text-slate-100 capitalize text-center flex-1">
+            <h4 className="font-semibold text-gray-800 capitalize text-center flex-1">
               {monthName}
             </h4>
             <button
               onClick={handleNextMonth}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors duration-200 active:scale-95"
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200 active:scale-95"
             >
-              <ChevronRight size={20} className="text-gray-600 dark:text-slate-400" />
+              <ChevronRight size={20} className="text-gray-600" />
             </button>
           </div>
 
           {/* Días de la semana */}
           <div className="grid grid-cols-7 gap-1 mb-3">
             {weekDays.map((day) => (
-              <div key={day} className="text-center text-xs font-semibold text-gray-500 dark:text-slate-500 py-2">
+              <div key={day} className="text-center text-xs font-semibold text-gray-500 py-2">
                 {day}
               </div>
             ))}
@@ -214,7 +214,7 @@ export default function CalendarioPage() {
                     ? 'text-white'
                     : isToday(day)
                     ? 'bg-gray-100 text-gray-900'
-                    : 'text-gray-700 hover:bg-gray-100 dark:hover:bg-slate-700'
+                    : 'text-gray-700 hover:bg-gray-100'
                 }`}
                 style={
                   day && isSelected(day)
@@ -240,15 +240,15 @@ export default function CalendarioPage() {
         </div>
 
         {/* Citas del día seleccionado */}
-        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl dark:shadow-2xl dark:shadow-black/30 p-6">
-          <p className="text-sm font-semibold text-gray-500 dark:text-slate-500 uppercase mb-4 capitalize">
+        <div className="bg-white rounded-3xl shadow-xl p-6">
+          <p className="text-sm font-semibold text-gray-500 uppercase mb-4 capitalize">
             {selectedDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
 
           {loadingCitas ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: themeColorDark }} />
-              <p className="text-gray-500 dark:text-slate-500 mt-4">Cargando citas...</p>
+              <p className="text-gray-500 mt-4">Cargando citas...</p>
             </div>
           ) : citasDelDia.length > 0 ? (
             <div className="space-y-3">
@@ -274,10 +274,10 @@ export default function CalendarioPage() {
                         <User size={24} style={{ color: themeColorDark }} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-800 dark:text-slate-100 text-base truncate">
+                        <p className="font-semibold text-gray-800 text-base truncate">
                           {psicologoName}
                         </p>
-                        <p className="text-sm text-gray-600 dark:text-slate-400 mt-1 flex items-center gap-1.5">
+                        <p className="text-sm text-gray-600 mt-1 flex items-center gap-1.5">
                           <Clock size={16} />
                           {hora}
                         </p>
@@ -317,7 +317,7 @@ export default function CalendarioPage() {
                   />
                 </svg>
               </div>
-              <p className="text-sm text-gray-500 dark:text-slate-500 font-medium">Sin citas programadas</p>
+              <p className="text-sm text-gray-500 font-medium">Sin citas programadas</p>
               <p className="text-xs text-gray-400 mt-1">No tienes citas para este día</p>
             </div>
           )}

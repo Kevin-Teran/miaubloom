@@ -12,8 +12,39 @@ export default function RegistrarEmocionPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  // Función para activar la cámara
+  const activateCamera = async () => {
+    try {
+      console.log('[Cámara] Solicitando acceso automático...');
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        }
+      });
+      
+      console.log('[Cámara] Acceso concedido, activando video...');
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current?.play().then(() => {
+            setCameraActive(true);
+            console.log('[Cámara] Video activo automáticamente');
+          });
+        };
+      }
+    } catch (error) {
+      console.error('[Cámara] Error al activar automáticamente:', error);
+      // No mostrar alert para no molestar al usuario, solo log
+    }
+  };
+
+  // Activar animación y cámara al montar
   useEffect(() => {
     setTimeout(() => setIsAnimated(true), 100);
+    // Activar cámara automáticamente después de un breve delay
+    setTimeout(() => activateCamera(), 300);
   }, []);
 
   const handleManualForm = () => {

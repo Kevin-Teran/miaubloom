@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 export async function PUT(req: NextRequest) {
   try {
     // Obtener la sesión del cookie
-    const sessionCookie = req.cookies.get('miaubloom_session');
+    const sessionCookie = req.cookies.get('auth_token');
 
     if (!sessionCookie) {
       return NextResponse.json(

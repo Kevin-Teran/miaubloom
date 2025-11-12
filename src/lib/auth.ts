@@ -11,7 +11,7 @@ import { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 
 const SECRET_KEY = new TextEncoder().encode(
-  process.env.JWT_SECRET_KEY || 'tu-clave-secreta-muy-segura-aqui'
+  process.env.JWT_SECRET || 'tu_secreto_super_seguro_cambialo'
 );
 
 export interface AuthPayload {
@@ -25,7 +25,7 @@ export interface AuthPayload {
  * @returns Payload con userId y rol, o null si no está autenticado
  */
 export async function getAuthPayload(request: NextRequest): Promise<AuthPayload | null> {
-  const token = request.cookies.get('miaubloom_session')?.value;
+  const token = request.cookies.get('auth_token')?.value;
   if (!token) return null;
   
   try {

@@ -24,7 +24,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     // Leer la cookie DESDE el request
-    const sessionCookie = request.cookies.get('miaubloom_session'); //
+    const sessionCookie = request.cookies.get('auth_token'); //
 
     if (!sessionCookie) {
       console.log("Logout: No session cookie found to delete.");
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     // Borrar la cookie en la respuesta que se enviará al cliente
     response.cookies.set({
-      name: 'miaubloom_session',
+      name: 'auth_token',
       value: '',
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

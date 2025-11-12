@@ -33,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es">
       <head>
         <meta name="theme-color" content="#EE7E7F" />
         <link rel="manifest" href="/manifest.json" />
@@ -51,57 +51,6 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="MiauBloom" />
       </head>
       <body className={roboto.className} style={{ fontFamily: 'Roboto, sans-serif' }}>
-        <script dangerouslySetInnerHTML={{__html: `
-          (function() {
-            // FORZAR siempre modo claro inicialmente para debugging
-            console.log('[Layout Script] FORZANDO modo claro al inicio');
-            document.documentElement.classList.remove('dark');
-            document.documentElement.style.colorScheme = 'light';
-            
-            // Interceptar setItem para rastrear quién escribe en darkMode
-            const originalSetItem = localStorage.setItem;
-            localStorage.setItem = function(key, value) {
-              if (key === 'darkMode') {
-                console.log('[localStorage] setItem("darkMode", ' + value + ')');
-                console.log('[localStorage] Stack:', new Error().stack);
-              }
-              return originalSetItem.apply(this, arguments);
-            };
-            
-            try {
-              const darkModeRaw = localStorage.getItem('darkMode');
-              console.log('[Layout Script] darkMode from localStorage:', darkModeRaw);
-              
-              // Parsear el valor correctamente
-              let isDark = false;
-              if (darkModeRaw !== null) {
-                try {
-                  isDark = JSON.parse(darkModeRaw);
-                } catch (e) {
-                  isDark = darkModeRaw === 'true';
-                }
-              }
-              
-              console.log('[Layout Script] isDark parsed:', isDark);
-              console.log('[Layout Script] Aplicando dark mode:', isDark ? 'SI' : 'NO');
-              
-              if (isDark) {
-                document.documentElement.classList.add('dark');
-                document.documentElement.style.colorScheme = 'dark';
-                console.log('[Layout Script] ✓ Dark mode ACTIVADO - clase agregada');
-              } else {
-                document.documentElement.classList.remove('dark');
-                document.documentElement.style.colorScheme = 'light';
-                console.log('[Layout Script] ✓ Light mode ACTIVADO - clase removida');
-              }
-              
-              // Verificar que se aplicó correctamente
-              console.log('[Layout Script] Verificación final - tiene clase dark?', document.documentElement.classList.contains('dark'));
-            } catch (e) {
-              console.error('[Layout Script] Error:', e);
-            }
-          })();
-        `}} />
         <style>{`
           img {
             user-select: none !important;

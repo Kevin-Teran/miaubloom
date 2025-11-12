@@ -23,7 +23,7 @@ export function CalendarWithCitas({}: CalendarWithCitasProps) {
   return (
     <button
       onClick={() => router.push('/inicio/paciente/calendario')}
-      className="flex items-center gap-2 bg-white/90 dark:bg-slate-700/90 backdrop-blur-sm rounded-2xl shadow-lg dark:shadow-xl dark:shadow-black/30 px-4 py-3 hover:shadow-xl dark:hover:shadow-2xl transition-all duration-200 active:scale-95"
+      className="flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg px-4 py-3 hover:shadow-xl transition-all duration-200 active:scale-95"
     >
       <svg
         className="w-5 h-5 text-[var(--color-theme-primary)]"
@@ -42,7 +42,7 @@ export function CalendarWithCitas({}: CalendarWithCitasProps) {
         <span className="block text-2xl font-bold text-[var(--color-theme-primary)] leading-none">
           {new Date().getDate()}
         </span>
-        <span className="block text-xs text-gray-500 dark:text-slate-400 font-semibold uppercase tracking-wider mt-0.5">
+        <span className="block text-xs text-gray-500 font-semibold uppercase tracking-wider mt-0.5">
           {new Date().toLocaleDateString('es-ES', { month: 'short' }).replace('.', '').toUpperCase()}
         </span>
       </div>

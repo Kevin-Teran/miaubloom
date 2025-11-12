@@ -12,7 +12,7 @@ interface JWTPayload {
 export async function PUT(req: NextRequest) {
   try {
     // Obtener el JWT de la cookie
-    const sessionCookie = req.cookies.get('miaubloom_session');
+    const sessionCookie = req.cookies.get('auth_token');
 
     if (!sessionCookie?.value) {
       return NextResponse.json(

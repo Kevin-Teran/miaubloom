@@ -40,8 +40,6 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   theme: 'pink' | 'blue';
-  darkMode: boolean;
-  setDarkMode: (value: boolean) => void;
   refetchUser: () => Promise<void>;
 }
 
@@ -50,36 +48,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [darkMode, setDarkModeState] = useState(false);
   const [theme, setTheme] = useState<'pink' | 'blue'>('pink');
   const pathname = usePathname();
 
   // Aplicar tema basado en usuario
-  // Función para cambiar el modo oscuro
-  const setDarkMode = useCallback((value: boolean) => {
-    console.log('[AuthContext] Cambiando dark mode a:', value);
-    // Actualizar localStorage primero
-    localStorage.setItem('darkMode', JSON.stringify(value));
-    // Aplicar clases al DOM
-    if (value) {
-      document.documentElement.classList.add('dark');
-      document.documentElement.style.colorScheme = 'dark';
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.style.colorScheme = 'light';
-    }
-    // Actualizar el estado DESPUÉS (para forzar re-render)
-    setDarkModeState(value);
-  }, []);
-
-  // Cargar dark mode desde localStorage al inicio - sincronizar SOLO el estado con lo que ya está en el DOM
-  useEffect(() => {
-    // Leer el estado actual del DOM (que ya fue configurado por el script inline)
-    const hasDarkClass = document.documentElement.classList.contains('dark');
-    console.log('[AuthContext] Sincronizando estado con DOM, tiene clase dark?:', hasDarkClass);
-    setDarkModeState(hasDarkClass); // Solo sincronizar el estado, NO modificar las clases
-  }, []);
-
   const applyTheme = useCallback((userToTheme: User | null) => {
     if (!userToTheme) {
       setTheme('pink');
@@ -108,6 +80,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // --- CORRECCIÓN CRÍTICA: checkUserSession ---
   // Esta función ahora depende de la cookie httpOnly, no de localStorage.
   const checkUserSession = useCallback(async () => {
+    // Timeout para evitar que se quede colgado
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 segundos máximo
+
     try {
       console.log('[AuthContext] Iniciando verificación de sesión...');
       
@@ -115,6 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await fetch('/api/auth/user', { 
         method: 'GET',
         credentials: 'include', // Asegura que las cookies se envíen
+        signal: controller.signal,
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
@@ -122,6 +99,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       });
       
+      clearTimeout(timeoutId);
       console.log('[AuthContext] Respuesta recibida:', response.status);
       
       if (response.ok) {
@@ -152,8 +130,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(null);
         applyTheme(null);
       }
-    } catch (error) {
-      console.error('[AuthContext] Error al verificar sesión:', error);
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        console.error('[AuthContext] Timeout: La verificación tardó demasiado');
+      } else {
+        console.error('[AuthContext] Error al verificar sesión:', error);
+      }
       setUser(null);
       applyTheme(null);
     } finally {
@@ -175,7 +158,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [pathname, user, applyTheme]);
 
   // Proveer contexto
-  const value = { user, isLoading, theme, darkMode, setDarkMode, refetchUser: checkUserSession };
+  const value = { user, isLoading, theme, refetchUser: checkUserSession };
 
   return (
     <AuthContext.Provider value={value}>

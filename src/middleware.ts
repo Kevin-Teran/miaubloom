@@ -14,7 +14,7 @@ import { jwtVerify } from 'jose';
 
 // Clave secreta para VERIFICAR el token. DEBE SER LA MISMA que usas en login/register.
 const SECRET_KEY = new TextEncoder().encode(
-  process.env.JWT_SECRET_KEY || 'tu-clave-secreta-muy-segura-aqui'
+  process.env.JWT_SECRET || 'tu_secreto_super_seguro_cambialo'
 );
 
 // Función para verificar el JWT (la cookie de sesión)
@@ -34,7 +34,8 @@ async function verifyAuth(token: string): Promise<Record<string, unknown> | null
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const sessionToken = request.cookies.get('miaubloom_session')?.value;
+  // Buscar la cookie correcta: auth_token
+  const sessionToken = request.cookies.get('auth_token')?.value;
 
   // Verificar si hay token válido
   let isAuthenticated = false;
@@ -62,7 +63,6 @@ export async function middleware(request: NextRequest) {
     // Permitir acceso a rutas públicas
     return NextResponse.next();
   }
-
   // Si la ruta NO es pública, requiere autenticación
   // Si NO hay token válido, redirigir a /identificacion
   if (!isAuthenticated) {

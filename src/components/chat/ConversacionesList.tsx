@@ -95,10 +95,10 @@ export const ConversacionesList: React.FC<ConversacionesListProps> = ({
 
   if (cargando) {
     return (
-      <div className="flex justify-center items-center h-64 p-4 bg-white dark:bg-slate-900">
+      <div className="flex justify-center items-center h-64 p-4">
         <div className="flex flex-col items-center gap-3">
           <div className="w-12 h-12 border-4 rounded-full animate-spin" style={{ borderColor: 'var(--color-theme-primary)', borderTopColor: 'transparent' }}></div>
-          <p className="text-gray-500 dark:text-slate-500 text-sm">Cargando chats...</p>
+          <p className="text-gray-500 text-sm">Cargando chats...</p>
         </div>
       </div>
     );
@@ -106,10 +106,10 @@ export const ConversacionesList: React.FC<ConversacionesListProps> = ({
 
   if (error) {
     return (
-      <div className="p-4 m-4 bg-red-50 dark:bg-red-900/20 border-l-4 rounded-lg" style={{ borderLeftColor: 'var(--color-theme-primary)' }}>
+      <div className="p-4 m-4 bg-red-50 border-l-4 rounded-lg" style={{ borderLeftColor: 'var(--color-theme-primary)' }}>
         <div className="flex items-center gap-2">
           <span className="text-2xl">⚠️</span>
-          <p className="text-red-700 dark:text-red-400 font-medium">{error}</p>
+          <p className="text-red-700 font-medium">{error}</p>
         </div>
       </div>
     );
@@ -117,18 +117,18 @@ export const ConversacionesList: React.FC<ConversacionesListProps> = ({
 
   if (conversaciones.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-slate-400 p-8 bg-white dark:bg-slate-900">
+      <div className="flex flex-col items-center justify-center h-64 text-gray-500 p-8">
         <div className="w-20 h-20 mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-theme-primary-light)' }}>
           <MessageCircle size={40} style={{ color: 'var(--color-theme-primary)' }} />
         </div>
-        <p className="text-lg font-semibold text-gray-700 dark:text-slate-300">Sin conversaciones</p>
-        <p className="text-sm text-gray-500 dark:text-slate-500">Tus chats aparecerán aquí</p>
+        <p className="text-lg font-semibold text-gray-700">Sin conversaciones</p>
+        <p className="text-sm text-gray-500">Tus chats aparecerán aquí</p>
       </div>
     );
   }
 
   return (
-    <div className="divide-y divide-gray-100 dark:divide-slate-700 bg-white dark:bg-slate-900">
+    <div className="divide-y divide-gray-100">
       {conversaciones.map((conversacion, index) => {
         const tieneNoLeidos = conversacion.mensajesNoLeidos > 0;
         
@@ -138,8 +138,8 @@ export const ConversacionesList: React.FC<ConversacionesListProps> = ({
             onClick={() => onSelectConversacion(conversacion)}
             className={`w-full text-left px-4 py-4 transition-all duration-150 active:scale-[0.98] ${
               conversacionSeleccionadaId === conversacion.id 
-                ? 'dark:bg-slate-700' 
-                : 'hover:bg-gray-50 dark:hover:bg-slate-800 active:bg-gray-100 dark:active:bg-slate-700'
+                ? 'bg-opacity-100' 
+                : 'hover:bg-gray-50 active:bg-gray-100'
             }`}
             style={conversacionSeleccionadaId === conversacion.id ? {
               backgroundColor: 'var(--color-theme-primary-light)',
@@ -148,7 +148,7 @@ export const ConversacionesList: React.FC<ConversacionesListProps> = ({
             <div className="flex items-start gap-3">
               {/* Avatar con badge */}
               <div className="relative flex-shrink-0">
-                <div className="w-14 h-14 rounded-full overflow-hidden ring-1 ring-gray-200 dark:ring-slate-700">
+                <div className="w-14 h-14 rounded-full overflow-hidden ring-1 ring-gray-200">
                   <Image
                     src={conversacion.otroUsuario.avatar}
                     alt={conversacion.otroUsuario.nombre}
@@ -165,7 +165,7 @@ export const ConversacionesList: React.FC<ConversacionesListProps> = ({
               <div className="flex-1 min-w-0 pt-0.5">
                 {/* Nombre y hora */}
                 <div className="flex items-baseline justify-between mb-1 gap-2">
-                  <h3 className={`truncate text-base ${tieneNoLeidos ? 'font-bold text-gray-900 dark:text-slate-100' : 'font-medium text-gray-900 dark:text-slate-200'}`}>
+                  <h3 className={`truncate text-base ${tieneNoLeidos ? 'font-bold text-gray-900' : 'font-medium text-gray-900'}`}>
                     {conversacion.otroUsuario.nombre}
                   </h3>
                   {conversacion.ultimoMensaje && (
