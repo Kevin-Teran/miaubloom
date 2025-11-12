@@ -53,6 +53,15 @@ export default function RootLayout({
       <body className={roboto.className} style={{ fontFamily: 'Roboto, sans-serif' }}>
         <script dangerouslySetInnerHTML={{__html: `
           (function() {
+            // Interceptar setItem para rastrear quién escribe en darkMode
+            const originalSetItem = localStorage.setItem;
+            localStorage.setItem = function(key, value) {
+              if (key === 'darkMode') {
+                console.log('[localStorage] setItem("darkMode", ' + value + ') - llamado desde:', new Error().stack);
+              }
+              return originalSetItem.apply(this, arguments);
+            };
+            
             try {
               const darkModeRaw = localStorage.getItem('darkMode');
               console.log('[Layout Script] darkMode from localStorage (raw):', darkModeRaw, 'type:', typeof darkModeRaw);

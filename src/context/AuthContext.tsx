@@ -72,26 +72,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setDarkModeState(value);
   }, []);
 
-  // Cargar dark mode desde localStorage al inicio
+  // Cargar dark mode desde localStorage al inicio - SOLO el estado, las clases ya las aplicó el script inline
   useEffect(() => {
     const savedDarkMode = localStorage.getItem('darkMode');
-    console.log('[AuthContext] Dark mode cargado desde localStorage (raw):', savedDarkMode, 'type:', typeof savedDarkMode);
+    console.log('[AuthContext] Sincronizando estado de darkMode desde localStorage:', savedDarkMode);
     if (savedDarkMode !== null) {
       try {
         const isDark = JSON.parse(savedDarkMode);
-        console.log('[AuthContext] Dark mode parseado:', isDark);
-        setDarkModeState(isDark); // Usar setDarkModeState directamente para evitar loop
-        // Aplicar las clases también
-        if (isDark) {
-          document.documentElement.classList.add('dark');
-          document.documentElement.style.colorScheme = 'dark';
-        } else {
-          document.documentElement.classList.remove('dark');
-          document.documentElement.style.colorScheme = 'light';
-        }
+        console.log('[AuthContext] Seteando darkModeState a:', isDark);
+        setDarkModeState(isDark); // Solo actualizar el estado, NO las clases
       } catch (e) {
         console.error('[AuthContext] Error parsing darkMode:', e);
-        // Si falla el parse, intentar comparación de string
         const isDark = savedDarkMode === 'true';
         setDarkModeState(isDark);
       }
@@ -191,16 +182,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     applyTheme(user);
   }, [pathname, user, applyTheme]);
-
-  // Observer para cambios en darkMode y asegurar que se aplique correctamente
-  useEffect(() => {
-    console.log('[AuthContext] darkMode cambió a:', darkMode);
-    // Forzar un pequeño delay para asegurar que Tailwind detecte el cambio
-    const timer = setTimeout(() => {
-      document.documentElement.setAttribute('data-dark-mode', String(darkMode));
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [darkMode]);
 
   // Proveer contexto
   const value = { user, isLoading, theme, darkMode, setDarkMode, refetchUser: checkUserSession };
