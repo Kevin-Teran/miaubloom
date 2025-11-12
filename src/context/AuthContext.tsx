@@ -75,16 +75,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Cargar dark mode desde localStorage al inicio
   useEffect(() => {
     const savedDarkMode = localStorage.getItem('darkMode');
-    console.log('[AuthContext] Dark mode cargado desde localStorage:', savedDarkMode);
+    console.log('[AuthContext] Dark mode cargado desde localStorage (raw):', savedDarkMode, 'type:', typeof savedDarkMode);
     if (savedDarkMode !== null) {
       try {
         const isDark = JSON.parse(savedDarkMode);
-        setDarkMode(isDark);
+        console.log('[AuthContext] Dark mode parseado:', isDark);
+        setDarkModeState(isDark); // Usar setDarkModeState directamente para evitar loop
+        // Aplicar las clases también
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+          document.documentElement.style.colorScheme = 'dark';
+        } else {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.style.colorScheme = 'light';
+        }
       } catch (e) {
         console.error('[AuthContext] Error parsing darkMode:', e);
+        // Si falla el parse, intentar comparación de string
+        const isDark = savedDarkMode === 'true';
+        setDarkModeState(isDark);
       }
     }
-  }, [setDarkMode]);
+  }, []);
 
   const applyTheme = useCallback((userToTheme: User | null) => {
     if (!userToTheme) {

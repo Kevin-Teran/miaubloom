@@ -54,9 +54,22 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{__html: `
           (function() {
             try {
-              const darkMode = localStorage.getItem('darkMode');
-              console.log('[Layout Script] darkMode from localStorage:', darkMode);
-              if (darkMode === 'true') {
+              const darkModeRaw = localStorage.getItem('darkMode');
+              console.log('[Layout Script] darkMode from localStorage (raw):', darkModeRaw, 'type:', typeof darkModeRaw);
+              
+              // Parsear el valor correctamente - puede ser "true", "false", true, false, null
+              let isDark = false;
+              if (darkModeRaw !== null) {
+                try {
+                  isDark = JSON.parse(darkModeRaw);
+                } catch (e) {
+                  isDark = darkModeRaw === 'true';
+                }
+              }
+              
+              console.log('[Layout Script] isDark parsed:', isDark);
+              
+              if (isDark) {
                 document.documentElement.classList.add('dark');
                 document.documentElement.style.colorScheme = 'dark';
                 console.log('[Layout Script] Dark mode ACTIVADO');
