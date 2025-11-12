@@ -135,7 +135,7 @@ const EmotionChart = ({
                 </svg>
                 {/* Porcentaje en el centro */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-lg font-bold text-gray-800 dark:text-white" style={{ color: '#1f2937' }}>
+                    <span className="text-lg font-bold text-gray-800 dark:text-white">
                         {percentage}%
                     </span>
                 </div>
@@ -156,7 +156,7 @@ const EmotionChart = ({
             </div>
 
             {/* Nombre de la emoción */}
-            <span className="text-sm font-medium text-gray-600 dark:text-slate-100" style={{ color: '#4b5563' }}>{name}</span>
+            <span className="text-sm font-medium text-gray-600 dark:text-slate-300">{name}</span>
         </div>
     );
 };
@@ -714,8 +714,8 @@ export default function InicioPacientePage() {
                             {/* Mis Tareas */}
                             <section>
                                 <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-2xl font-bold text-gray-800">Mis tareas</h3>
-                                    <Link href="/inicio/paciente/tareas" className="text-sm hover:text-opacity-80 font-semibold transition-colors" style={{ color: 'var(--color-theme-primary)' }}>
+                                    <h3 className="text-2xl font-bold text-gray-800 dark:text-slate-100">Mis tareas</h3>
+                                    <Link href="/inicio/paciente/tareas" className="text-sm hover:text-opacity-80 font-semibold transition-colors text-[var(--color-theme-primary)]">
                                         Ver todas →
                                     </Link>
                                 </div>

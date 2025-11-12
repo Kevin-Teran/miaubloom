@@ -57,20 +57,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Aplicar tema basado en usuario
   // Función para cambiar el modo oscuro
   const setDarkMode = useCallback((value: boolean) => {
-    setDarkModeState(value);
+    console.log('[AuthContext] Cambiando dark mode a:', value);
+    // Actualizar localStorage primero
+    localStorage.setItem('darkMode', JSON.stringify(value));
+    // Aplicar clases al DOM
     if (value) {
       document.documentElement.classList.add('dark');
+      document.documentElement.style.colorScheme = 'dark';
     } else {
       document.documentElement.classList.remove('dark');
+      document.documentElement.style.colorScheme = 'light';
     }
+    // Actualizar el estado DESPUÉS (para forzar re-render)
+    setDarkModeState(value);
   }, []);
 
   // Cargar dark mode desde localStorage al inicio
   useEffect(() => {
     const savedDarkMode = localStorage.getItem('darkMode');
+    console.log('[AuthContext] Dark mode cargado desde localStorage:', savedDarkMode);
     if (savedDarkMode !== null) {
-      const isDark = JSON.parse(savedDarkMode);
-      setDarkMode(isDark);
+      try {
+        const isDark = JSON.parse(savedDarkMode);
+        setDarkMode(isDark);
+      } catch (e) {
+        console.error('[AuthContext] Error parsing darkMode:', e);
+      }
     }
   }, [setDarkMode]);
 
@@ -167,6 +179,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     applyTheme(user);
   }, [pathname, user, applyTheme]);
+
+  // Observer para cambios en darkMode y asegurar que se aplique correctamente
+  useEffect(() => {
+    console.log('[AuthContext] darkMode cambió a:', darkMode);
+    // Forzar un pequeño delay para asegurar que Tailwind detecte el cambio
+    const timer = setTimeout(() => {
+      document.documentElement.setAttribute('data-dark-mode', String(darkMode));
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [darkMode]);
 
   // Proveer contexto
   const value = { user, isLoading, theme, darkMode, setDarkMode, refetchUser: checkUserSession };

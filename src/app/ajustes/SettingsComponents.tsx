@@ -39,34 +39,29 @@ export const ToggleItem = ({ label, initialValue = false, isDarkMode = false }: 
     const { setDarkMode, darkMode } = useAuth();
     const [isEnabled, setIsEnabled] = useState(initialValue);
 
-    // Si es el toggle de dark mode, usar el estado global
+    // Si es el toggle de dark mode, sincronizar con el estado global
     useEffect(() => {
-        if (isDarkMode && darkMode !== undefined) {
+        if (isDarkMode) {
             setIsEnabled(darkMode);
         }
     }, [isDarkMode, darkMode]);
 
-    const onToggle = async () => {
+    const onToggle = () => {
         const newValue = !isEnabled;
-        setIsEnabled(newValue);
+        console.log('[ToggleItem] Toggle clicked, new value:', newValue);
         
         if (isDarkMode) {
-            // Guardar en el contexto y localStorage
+            // Actualizar el estado global PRIMERO (que se encarga de guardar en localStorage y aplicar clases)
             setDarkMode(newValue);
-            localStorage.setItem('darkMode', JSON.stringify(newValue));
-            
-            // Aplicar clase al documento
-            if (newValue) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
         }
+        
+        // Actualizar el estado local después
+        setIsEnabled(newValue);
     };
 
      return (
         <div className="flex items-center justify-between py-3 px-4">
-            <span className="text-gray-800 text-sm">{label}</span>
+            <span className="text-gray-800 dark:text-gray-200 text-sm">{label}</span>
             <button
                 onClick={onToggle}
                 className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors duration-200 ease-in-out focus:outline-none ${isEnabled ? 'bg-[var(--color-theme-primary)]' : 'bg-gray-300'}`}

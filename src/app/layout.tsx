@@ -33,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <head>
         <meta name="theme-color" content="#EE7E7F" />
         <link rel="manifest" href="/manifest.json" />
@@ -51,6 +51,20 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="MiauBloom" />
       </head>
       <body className={roboto.className} style={{ fontFamily: 'Roboto, sans-serif' }}>
+        <script dangerouslySetInnerHTML={{__html: `
+          (function() {
+            try {
+              const darkMode = localStorage.getItem('darkMode');
+              if (darkMode === 'true') {
+                document.documentElement.classList.add('dark');
+                document.documentElement.style.colorScheme = 'dark';
+              } else {
+                document.documentElement.classList.remove('dark');
+                document.documentElement.style.colorScheme = 'light';
+              }
+            } catch (e) {}
+          })();
+        `}} />
         <style>{`
           img {
             user-select: none !important;
