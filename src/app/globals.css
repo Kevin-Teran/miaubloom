@@ -31,10 +31,10 @@
   --color-theme-primary-light: #FDE6E6;
   --color-theme-primary-rgb: 242, 194, 193; /* RGB para transparencias */
   
-  /* Colores neutros (CORREGIDOS SEGÚN PDF) */
-  --color-background: #FFFFFF;
-  --color-background-alt: #FAFAFA;
-  --color-foreground: #070806; /* Negro/Gris oscuro para texto */
+  /* Colores neutros - MODO CLARO */
+  --color-background: #FFFFFF; /* BLANCO PURO */
+  --color-background-alt: #F9FAFB; /* Gris muy claro */
+  --color-foreground: #111827; /* Negro para texto */
   --color-gray: #6B7280;
   --color-gray-light: #E5E7EB;
   
