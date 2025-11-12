@@ -445,20 +445,26 @@ select:focus {
 */
 
 /* ================================================
-   MODO OSCURO
+   MODO OSCURO - Sistema completo y funcional
    ================================================ */
 .dark {
-  --color-background: #0F172A;
-  --color-background-alt: #1E293B;
-  --color-foreground: #F1F5F9;
+  /* Colores de fondo oscuros */
+  --color-background: #0F172A; /* Fondo principal muy oscuro */
+  --color-background-alt: #1E293B; /* Fondo alternativo (cards) */
+  --color-foreground: #F1F5F9; /* Texto claro */
   --color-gray: #94A3B8;
   --color-gray-light: #334155;
+  
+  /* Logo filters para dark mode */
   --logo-filter: brightness(1);
   --logo-text-filter: brightness(0) invert(1) saturate(1);
+  
+  /* Chat */
   --chat-bg: #1F2937;
 }
 
-/* REMOVIDO: Estilos con !important que sobrescribían Tailwind
-   Ahora Tailwind CSS maneja completamente el dark mode con las clases dark:
-   Las clases como dark:bg-slate-900, dark:text-white, etc. funcionan correctamente
-*/
+/* Aplicar variables CSS al body en dark mode */
+.dark body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}

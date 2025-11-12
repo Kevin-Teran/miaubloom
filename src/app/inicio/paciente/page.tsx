@@ -640,12 +640,7 @@ export default function InicioPacientePage() {
                         {/* Columna Izquierda - Avatar y Navegación */}
                         <aside className="col-span-3 space-y-6">
                             {/* Card de Saludo */}
-                            <div 
-                                className="bg-gradient-to-br from-[var(--color-theme-primary-light)] to-[var(--color-theme-primary-light)]/60 dark:from-slate-700 dark:to-slate-700/80 rounded-3xl p-6 text-center shadow-lg dark:shadow-xl dark:shadow-black/30"
-                                style={{
-                                    backgroundColor: document.documentElement.classList.contains('dark') ? undefined : 'var(--color-theme-primary-light)'
-                                }}
-                            >
+                            <div className="bg-gradient-to-br from-[var(--color-theme-primary-light)] to-[var(--color-theme-primary-light)]/60 dark:from-slate-700 dark:to-slate-700/80 rounded-3xl p-6 text-center shadow-lg dark:shadow-xl dark:shadow-black/30">
                                 <div className="w-40 h-40 relative mx-auto mb-4 drop-shadow-2xl">
                                     <Image
                                         src="/assets/gato-inicio-1.png"
