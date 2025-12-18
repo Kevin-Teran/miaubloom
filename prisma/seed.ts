@@ -15,7 +15,6 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Iniciando seed de la base de datos...\n');
 
-  // Limpiar datos existentes (opcional - comentar en producción)
   console.log('🧹 Limpiando datos existentes...');
   await prisma.passwordResetToken.deleteMany();
   await prisma.cita.deleteMany();
@@ -26,12 +25,8 @@ async function main() {
   await prisma.user.deleteMany();
   console.log('✓ Datos limpiados\n');
 
-  // Hash de contraseña para usuarios de prueba
   const password = await bcrypt.hash('test123', 12);
 
-  // ============================================
-  // CREAR PSICÓLOGOS
-  // ============================================
   console.log('👨‍⚕️ Creando psicólogos de prueba...');
 
   const psicologo1 = await prisma.user.create({
