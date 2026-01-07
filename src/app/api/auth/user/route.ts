@@ -16,156 +16,64 @@ export const dynamic = 'force-dynamic';
 
 const prisma = new PrismaClient();
 
-// Clave secreta para verificar el JWT
-const SECRET_KEY = new TextEncoder().encode(
-  process.env.JWT_SECRET_KEY || 'tu-clave-secreta-muy-segura-aqui'
-);
+// 🔐 MISMO SECRET QUE LOGIN
+const SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET_KEY!);
 
-/**
- * @function GET
- * @description Obtiene los datos completos del usuario autenticado (LEYENDO DESDE COOKIE)
- * @param {NextRequest} request - Petición HTTP
- * @returns {Promise<NextResponse>} Datos del usuario con perfil completo
- */
 export async function GET(request: NextRequest) {
   try {
-    // --- CORRECCIÓN CRÍTICA: LEER DE COOKIE ---
-    const sessionToken = request.cookies.get('miaubloom_session')?.value;
-    // --- FIN DE CORRECCIÓN ---
+    const token = request.cookies.get('miaubloom_session')?.value;
 
-    console.log('[AUTH/USER] Verificando sesión desde cookie:', {
-      hasSessionToken: !!sessionToken,
-    });
-
-    if (!sessionToken) {
-      console.log('[AUTH/USER] No hay cookie de sesión');
+    if (!token) {
       return NextResponse.json(
-        { 
-          success: false, 
-          authenticated: false,
-          message: 'No hay sesión activa' 
-        },
-        { 
-          status: 401,
-          headers: {
-            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0',
-            'Surrogate-Control': 'no-store',
-          }
-        }
+        { authenticated: false },
+        { status: 401 }
       );
     }
 
-    // Verificar el JWT
-    let payload: Record<string, unknown>;
-    let userId: string;
-    let userRole: string;
-
+    let payload: any;
     try {
-      const { payload: decodedPayload } = await jwtVerify(sessionToken, SECRET_KEY);
-      payload = decodedPayload as Record<string, unknown>;
-      userId = payload.userId as string;
-      userRole = payload.rol as string;
-      
-      if (!userId || !userRole) {
-        throw new Error('Payload de JWT inválido');
-      }
-
-    } catch (error) {
-      console.error('[AUTH/USER] Error al verificar JWT:', error);
-      // Devolver 401 para que el cliente sepa que la cookie es inválida
+      const result = await jwtVerify(token, SECRET_KEY);
+      payload = result.payload;
+    } catch {
       return NextResponse.json(
-        { 
-          success: false, 
-          authenticated: false,
-          message: 'Sesión inválida o expirada' 
-        },
-        { 
-          status: 401,
-          headers: {
-            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0',
-          }
-        }
+        { authenticated: false },
+        { status: 401 }
       );
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        nombreCompleto: true,
-        rol: true,
+      where: { id: payload.userId },
+      include: {
         perfilPaciente: true,
-        perfilPsicologo: true
-      }
+        perfilPsicologo: true,
+      },
     });
 
     if (!user) {
       return NextResponse.json(
-        { 
-          success: false, 
-          authenticated: false,
-          message: 'Usuario no encontrado' 
-        },
-        { 
-          status: 401,
-          headers: {
-            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-          }
-        }
+        { authenticated: false },
+        { status: 401 }
       );
     }
 
-    // Preparar datos del perfil
-    let perfilCompleto = false;
-    let perfilData = null;
-
-    if (userRole === 'Paciente' && user.perfilPaciente) {
-      perfilCompleto = true;
-      perfilData = user.perfilPaciente;
-    } else if (userRole === 'Psicólogo' && user.perfilPsicologo) {
-      perfilCompleto = true;
-      perfilData = user.perfilPsicologo;
-    }
-
-    // Devolver la estructura de usuario unificada
     return NextResponse.json(
-      { 
-        success: true, 
+      {
         authenticated: true,
         user: {
           id: user.id,
           email: user.email,
           nombreCompleto: user.nombreCompleto,
           rol: user.rol,
-          perfil: perfilData, // Enviar el objeto de perfil completo
-          perfilCompleto: perfilCompleto
-        }
+          perfilPaciente: user.perfilPaciente,
+          perfilPsicologo: user.perfilPsicologo,
+        },
       },
-      { 
-        status: 200,
-        headers: {
-          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0',
-          'Surrogate-Control': 'no-store',
-        }
-      }
+      { status: 200 }
     );
-
   } catch (error) {
-    console.error('Error obteniendo usuario:', error);
-    
+    console.error('[AUTH USER ERROR]', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        authenticated: false,
-        message: 'Error al obtener usuario' 
-      },
+      { authenticated: false },
       { status: 500 }
     );
   } finally {
