@@ -8,106 +8,72 @@
  * @copyright MiauBloom
  */
 
-
-import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { SignJWT } from 'jose';
+import jwt from 'jsonwebtoken';
 
-export const dynamic = 'force-dynamic';
-
-const prisma = new PrismaClient();
-
-// 🔐 SECRET OBLIGATORIO (DEBE EXISTIR EN VERCEL)
-const SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET_KEY!);
-
-interface LoginRequestBody {
-  email: string;
-  password: string;
-  rol: 'Paciente' | 'Psicólogo';
-}
-
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const { email, password, rol }: LoginRequestBody = await request.json();
+    const { email, password } = await req.json();
 
-    if (!email || !password || !rol) {
+    if (!email || !password) {
       return NextResponse.json(
-        { success: false, message: 'Datos incompletos' },
+        { error: 'Datos incompletos' },
         { status: 400 }
       );
     }
 
-    const user = await prisma.user.findFirst({
-      where: {
-        email: email.toLowerCase().trim(),
-        rol,
-      },
-      include: {
-        perfilPaciente: true,
-        perfilPsicologo: true,
-      },
+    const user = await prisma.user.findUnique({
+      where: { email },
     });
 
     if (!user) {
       return NextResponse.json(
-        { success: false, message: 'Credenciales inválidas' },
+        { error: 'Credenciales inválidas' },
         { status: 401 }
       );
     }
 
     const validPassword = await bcrypt.compare(password, user.password);
+
     if (!validPassword) {
       return NextResponse.json(
-        { success: false, message: 'Credenciales inválidas' },
+        { error: 'Credenciales inválidas' },
         { status: 401 }
       );
     }
 
-    // 🧾 Payload JWT
-    const payload = {
-      userId: user.id,
-      email: user.email,
-      rol: user.rol,
-      nombreCompleto: user.nombreCompleto,
-    };
-
-    const token = await new SignJWT(payload)
-      .setProtectedHeader({ alg: 'HS256' })
-      .setIssuedAt()
-      .setExpirationTime('7d')
-      .sign(SECRET_KEY);
-
-    const response = NextResponse.json(
+    const token = jwt.sign(
       {
-        success: true,
-        user: {
-          id: user.id,
-          email: user.email,
-          nombreCompleto: user.nombreCompleto,
-          rol: user.rol,
-        },
+        userId: user.id,
+        role: user.rol,
       },
-      { status: 200 }
+      process.env.JWT_SECRET!,
+      { expiresIn: '7d' }
     );
 
-    // 🍪 COOKIE CORRECTA PARA VERCEL
-    response.cookies.set('miaubloom_session', token, {
+    const response = NextResponse.json({
+      id: user.id,
+      email: user.email,
+      nombreCompleto: user.nombreCompleto,
+      rol: user.rol,
+    });
+
+    response.cookies.set('auth_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7,
       path: '/',
+      maxAge: 60 * 60 * 24 * 7,
     });
 
     return response;
   } catch (error) {
-    console.error('[LOGIN ERROR]', error);
+    console.error('[LOGIN_ERROR]', error);
     return NextResponse.json(
-      { success: false, message: 'Error interno del servidor' },
+      { error: 'Error interno del servidor' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
