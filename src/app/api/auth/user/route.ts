@@ -8,75 +8,50 @@
  * @copyright MiauBloom
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { jwtVerify } from 'jose';
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import jwt from 'jsonwebtoken';
+import { cookies } from 'next/headers';
 
-export const dynamic = 'force-dynamic';
-
-const prisma = new PrismaClient();
-
-// 🔐 MISMO SECRET QUE LOGIN
-const SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET_KEY!);
-
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const token = request.cookies.get('miaubloom_session')?.value;
+    const token = cookies().get('auth_token')?.value;
 
     if (!token) {
       return NextResponse.json(
-        { authenticated: false },
+        { error: 'No autenticado' },
         { status: 401 }
       );
     }
 
-    let payload: any;
-    try {
-      const result = await jwtVerify(token, SECRET_KEY);
-      payload = result.payload;
-    } catch {
-      return NextResponse.json(
-        { authenticated: false },
-        { status: 401 }
-      );
-    }
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET!
+    ) as { userId: string };
 
     const user = await prisma.user.findUnique({
-      where: { id: payload.userId },
-      include: {
-        perfilPaciente: true,
-        perfilPsicologo: true,
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        email: true,
+        nombreCompleto: true,
+        rol: true,
       },
     });
 
     if (!user) {
       return NextResponse.json(
-        { authenticated: false },
+        { error: 'Usuario no encontrado' },
         { status: 401 }
       );
     }
 
-    return NextResponse.json(
-      {
-        authenticated: true,
-        user: {
-          id: user.id,
-          email: user.email,
-          nombreCompleto: user.nombreCompleto,
-          rol: user.rol,
-          perfilPaciente: user.perfilPaciente,
-          perfilPsicologo: user.perfilPsicologo,
-        },
-      },
-      { status: 200 }
-    );
+    return NextResponse.json(user);
   } catch (error) {
-    console.error('[AUTH USER ERROR]', error);
+    console.error('[AUTH_USER_ERROR]', error);
     return NextResponse.json(
-      { authenticated: false },
-      { status: 500 }
+      { error: 'Sesión inválida' },
+      { status: 401 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
