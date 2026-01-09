@@ -7,11 +7,12 @@ const withPWA = withPWAInit({
   dest: "public",
   disable: !isProd,
   register: true,
-  skipWaiting: true,
+  workboxOptions: {
+    skipWaiting: true,
+  },
 });
 
 const nextConfig: NextConfig = {
-  // Deshabilitar prerendering estático para evitar problemas con dynamic pages
   onDemandEntries: {
     maxInactiveAge: 25 * 1000,
     pagesBufferLength: 5,
